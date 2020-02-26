@@ -20,17 +20,10 @@
    * ecom.yml
    
 #### `Ссылка на документ`
-Протокол расположен по адресу https://e-commerce.raiffeisen.ru/api/doc/sbp.html
+Протокол расположен по адресу: https://e-commerce.raiffeisen.ru/api/doc/ecom.html
 
-### `Назначение документа Raiffeisenbank e-commerce API_EN`
-Это инструмент на английском языке для интеграции с эквайрингом Райффайзенбанка — для разработчиков.
+Документ на английком языке расположен по адресу: https://e-commerce.raiffeisen.ru/api/doc/ecom_en.html
 
-#### `Компоненты документа`
-   * ecom_en.html
-   * ecom_en.yml
-   
-#### `Ссылка на документ`
-Протокол расположен по адресу https://e-commerce.raiffeisen.ru/api/doc/ecom_en.html
 
 ### `Назначение документа СБП API Raiffeisenbank` 
 
