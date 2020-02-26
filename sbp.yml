@@ -1,0 +1,398 @@
+swagger: '2.0'
+info:
+  title: API интеграции Системы Быстрых Платежей (СБП)
+  contact: {
+    email: ecom_support@raiffeisen.ru,
+    name: Support e-mail
+  }
+  x-logo:
+    url: images/raifflogo.png
+    backgroundColor: '#FFFFFF'
+    altText: Raiff logo
+  description: |
+    # Подключение к СБП
+
+    Для приема СБП-платежей направьте запрос на e-mail: Cash_Management_Sales@raiffeisen.ru, указав ваши контактные данные: номер телефона и e-mail.
+    
+    Райффайзенбанк выполнит регистрацию. 
+    После завершения процесса вы будете оповещены на электронную почту.
+
+    ## Участники СБП
+
+    ### Покупатель
+    * выбирает в ПО партнёр услуги/товары и пункт «Оплата через СБП» (опционально)
+    * сканирует QR-код, предоставленный партнёром, и подтверждает платеж в приложении своего банка
+    * получает результат платежа и оплаченную услуги/товары
+
+    ### Партнёр
+    * запрашивает формирование QR-кода для выбранных товаров/услуг (корзины)
+    * отображает QR-код клиенту для сканирования и произведения оплаты
+    * обрабатывает уведомления о результатах СБП-операций
+    * запрашивает данные по платежу (опционально)
+    * обеспечивает выдачу товаров/услуг покупателю по факту платежа
+
+    ### Райффайзенбанк
+    * предоставляет интерфейс для запроса со стороны партнёра QR-кода
+    * обеспечивает перевод денежных средств на счет партнёра по факту расчетов в СБП
+    * определяет формат уведомления о факте СБП-платежа
+    * предоставляет интерфейс для получения данных по платежу
+    
+    ## Общая схема работы
+
+    На рисунке ниже изображена схема информационного обмена c партнёром при реализации платежа по QR-коду. 
+    
+    <a href='images/SBP API Raiffeisenbank scheme.html' target='_blank'><img src='images/SBP API Raiffeisenbank scheme.png'></a>
+
+    # Описание API
+    Взаимодействие осуществляется по протоколу HTTP с использованием методов GET/POST (в описании каждого запроса явно указан требуемый метод и адрес). 
+    
+    POST-запросы используют JSON-аргументы, GET-запросы работают со строками запросов. 
+
+    API всегда возвращает ответ в формате JSON, независимо от типа запроса. 
+
+    Ответ любого метода содержит код сообщения (code). Если в процессе обработки любого запроса произойдет логическая ошибка, API вернет дополнительно описание ошибки (message).
+    
+    ## Авторизация
+    Запросы на получение информации по QR-коду и платежу авторизуются посредством секретного ключа API (SECRET_KEY). Параметр авторизации указывается в заголовке Authorization, значение которого формируется как "Bearer SECRET_KEY".
+    
+    Для генерации секретного ключа необходимо обратиться по адресу:  ecom_support@raiffeisen.ru
+
+    # Тестирование
+
+    ## Приложение для тестирования
+
+    Для полного цикла тестирования оплаты Райффайзенбанк предоставляет возможность использования демо-приложения для сканирования QRC от имени покупателя по адресу:
+    https://rfuture.site
+
+    * Логин - demo
+    * Пароль - demo
+    
+    Указанный адрес можно открыть в браузере любого устройства, где есть камера. Никакого дополнительного софта/плагинов устанавливать не нужно. Далее нажать на значок СБП (при необходимости разрешить браузеру доступ к камере) и поднести к ней изображение QR-кода. 
+
+    ## Пример экранов демо-приложения
+
+    <div align=center><a href='images/example-sbp-1.png' target='_blank'><img src='images/example-sbp-1.png'></a></div>
+
+servers:
+- url: https://e-commerce.raiffeisen.ru
+  description: Production API
+- url: https://test.ecom.raiffeisen.ru
+  description: Sandbox API
+tags:
+- name: qr-controller
+  x-displayName: 'Оплата по QR-коду'
+  description: |
+    Для реализации взаимодействия с партнёром Райффайзенбанк предоставляет API из следующих запросов:
+      * регистрация QR-кода,
+      * получение данных по зарегистрированному ранее QR-коду,
+      * получение данных по платежу.
+- name: Callback
+  x-displayName: 'Уведомление о платеже'
+  description: |
+    Для информирования ТСП о проведенных платежах могут использоваться HTTP-уведомления на адрес, указанный в его настройках.
+    
+    Для партнёра уведомление представляет собой входящий POST-запрос, который использует JSON-структуру.
+    
+    Уведомление считается принятым, если получатель ответил на запрос кодом HTTP 200.
+    
+    Ответы с любыми другими HTTP-кодами будут считаться невалидными. 
+    Повторные попытки отправки будут проводиться в течение суток с нарастающим интервалом.
+
+    Для проверки подлинности уведомления к данным добавляется подпись в заголовке  x-api-signature-sha256, полученная на основе общего секретного ключа и контрольной строки (amount|sbpMerchantId|order|paymentStatus|transactionDate) с помощью HMAC-SHA-256.
+paths:
+  /api/sbp/v1/qr/register:
+    post:
+      tags:
+      - qr-controller
+      summary: Регистрация QR-кода
+      operationId: registerUsingPOST_1
+      consumes:
+      - application/json;charset=UTF-8
+      produces:
+      - application/json;charset=UTF-8
+      parameters:
+      - in: body
+        name: payment
+        description: payment
+        required: true
+        schema:
+          "$ref": "#/definitions/Payment"
+      responses:
+        "200":
+          description: Ответ с успешным результатом.
+          schema:
+            "$ref": "#/definitions/QR"
+      deprecated: false
+  /api/sbp/v1/qr/{qrId}/info -H "Authorization :Bearer SecretKey": 
+    get:
+      tags:
+      - qr-controller 
+      summary: Получение данных по зарегистрированному ранее QR-коду
+      operationId: getStatusUsingGET
+      produces:
+      - application/json;charset=UTF-8
+      parameters:
+      - in: header
+        name: Authorization
+        type: string
+        description: Bearer secret key
+        required: true
+      - name: qrId
+        in: path
+        description: qrId
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ответ с успешным результатом.
+          schema:
+            "$ref": "#/definitions/QR"
+      deprecated: false
+  /api/sbp/v1/qr/{qrId}/payment-info -H "Authorization :Bearer SecretKey":
+    get:
+      tags:
+      - qr-controller
+      summary: Получение информации по платежу
+      operationId: getPaymentInfoUsingGET
+      produces:
+      - application/json;charset=UTF-8
+      parameters:
+      - in: header
+        name: Authorization
+        type: string
+        description: Bearer secret key
+        required: true
+      - name: qrId
+        in: path
+        description: qrId
+        required: true
+        type: string
+      responses:
+        '200':
+          description: Ответ с успешным результатом.
+          schema:
+            "$ref": "#/definitions/PaymentInfo"
+      deprecated: false
+  <URL обработчика уведомлений на стороне партнёра>:
+    post:
+      tags:
+      - Callback
+      summary: Уведомление о статусе платежа
+      operationId: sendCallback
+      consumes:
+      - application/json;charset=UTF-8
+      parameters:
+      - name: Callback
+        in: body
+        description: Callback
+        required: true
+        schema:
+          "$ref": "#/definitions/Callback"
+      responses:
+        200:
+          description: Ответ с успешным результатом.
+          schema:
+            "$ref": "#/definitions/EmptyBody"
+      deprecated: false
+definitions:
+  Payment:
+    type: object
+    required:
+    - createDate
+    - qrType
+    - sbpMerchantId
+    - order
+    properties:
+      additionalInfo:
+        type: string
+        description: Дополнительная информация, заполняемая по желанию партнёра при генерации QR-кода
+        maxLength: 140
+        example: Доп информация
+      amount:
+        type: BigDecimal
+        description: Сумма в рублях. Обязательно для заполнения, если Тип QR = QRDynamic
+        maxLength:
+        example: 1110.00
+      createDate:
+        type: string
+        format: YYYY-MM-DD ТHH24:MM:SS±HH:MM
+        description: Время формирования заявки
+        maxLength:
+        example: '2019-07-22T09:14:38.107227+03:00'
+      currency:
+        type: string
+        description: Валюта платежа. Обязательно для заполнения, если заполнена сумма
+        enum:
+        - RUB
+        maxLength: 3
+        example: RUB
+      order:
+        type: string
+        description: Уникальный идентификатор заказа в системе партнёра. Обязательно, если Тип QR = QRDynamic. Если по идентификатору заказа уже был успешный платеж, то повторно выполнить запрос с этим же номером нельзя.
+        maxLength: 40
+        example: 1-22-333
+      qrType:
+        type: string
+        description: Тип QR-кода
+        enum:
+        - QRStatic
+        - QRDynamic
+        example: QRStatic
+      qrExpirationDate:
+        type: string
+        format: YYYY-MM-DD ТHH24:MM:SS±HH:MM
+        description: Опциональный параметр для указания срока действия QR-кода. При заполнении не может быть меньше текущей даты и времени. После истечения срока действия QR-кода оплату по нему провести нельзя.
+        example: '2023-07-22T09:14:38.107227+03:00'
+      sbpMerchantId:
+        type: string
+        description: Идентификатор зарегистрированного партнёра в СБП
+        maxLength: 12
+        example: MA0000000552
+    title: Payment
+  PaymentInfo:
+    type: object
+    properties:
+      additionalInfo:
+        type: string
+        description: Дополнительная информация, заполняемая по желанию партнёра при генерации QR-кода
+        example: 'Доп информация'
+      amount:
+        type: BigDecimal
+        description: Сумма платежа
+        example: 12399.00
+      code:
+        type: 
+        description: Код сообщения
+        maxLength: 140
+        example: SUCCESS
+      createDate: 
+        type: string
+        format: date-time
+        description: Время формирования заявки
+        example: '2020-01-31T09:14:38.107227+03:00'
+      currency:
+        type: string
+        description: Валюта платежа
+        maxLength: 3
+        enum:
+        - RUB
+      merchantId:
+        type: long
+        format: int32
+        description: Уникальный идентификатор партнёра, выданный банком
+        example: 123
+      order:
+        type: string
+        description: Уникальный идентификатор заказа в системе партнёра
+        example: '282a60f8-dd75-4286-bde0-af321dd081b3'
+      paymentStatus:
+        type: string
+        description: Статус платежа
+        enum:
+        - SUCCESS
+        - DECLINED
+        - NOINFO
+        - INPROGRESS
+        example: NOINFO
+      qrId:
+        type: string
+        description: Уникальный идентификатор QRC, выданный СБП при запросе генерации QRC
+        example: AD100051KNSNR64I98CRUJUASC9M72QT
+      sbpMerchantId:
+        type: string
+        description: Уникальный идентификатор партнёра, выданный СБП
+        example: MA0000000553
+      transactionDate:
+        type: string
+        format: date-time
+        description: Дата и время проведения платежа
+        example: '2019-07-11T17:45:13.109227+03:00'
+      transactionId:
+        type: integer
+        format: int64
+        description: Идентификатор операции платежа в Райффайзенбанке
+        example: 23
+    title: PaymentInfo
+  QR:
+    type: object
+    properties:
+      code:
+        type: string
+        maxLength: 140
+        description: Код сообщения
+        example: 'SUCCESS'
+      payload:
+        type: string
+        description: Данные для самостоятельной генерации изображения зарегистрированного QR-кода в СБП.
+        maxLength: 999
+        example: 'https://qr.nspk.ru/AS10002LMSG5QQGE8K2B6588FFVJP1DP?type=01&bank=raiffei1test&sum=1110&cur=RUB&crc=142D'
+      qrId:
+        type: string
+        description: Идентификатор зарегистрированного QRС в СБП
+        maxLength: 32
+        example: 'AS10002LMSG5QQGE8K2B6588FFVJP1DP'
+      qrUrl:
+        type: string
+        description: URL с изображением зарегистрированного QR-кода в СБП
+        maxLength: 999
+        example: 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https%3A%2F%2Fqr.nspk.ru%2FAS10002LMSG5QQGE8K2B6588FFVJP1DP%3Ftype%3D01%26bank%3Draiffei1test%26sum%3D1110%26cur%3DRUB%26crc%3D142D'
+    title: QR
+  Callback:
+    type: object
+    properties:
+      transactionId:
+        type: long
+        description: Идентификатор операции платежа в Райффайзенбанке
+        maxLength: 
+        example: 41
+      qrId:
+        type: string
+        description: Уникальный идентификатор QR-кода, выданный СБП при запросе генерации QR-кода
+        maxLength: 32
+        example: "AS100032PQ7739G58NCQ457RA2OG82JP"
+      sbpMerchantId:
+        type: string
+        description: Идентификатор зарегистрированного ТСП в СБП
+        maxLength: 12
+        example: "MA0000000279"
+      merchantId: 
+        type: long
+        description: Идентификатор ТСП в Райффайзенбанке
+        maxLength: 
+        example: "1780672001"
+      amount:
+        type: BigDecimal
+        description: Сумма в рублях 
+        maxLength: 
+        example: 10
+      currency:
+        type: string
+        description: Валюта платежа
+        maxLength: 3
+        example: "RUB"
+      transactionDate:
+        type: YYYY-MM-DD ТHH24:MM:SS±HH:MM
+        description: Дата и время проведения платежа
+        maxLength: 
+        example: "2020-01-15T16:01:49.043924+03:00"
+      paymentStatus:
+        type: string
+        description: Статус проведения платежа 
+        example: 'SUCCESS'
+      additionalInfo:
+        type: string
+        description: Дополнительная информация, заполняемая по желанию ТСП при генерации QR-кода
+        maxLength: 140
+        example: "Some info"
+      order:
+        type: string
+        description: Уникальный идентификатор заказа в системе ТСП. Обязательно, если Тип QR = QRDynamic
+        maxLength: 40
+        example: "string"
+      createDate:
+        type: YYYY-MM-DD ТHH24:MM:SS±HH:MM
+        description: Время формирования заявки
+        maxLength: 
+        example: '2020-01-15T13:00:40+03:00'
+    title: Callback
+  EmptyBody:

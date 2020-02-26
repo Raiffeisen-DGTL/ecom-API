@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Raiffeisenbank e-commerce API</title>
+    <!-- needed for adaptive design -->
+    <meta charset="utf-8"/>
+    <meta name="viewport" 
+          content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700" 
+          rel="stylesheet">
+    <link rel="apple-touch-icon" sizes="144x144" href="https://www.raiffeisen.ru/apple-touch-icon-114x114.png">
+    <link rel="shortcut icon" href="https://www.raiffeisen.ru/favicon.ico" type="image/x-icon">
+
+  <!-- ReDoc doesn't change outer page styles -->
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+  </head>
+  <body>
+    <div id="redoc_container"></div>
+    
+    <script src="./redoc/node_modules/redoc/bundles/redoc.standalone.js"> </script>
+    <script>
+          // initially render first API
+      Redoc.init("./ecom.yml",
+      {
+        "hideLOading":true,
+        "disableSearch":true,
+        theme:{
+          breakpoints: {
+            small: '25rem',
+            medium: '50rem',
+            large: '75rem',
+          },
+          typography: {
+            fontSize: '14px',
+            lineHeight: '1.5em',
+            fontWeightRegular: '400',
+            fontWeightBold: '600',
+            fontWeightLight: '300',
+            fontFamily: 'Roboto, sans-serif',
+            smoothing: 'antialiased',
+            optimizeSpeed: true,
+            headings: {//Заголовки и их параметры
+              fontFamily: 'Arial, sans-serif',
+              fontWeight: '400',
+              lineHeight: '1.2em',
+            }
+          },
+          logo: { // параметры для логотипа
+            maxHeight: ({ menu }) => menu.width,
+            maxWidth: ({ menu }) => menu.width,
+            gutter: '0px',//Отступы вокруг логотипа
+          },
+          rightPanel: {
+            backgroundColor: '#2B2D33',
+            width: '40%',
+            textColor: '#ffffff',
+          },
+        }
+      },
+      document.getElementById("redoc_container"));
+    </script>
+  </body>
+</html>
