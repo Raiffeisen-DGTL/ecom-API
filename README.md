@@ -2,13 +2,13 @@
 
 #  `Документация`
 
-* [Назначение документа Raiffeisenbank e-commerce API](#Назначение документа Raiffeisenbank e-commerce API )
+* [Назначение документа Raiffeisenbank e-commerce API](#Назначение-документа-Raiffeisenbank-e-commerce-API)
     * [Компоненты документа](#Компоненты документа)
     * [Ссылка на документ](#Ссылка на документ)
-* [Назначение документа Raiffeisenbank e-commerce API_EN](#Назначение документа Raiffeisenbank e-commerce API_EN )
+* [Назначение документа Raiffeisenbank e-commerce API_EN](#Назначение-документа-Raiffeisenbank-e-commerce-API_EN)
     * [Компоненты документа](#Компоненты документа)
     * [Ссылка на документ](#Ссылка на документ)
-* [Назначение документа СБП API Raiffeisenbank](#Назначение документа СБП API Raiffeisenbank)
+* [Назначение документа СБП API Raiffeisenbank](#Назначение-документа-СБП-API-Raiffeisenbank)
     * [Компоненты документа](#Компоненты документа)
     * [Ссылка на документ](#Ссылка на документ)
     
@@ -22,7 +22,7 @@
 #### Ссылка на документ
 Протокол расположен по адресу https://e-commerce.raiffeisen.ru/api/doc/sbp.html
 
-### `Назначение документа Raiffeisenbank e-commerce API`
+### `Назначение документа Raiffeisenbank e-commerce API_EN`
 Это инструмент на английском языке для интеграции с эквайрингом Райффайзенбанка — для разработчиков.
 
 #### Компоненты документа
