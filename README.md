@@ -27,7 +27,7 @@
 
 #### `Компоненты документа`
    * ecom_en.html
-   * com_en.yml
+   * ecom_en.yml
    
 #### `Ссылка на документ`
 Протокол расположен по адресу https://e-commerce.raiffeisen.ru/api/doc/ecom_en.html
