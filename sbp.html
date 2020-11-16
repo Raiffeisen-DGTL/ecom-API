@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>СБП API - Raiffeisenbank</title>
+    <title>SBP API - Raiffeisenbank</title>
     <!-- needed for adaptive design -->
     <meta charset="utf-8"/>
     <meta name="viewport" 
@@ -22,13 +22,15 @@
   <body>
     <div id="redoc_container"></div>
     
-    <script src="./redoc/node_modules/redoc/bundles/redoc.standalone.js"> </script>
+    <script src="./node_modules/redoc/bundles/redoc.standalone.js"> </script>
     <script>
           // initially render first API
       Redoc.init("./sbp.yml",
       {
         "hideLOading":true,
         "disableSearch":true,
+        "jsonSampleExpandLevel": "all",
+        "hideDownloadButton": true,
         theme:{
           breakpoints: {
             small: '25rem',
@@ -44,16 +46,14 @@
             fontFamily: 'Roboto, sans-serif',
             smoothing: 'antialiased',
             optimizeSpeed: true,
-            headings: {//Заголовки и их параметры
+            headings: {//   
               fontFamily: 'Arial, sans-serif',
               fontWeight: '400',
               lineHeight: '1.2em',
             }
           },
-          logo: { // параметры для логотипа
-            maxHeight: ({ menu }) => menu.width,
-            maxWidth: ({ menu }) => menu.width,
-            gutter: '0px',//Отступы вокруг логотипа
+          logo: { //   
+            gutter: '0px',//  
           },
           rightPanel: {
             backgroundColor: '#2B2D33',

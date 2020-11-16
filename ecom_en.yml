@@ -1,8 +1,9 @@
+---
 swagger: '2.0'
 info:
   title: Raiffeisenbank e-commerce API
   contact: {
-    email: ecom_support@raiffeisen.ru,
+    email: ecom@raiffeisen.ru,
     name: Support e-mail
   }
   x-logo:
@@ -10,34 +11,42 @@ info:
     backgroundColor: '#FFFFFF'
     altText: Raiff logo
   description: |
+
+    You can give your comments about current documentation in repository: https://github.com/Raiffeisen-DGTL/ecom-API/blob/master/ecom_en.yml
+
     # Payment acceptance protocol
-    
+
+    To receive e-commerce, follow the [link.](https://www.raiffeisen.ru/corporate/management/commerce/)
+
     For all questions regarding operations with API, please contact Raiffeisenbank Support Service:
-    - email: <a href="mailto:ecom_support@raiffeisen.ru">ecom_support@raiffeisen.ru</a>
-    
+    - email: <a href="mailto:ecom@raiffeisen.ru">ecom@raiffeisen.ru</a>
+
     ## Payment process
+    Demonstration:
+    https://e-commerce.raiffeisen.ru/pay/demo.html
+
     The user performs the following actions during the payment process:
     * Selects goods/services into the shopping cart and clicks "Pay".
     * The store opens up the payment form.
     * The customer enters the relevant details on the payment form and confirms the payment.
-    
+
     The payment execution scheme is presented below:
-    
+
     <a target='_blank'><img src='images/E-commerce Raiffeisenbank scheme_en.png'></a>
-    
-    ## Preparatory Actions
-    In order to accept payments, you need to: 
+
+    ### Preparatory Actions
+    In order to accept payments, you need to:
     * submit an application for connection
     * conclude an agreement with Raiffeisenbank
     * choose an integration method and implement it
     * successfully conduct test payments.
-    
-    ## Payment page integration methods
+
+    ### Payment page integration methods
     In order to integrate the payment page, you can use:
     * a ready-made library that allows you to open a pop-up for entering payment data and transferring complex data structures.
     * redirection of the client to the payment page of Raiffeisenbank
 
-    # API description 
+    # API description
     Interaction is conducted with the HTTP protocol using the GET/POST methods (the description of each request clearly indicates the required method and address).
 
     POST requests use JSON arguments, GET requests work with query strings.
@@ -46,55 +55,75 @@ info:
 
     The response of any method contains a message code. If a logical error occurs during the processing of any request, API will return an additional description of the error (message).
 
-   
+
     ##  Authorization
-    
+
     In order to authorize requests, you will need:
     * publicId - identifier that is used to open a payment form and is not confidential
-    * secretKey - a secret key that is used for interservice communication. 
-    
+    * secretKey - a secret key that is used for interservice communication.
+
     IMPORTANT: The secret key must be stored in a secure place, it cannot be published on third-party resources or transferred to third parties.
-    
+
     Interservice requests are authorized using API secret key (SECRET_KEY). The authorization parameter is specified in the Authorization header, the value of which is formed as "Bearer SECRET_KEY".
-    
-    In order to generate a secret key, please contact: ecom_support@raiffeisen.ru
+
+    In order to generate a secret key, please contact: ecom@raiffeisen.ru
 
     ## Errors
     The response of any method contains a message code. If a logical error occurs during the processing of any request, API will return an additional description of the error (message).
 
-    HTTP-код | code | message | Comments
+    HTTP-code | code | message | Comments
     --------|------------------|-----------------------------------|-----------------------------
     200 | SUCCESS | Request processed successfully | Successful processing of the request without logical and system failures
     200 | ERROR.<Error_code> | Text message on error | Logical error during processing of the request
     500 | ERROR.INTERNAL | Error | System error during processing of the request
 
+    # Testing
+    ## E-commerce
+    For a full payment testing cycle, you must specify an amount of more than 10 rubles.
+    Cards:
+    * 2200300100000023 12/24 880 - No 3DS
+    * 4000001000000018 12/24 880  PIN for success payment : 1234, 1111  - 3DS
+
+    ## SBP
+    For a full payment testing cycle, Raiffeisenbank provides the opportunity to use a demo application for scanning QRC on behalf of the buyer at:
+    https://rfuture.site
+
+    * Login - demo
+    * Password - demo
+
+    The specified address can be opened in the browser of any device with a camera. No additional software / plugins need to be installed. Then click on the SBP icon (if necessary, allow the browser access to the camera) and bring the QR code image to it.
+    If the camera doesn't open, check the url, it has to have https.
+
 servers:
-- url: https://e-commerce.raiffeisen.ru
-  description: Production API
-- url: https://test.ecom.raiffeisen.ru
-  description: Sandbox API
+  - url: https://e-commerce.raiffeisen.ru
+    description: Production API
+  - url: https://test.ecom.raiffeisen.ru
+    description: Sandbox API
 tags:
+  - name: js-sdk
+    x-displayName: 'js-library'
+    description: |
+      Using the library allows you to open the form in a pop-up window, which provides a seamless script for the client.
+      It is also possible to customize the interface of the payment form and transfer additional fields.
+
+      Using the JS library is described in the repository https://github.com/Raiffeisen-DGTL/ecom-payment-sdk
+
+      Below is an example of a request for payment:
+
+      <SchemaDefinition schemaRef="#/components/schemas/Payment" />
+
+  - name: payform
+    x-displayName: 'Payment form'
+    description: |
+      Easy way to integrate. The client must be redirected to the payment form, passing the order parameters. Customization of the form interface or transfer of additional fields is not available in this integration option.
+
   - name: pay-controller
     x-displayName: 'Available methods'
     description: |
-      To implement interaction with a partner, Raiffeisenbank provides an API for opening a payment form using HTTP requests
-      
-  - name: Json-file
-    x-displayName: 'Using js-library'
-    description: |
-      In case of using js library, the store must perform the following steps:
-      1) Download SDK https://github.com/Raiffeisen-DGTL/ecom-payment-sdk
-    
-      2) Prescribe a script on the store website, example: 
-    
-      <code>`<script src="https://e-commerce.raiffeisen.ru/pay/sdk/payment.styled.min.js"> </script>`</code>
-    
-      3) Further use of the JS library is described in the Readme.md file in the repository https://github.com/Raiffeisen-DGTL/ecom-payment-sdk
-      
-      The following are data that can be used for testing.
-      
-      <SchemaDefinition schemaRef="#/components/schemas/Payment" />
-  
+      To implement interaction with a partner, Raiffeisenbank provides an API:
+      * for opening a payment form using HTTP requests;
+      * for receiving payment status.
+
   - name: Callback
     x-displayName: 'Payment notification'
     description: |
@@ -106,84 +135,196 @@ tags:
 
       Responses with any other HTTP codes will be considered invalid. Repeated attempts to send will be conducted during the day with increasing intervals.
 
-      In order to verify the authenticity of the notification, a signature is added to the data in the x-api-signature-sha256 header, obtained on the basis of the shared secret key and control string (amount|MerchantId|order|paymentStatus|transactionDate) by way of HMAC-SHA-256.
+      In order to verify the authenticity of the notification, a signature is added to the data in the x-api-signature-sha256 header, obtained on the basis of the shared secret key and control string (amount|publickId|order|paymentStatus|transactionDate) by way of HMAC-SHA-256.
 
-    
 paths:
   /pay:
-    post:
+    get:
       tags:
-      - pay-controller
-      summary: Opening a payment form using an HTTP request
-      operationId: registerUsingPOST_1
-      consumes:
-      - application/json;charset=UTF-8
-      produces:
-      - application/json;charset=UTF-8
+        - payform
+      summary: Opening a payment form
+      operationId: getPayform
       parameters:
-      - in: body
-        name: payment
-        description: payment
-        required: true
-        schema:
-          "$ref": "#/definitions/PaymentOptional"
+        - in: query
+          name: publicId
+          type: string
+          description: Store id
+          required: true
+        - in: query
+          name: amount
+          type: BigDecimal
+          description: Payment amount in rubles
+          required: true
+        - in: query
+          name: orderId
+          type: string
+          description: Store order ID
+          maxLength: 40
+        - in: query
+          name: successUrl
+          type: URL encoded string
+          description: URL of the resource where the client will be redirected in case of successful payment
+        - in: query
+          name: failUrl
+          type: URL encoded string
+          description: URL of the resource where the client will be redirected in case of payment failure
       responses:
-        "200":
-          description: Answer with a successful result.
+        '200':
+          description: Billing page.
           schema:
             "$ref": "#/definitions/EmptyBody"
-      deprecated: false       
-      
-  <Partner Notification Handler URL>:
-    post:
+      deprecated: false
+
+
+  /api/payments/v1/orders/{orderId}/transaction:
+    get:
       tags:
-      - Callback
-      summary: Payment status notification
-      operationId: sendCallback
-      consumes:
-      - application/json;charset=UTF-8
+        - pay-controller
+      summary: Getting order status information
+      operationId: getTransactionInfo
+      produces:
+        - application/json;charset=UTF-8
       parameters:
-      - name: Callback
-        in: body
-        description: Callback
-        required: true
-        schema:
-          "$ref": "#/definitions/Callback"
+        - in: header
+          name: Authorization
+          type: string
+          description: Bearer secret key
+          required: true
+        - name: orderId
+          in: path
+          description: order id
+          required: true
+          type: string
       responses:
         200:
           description: Answer with a successful result.
           schema:
+            "$ref": "#/definitions/OrderInformation"
+      deprecated: false
+
+  /api/payments/v1/orders/{orderId}/refunds/{refundId}:
+    post:
+      tags:
+        - pay-controller
+      summary: Refund
+      operationId: postRefund
+      produces:
+        - application/json;charset=UTF-8
+      parameters:
+        - in: header
+          name: Authorization
+          type: string
+          description: Bearer secret key
+          required: true
+        - name: orderId
+          in: path
+          description: order id
+          required: true
+          type: string
+        - name: refundId
+          in: path
+          description: refund id
+          required: true
+          type: string
+        - name: amount
+          in: body
+          description: Refund Amount
+          required: true
+          type: string
+      schema:
+        "$ref": "#/definitions/Refund"
+      responses:
+        200:
+          description: Answer.
+          schema:
+            "$ref": "#/definitions/RefundResponse"
+      deprecated: false
+    get:
+      tags:
+        - pay-controller
+      summary: Refund Status
+      operationId: getRefund
+      produces:
+        - application/json;charset=UTF-8
+      parameters:
+        - in: header
+          name: Authorization
+          type: string
+          description: Bearer secret key
+          required: true
+        - name: orderId
+          in: path
+          description: order id
+          required: true
+          type: string
+        - name: refundId
+          in: path
+          description: refund id
+          required: true
+          type: string
+      responses:
+        200:
+          description: Answer.
+          schema:
+            "$ref": "#/definitions/RefundResponse"
+      deprecated: false
+
+  <Partner Notification Handler URL>:
+    post:
+      tags:
+        - Callback
+      summary: Payment Status Notification
+      operationId: sendCallback
+      consumes:
+        - application/json;charset=UTF-8
+      parameters:
+        - name: Callback
+          in: body
+          description: Callback
+          required: true
+          schema:
+            "$ref": "#/definitions/Callback"
+      responses:
+        200:
+          description: Answer.
+          schema:
             "$ref": "#/definitions/EmptyBody"
       deprecated: false
-      
+
 definitions:
-  PaymentOptional:
-    type: object
+  Payform:
+    type: string
     required:
-    - publicId
-    - amount
+      - publicId
+      - amount
     properties:
       publicId:
         type: string
         description: Store id
-        maxLength: 12
-        example: 1680000000
+      orderId:
+        type: string
+        description: Store order ID
       amount:
         type: BigDecimal
         description: Payment amount in rubles
-        example: 1000.50
-    title: Paymeny Optional
+      successUrl:
+        type: URL encoded string
+        description: URL of the resource where the client will be redirected in case of successful payment
+        maxLength: 40
+      failUrl:
+        type: URL encoded string
+        description: URL of the resource where the client will be redirected in case of payment failure
+    title: Payform
   Payment:
     type: object
     required:
-    - publicId
-    - amount
+      - publicId
+      - amount
     properties:
       publicId:
         type: string
         description: Store id
-        maxLength: 12
-        example: 1680000000
+        example: 000001680200002-80200002
       orderId:
         type: string
         description: Store order ID
@@ -197,26 +338,225 @@ definitions:
         type: string
         description: Payment description
         maxLength: 255
-        example: Buying a chocolate cake
+        example: Chocolate Cake Buying
       successUrl:
         type: string
-        description: URL where the client will be redirected in case of successful payment
+        description: URL of the resource where the client will be redirected in case of successful payment
         maxLength: 40
         example: https://www.uniconf.ru/factories/krasny-octyabr/
       failUrl:
         type: string
-        description: URL where the client will be redirected in case of payment failure
+        description: URL of the resource where the client will be redirected in case of payment failure
         example: https://www.baduniconf.ru/factories/krasny-octyabr/
       extra:
-        type: string
+        type: object
         description: Structure with additional store options
         maxLength: 999
-        example: '{ "additionalInfo": "Sweet Cake" }'
+        example: {"additionalInfo": "Sweet Cake"}
     title: TransactionID
+  OrderInformation:
+    type: object
+    discriminator:
+      mapping:
+  acquiring:
+    type: object
+    allOf:
+      - $ref: "#/definitions/OrderInformation"
+    required:
+      - event
+    properties:
+      code:
+        type: string
+        description: HTTP request status code
+        enum:
+          - SUCCESS
+          - ERROR
+        example: 'SUCCESS'
+      transaction:
+        type: object
+        required:
+          - id
+          - orderId
+          - status
+          - paymentMethod
+          - amount
+        properties:
+          id:
+            type: long
+            description: Raiffeisenbank Transaction ID
+            example: 120059
+          orderId:
+            type: string
+            description: Store order ID
+            maxLength: 40
+            example: testOrder
+          status:
+            type: object
+            required:
+              - value
+              - date
+            properties:
+              value:
+                type: string
+                description: Status
+                enum:
+                  - SUCCESS
+                  - NOT_FOUND
+                example: SUCCESS
+              date:
+                type: ZonedDateTime
+                format: ISO-8601
+                description: Date and time
+                example: '2019-07-11T17:45:13+03:00'
+          paymentMethod:
+            type: string
+            description: Type of payment. If card - "acquiring", if QR SBP - "sbp"
+            example: acquiring
+          paymentParams:
+            type: object
+            properties:
+              rrn:
+                type: string
+                description: Identification Number
+                maxLength: 12
+                example: 935014591810
+              authCode:
+                type: string
+                description: Payment authorization code received from the issuer
+                maxLength: 6
+                example: 025984
+          amount:
+            type: BigDecimal
+            description: Amount in rubles
+            example: 12500.50
+          comment:
+            type: string
+            description: Payment description
+            maxLength: 255
+            example: Chocolate Cake Buying
+          extra:
+            type: object
+            description: Structure with additional store options
+            maxLength: 999
+            example: {"additionalInfo": "Sweet Cake"}
+    title: information about order
+  sbp:
+    type: object
+    allOf:
+      - $ref: "#/definitions/OrderInformation"
+    required:
+      - event
+    properties:
+      code:
+        type: string
+        description: HTTP request status code
+        enum:
+          - SUCCESS
+          - ERROR
+        example: 'SUCCESS'
+      transaction:
+        type: object
+        required:
+          - id
+          - orderId
+          - status
+          - paymentMethod
+          - amount
+        properties:
+          id:
+            type: long
+            description: Raiffeisenbank Transaction ID
+            example: 120059
+          orderId:
+            type: string
+            description: Store order ID
+            maxLength: 40
+            example: testOrder
+          status:
+            type: object
+            required:
+              - value
+              - date
+            properties:
+              value:
+                type: string
+                description: Status
+                enum:
+                  - SUCCESS
+                  - NOT_FOUND
+                example: SUCCESS
+              date:
+                type: ZonedDateTime
+                format: ISO-8601
+                description: Date and time
+                example: '2019-07-11T17:45:13+03:00'
+          paymentMethod:
+            type: string
+            description: Type of payment. If card - "acquiring", if QR SBP - "sbp"
+            example: sbp
+          paymentParams:
+            type: object
+            properties:
+              qrId:
+                type: string
+                description: Unique QRC ID issued by SBP
+                example: 'AD100051KNSNR64I98CRUJUASC9M72QT'
+          amount:
+            type: BigDecimal
+            description: Amount in rubles
+            example: 12500.50
+          comment:
+            type: string
+            description: Payment description
+            maxLength: 255
+            example: Chocolate Cake Buying
+          extra:
+            type: object
+            description: Structure with additional store options
+            maxLength: 999
+            example: {"additionalInfo": "Sweet Cake"}
+    title: information about order
+  Refund:
+    type: object
+    properties:
+      amount:
+        type: BigDecimal
+        description: refund amount in rubles
+        example: 150
+  RefundResponse:
+    type: object
+    properties:
+      code:
+        type: string
+        description: HTTP request status code
+        enum:
+          - SUCCESS
+          - ERROR
+        example: 'SUCCESS'
+      amount:
+        type: BigDecimal
+        description: refund amount in rubles
+        example: 150
+      refundStatus:
+        type: string
+        description: refund request status code
+        enum:
+          - IN_PROGRESS
+          - COMPLETED
+          - DECLINED
+        example: COMPLETED
+    title: RefundResponse
+
   Callback:
     type: object
+    discriminator:
+      mapping:
+  Acquiring:
+    type: object
+    allOf:
+      - $ref: "#/definitions/Callback"
     required:
-    - event
+      - event
     properties:
       event:
         type: string
@@ -227,19 +567,53 @@ definitions:
       transaction:
         type: object
         required:
-        - transactionId
-        - orderId
-        - amount
+          - id
+          - orderId
+          - status
         properties:
-          transactionId:
+          id:
             type: long
-            description: Raiffeisenbank transaction ID
+            description: Raiffeisenbank Transaction ID
             example: 120059
           orderId:
             type: string
             description: Store order ID
             maxLength: 40
             example: testOrder
+          status:
+            type: object
+            required:
+              - value
+              - date
+            properties:
+              value:
+                type: string
+                description: Status
+                enum:
+                  - SUCCESS
+                example: SUCCESS
+              date:
+                type: ZonedDateTime
+                format: ISO-8601
+                description: Date and time
+                example: '2019-07-11T17:45:13+03:00'
+          paymentMethod:
+            type: string
+            description: Type of payment. If card - "acquiring", if QR SBP - "sbp"
+            example: acquiring
+          paymentParams:
+            type: object
+            properties:
+              rrn:
+                type: string
+                description: Identification Number
+                maxLength: 12
+                example: 935014591810
+              authCode:
+                type: string
+                description: Payment authorization code received from the issuer
+                maxLength: 6
+                example: 025984
           amount:
             type: BigDecimal
             description: Amount in rubles
@@ -248,95 +622,84 @@ definitions:
             type: string
             description: Payment description
             maxLength: 255
-            example: Buying a chocolate cake
-          receipt :
-            type: string
-            description: Structure with fiscalization options
-            example: '-'
+            example: Chocolate Cake Buying
           extra:
-            type: string
+            type: object
             description: Structure with additional store options
             maxLength: 999
-            example: '{ "additionalInfo": "Tasty Cake" }'
-      status:
+            example: {"additionalInfo": "Sweet Cake"}
+    title: Payment notice
+  Sbp:
+    type: object
+    allOf:
+      - $ref: "#/definitions/Callback"
+    required:
+      - event
+    properties:
+      event:
+        type: string
+        description: Message type
+        enum:
+          - payment
+        example: payment
+      transaction:
         type: object
         required:
-        - value
-        - date
+          - id
+          - orderId
+          - status
         properties:
-          value:
+          id:
+            type: long
+            description: Raiffeisenbank Transaction ID
+            example: 120059
+          orderId:
             type: string
-            description: Status 
-            enum:
-            - SUCCESS
-            - DECLINED
-            example: SUCCESS
-          date:
+            description: Store order ID
+            maxLength: 40
+            example: testOrder
+          status:
+            type: object
+            required:
+              - value
+              - date
+            properties:
+              value:
+                type: string
+                description: Status
+                enum:
+                  - SUCCESS
+                example: SUCCESS
+              date:
+                type: ZonedDateTime
+                format: ISO-8601
+                description: Date and time
+                example: '2019-07-11T17:45:13+03:00'
+          paymentMethod:
             type: string
-            format: date-time
-            description: Date and time 
-            example: '2019-07-11T17:45:13.109227+03:00'
-      acquiringData:
-        type: object
-        properties:
-          rrn:
+            description: Type of payment. If card - "acquiring", if QR SBP - "sbp"
+            example: sbp
+          paymentParams:
+            type: object
+            properties:
+              qrId:
+                type: string
+                description: Unique QRC ID issued by SBP
+                example: 'AD100051KNSNR64I98CRUJUASC9M72QT'
+          amount:
+            type: BigDecimal
+            description: Amount in rubles
+            example: 12500.50
+          comment:
             type: string
-            description: Identification number
-            maxLength: 12
-            example: 935014591810
-          authCode:
-            type: string
-            description: Payment authorization code received from the issuer
-            maxLength: 6
-            example: 025984 
+            description: Payment description
+            maxLength: 255
+            example: Chocolate Cake Buying
+          extra:
+            type: object
+            description: Structure with additional store options
+            maxLength: 999
+            example: {"additionalInfo": "Sweet Cake"}
     title: Payment notice
   EmptyBody:
     type: object
-        
-components:
-  examples:
-    Payment:
-      value:
-        publicId: 12350,
-        orderId: testOrder,
-        amount: 1000.50,
-        comment: Buying a Chocolate Cake
-        successUrl: https://www.uniconf.ru/factories/krasny-octyabr/,
-        failUrl:  https://www.baduniconf.ru/factories/krasny-octyabr/,
-        receipt: -,
-        extra:   '{ "additionalInfo": "Sweet Cake" }'
-  schemas:
-    Payment:
-      type: object
-      required:
-      - publicId
-      - amount
-      properties:
-        publicId:
-          type: string
-          description: Store id
-          maxLength: 12
-        orderId:
-          type: string
-          description: Store order ID
-          maxLength: 40
-        amount:
-          type: BigDecimal
-          description: Payment amount in rubles
-        comment:
-          type: string
-          description: Payment description
-          maxLength: 255
-        successUrl:
-          type: string
-          description: URL, where the client will be redirected in case of successful payment
-          maxLength: 40
-        failUrl:
-          type: string
-          description: URL, where the client will be redirected in case of payment failure
-        extra:
-          type: string
-          description: Structure with additional store options
-          maxLength: 999
-      title: TransactionID
-      

@@ -1,8 +1,9 @@
+---
 swagger: '2.0'
 info:
   title: Raiffeisenbank e-commerce API
   contact: {
-    email: ecom_support@raiffeisen.ru,
+    email: ecom@raiffeisen.ru,
     name: Support e-mail
   }
   x-logo:
@@ -10,57 +11,65 @@ info:
     backgroundColor: '#FFFFFF'
     altText: Raiff logo
   description: |
+
+    Свои предложения и идеи о документации можно оставить в репозитории по адресу: https://github.com/Raiffeisen-DGTL/ecom-API/blob/master/ecom.yml
+
     # Подключение к эквайрингу
-    
-    По всем вопросам работы с API необходимо обращаться в Службу Поддержки Raiffeisenbank:
-    - email: <a href="mailto:ecom_support@raiffeisen.ru">ecom_support@raiffeisen.ru</a>
-    
-    ## Общая схема работы
+
+    Для подключения перейдите на [сайт.](https://www.raiffeisen.ru/corporate/management/commerce/)
+
+    По остальным вопросам работы с API необходимо обращаться в Службу Поддержки Raiffeisenbank:
+    - email: <a href="mailto:ecom@raiffeisen.ru">ecom@raiffeisen.ru</a>
+
+    ## Cхема работы
+    Демонстрация:
+    https://e-commerce.raiffeisen.ru/pay/demo.html
+
     Пользователь совершает следующие действия в процессе платежа:
     * Выбирает товары/услуги в корзину магазина и нажимает кнопку “Оплатить”.
     * Партнер открывает платежную форму.
     * Клиент вводит реквизиты на платежной форме и подтверждает платеж.
-    
+
     Схема выполнения платежа представлена ниже:
-    
+
     <a target='_blank'><img src='images/E-commerce Raiffeisenbank scheme.png'></a>
-    
-    ## Подготовительные мероприятия
-    Чтобы принимать платежи, нужно: 
-    * подать заявку на подключение
-    * заключить договор с Райффайзенбанком
-    * выбрать способ интеграции и реализовать его
-    * успешно провести тестовые платежи.
-    
-    ## Способы интеграции платежной страницы
-    Для интеграции платежной страницы можно использовать:
-    * готовую библиотеку, позволяющую открыть popup для ввода данных платежа и передать сложную структуру данных.
+
+    ### Подготовительные мероприятия
+    Чтобы принимать платежи:
+    * подайте заявку на подключение эквайринга
+    * заключите договор с Райффайзенбанком
+    * выберите способ интеграции и реализуйте его
+    * успешно проведите тестовые платежи.
+
+    ### Способы интеграции платежной страницы
+    Для интеграции платежной страницы используйте:
+    * готовую библиотеку, позволяющую открыть popup для ввода данных платежа и передать сложную структуру данных
     * перенаправление клиента на платежную страницу Райффайзенбанка
 
-    # Описание API 
+    # API
     Взаимодействие осуществляется по протоколу HTTP с использованием методов GET/POST (в описании каждого запроса явно указан требуемый метод и адрес).
 
     POST-запросы используют JSON-аргументы, GET-запросы работают со строками запросов.
 
     API всегда возвращает ответ в формате JSON, независимо от типа запроса.
 
-    Ответ любого метода содержит код сообщения (code). Если в процессе обработки любого запроса произойдет логическая ошибка, API вернет дополнительно описание ошибки (message).   
+    Ответ любого метода содержит код сообщения (code). Если в процессе обработки любого запроса произойдет логическая ошибка, API вернет дополнительно описание ошибки (message).
+
+
     ##  Авторизация
-    
+
     Для авторизация запросов необходимы:
     * publicId - идентификатор,который используется для открытия платежной формы и не является конфиденциальным
-    * secretKey - секретный ключ, который используется для межсервисного взаимодействия. 
-    
+    * secretKey - секретный ключ, который используется для межсервисного взаимодействия.
+
     ВАЖНО: Секретный ключ необходимо хранить в защищенном месте, нельзя публиковать на сторонних ресурсах или передавать третьим лицам.
-    
+
     Межсервисные запросы авторизуются посредством секретного ключа API (SECRET_KEY). Параметр авторизации указывается в заголовке Authorization, значение которого формируется как "Bearer SECRET_KEY".
-    
-    Для генерации секретного ключа необходимо обратиться по адресу: ecom_support@raiffeisen.ru
+
+    Для генерации секретного ключа необходимо обратиться по адресу: ecom@raiffeisen.ru
 
     ## Параметры ошибок
-    Ответ любого метода содержит код сообщения (code). Если в процессе обработки любого
-    запроса произойдет логическая ошибка, API вернет дополнительно описание ошибки
-    (message).
+    Ответ любого метода содержит код сообщения (code). Если в процессе обработки любого запроса произойдет логическая ошибка, API вернет дополнительно описание ошибки (message).
 
     HTTP-код | code | message | Комментарий
     --------|------------------|-----------------------------------|-----------------------------
@@ -68,121 +77,254 @@ info:
     200 | ERROR.Код_ошибки | Текстовое сообщение о сути ошибки | Логическая ошибка при выполнении запроса.
     500 | ERROR.INTERNAL | Ошибка | Системная ошибка при выполнении запроса.
 
+    # Тестирование
+    ## Эквайринг
+    Для полного цикла тестирования оплаты необходимо указывать сумму платежа больше 10 рублей.
+    Карты для тестовой среды:
+    * 2200300100000023 12/24 880 - без 3DS
+    * 4000001000000018 12/24 880  пин для успешной оплаты : 1234, 1111  - с 3DS
+
+    ## СБП
+    Для полного цикла тестирования оплаты Райффайзенбанк предоставляет возможность использования демо-приложения для сканирования QRC от имени покупателя по адресу:
+    https://rfuture.site
+
+    * Логин - demo
+    * Пароль - demo
+
+    Указанный адрес можно открыть в браузере любого устройства, где есть камера. Никакого дополнительного софта/плагинов устанавливать не нужно. Далее нажать на значок СБП (при необходимости разрешить браузеру доступ к камере) и поднести к ней изображение QR-кода.
+    Если камера не открылась, проверьте что в адресе указан проткол https.
+
 servers:
-- url: https://e-commerce.raiffeisen.ru
-  description: Production API
-- url: https://test.ecom.raiffeisen.ru
-  description: Sandbox API
+  - url: https://e-commerce.raiffeisen.ru
+    description: Production API
+  - url: https://test.ecom.raiffeisen.ru
+    description: Sandbox API
 tags:
-  - name: pay-controller
-    x-displayName: 'Доступные методы'
+  - name: js-sdk
+    x-displayName: 'js-библиотека'
     description: |
-      Для реализации взаимодействия с партнёром Райффайзенбанк предоставляет API для открытия платежной формы с ипользованием HTTP запросов
-      
-  - name: Json-file
-    x-displayName: 'Использование js-библиотеки'
-    description: |
-      В случае использования js-библиотеки магазину необходимо выполнить следующие шаги:
-      1) Скачать библиотеку https://github.com/Raiffeisen-DGTL/ecom-payment-sdk
-    
-      2) Прописать скрипт на сайте магазина, пример: 
-    
-      <code>`<script src="https://e-commerce.raiffeisen.ru/pay/sdk/payment.styled.min.js"> </script>`</code> 
-    
-      3) Дальнейшее использование JS-библиотеки описано в файле Readme.md в репозитории https://github.com/Raiffeisen-DGTL/ecom-payment-sdk
-      
+      Использование библиотеки позволяет открывать форму в pop-up окне, что обеспечивает бесшовный сценарий для клиента.
+      Также возможно выполнить кастомизацию интерфейса платежной формы и передать дополнительные поля.
+
+      Использование JS-библиотеки описано в репозитории https://github.com/Raiffeisen-DGTL/ecom-payment-sdk
+
       Ниже указан пример запроса на оплату:
-      
+
       <SchemaDefinition schemaRef="#/components/schemas/Payment" />
-  
+
+  - name: payform
+    x-displayName: 'Платежная форма'
+    description: |
+      Простой способ для интеграции. Клиента необходимо перенаправить на платежную форму, передав параметры заказа. Кастомизация интерфейса формы или передача дополнительных полей в данном варианте интеграции недоступны.
+
+  - name: pay-controller
+    x-displayName: 'Методы API'
+    description: |
+      Для реализации взаимодействия с партнёром Райффайзенбанк предоставляет API для:
+      * открытия платежной формы с ипользованием HTTP запросов;
+      * получения информации о статусе заказа.
+
   - name: Callback
     x-displayName: 'Уведомление о платеже'
     description: |
       Для информирования ТСП о проведенных платежах могут использоваться HTTP-уведомления на адрес, указанный в его настройках.
-    
+
       Для партнёра уведомление представляет собой входящий POST-запрос, который использует JSON-структуру.
-    
+
       Уведомление считается принятым, если получатель ответил на запрос кодом HTTP 200.
-    
+
       Ответы с любыми другими HTTP-кодами будут считаться невалидными. Повторные попытки отправки будут проводиться в течение суток с нарастающим интервалом.
-    
-      Для проверки подлинности уведомления к данным добавляется подпись в заголовке  x-api-signature-sha256, полученная на основе общего секретного ключа и контрольной строки (amount|MerchantId|order|paymentStatus|transactionDate) с помощью HMAC-SHA-256.   
-    
+
+      Для проверки подлинности уведомления к данным добавляется подпись в заголовке  x-api-signature-sha256, полученная на основе общего секретного ключа и контрольной строки (amount|publicId|order|transaction.status.value|transaction.status.date) с помощью HMAC-SHA-256.
+
 paths:
   /pay:
-    post:
+    get:
       tags:
-      - pay-controller
-      summary: Открытие платежной формы с ипользованием HTTP запроса
-      operationId: registerUsingPOST_1
-      consumes:
-      - application/json;charset=UTF-8
-      produces:
-      - application/json;charset=UTF-8
+        - payform
+      summary: Открытие платежной формы
+      operationId: getPayform
       parameters:
-      - in: body
-        name: payment
-        description: payment
-        required: true
-        schema:
-          "$ref": "#/definitions/PaymentOptional"
+        - in: query
+          name: publicId
+          type: string
+          description: Идентификатор магазина
+          required: true
+        - in: query
+          name: amount
+          type: BigDecimal
+          description: Сумма платежа в рублях
+          required: true
+        - in: query
+          name: orderId
+          type: string
+          description: Идентификатор заказа в магазине
+          maxLength: 40
+        - in: query
+          name: successUrl
+          type: URL encoded string
+          description: URL ресурса, куда будет перенаправлен клиент в случае успешного платежа
+        - in: query
+          name: failUrl
+          type: URL encoded string
+          description: URL ресурса, куда будет перенаправлен клиент в случае неуспешного платежа
+      responses:
+        '200':
+          description: Платежная страница.
+          schema:
+            "$ref": "#/definitions/EmptyBody"
+      deprecated: false
+
+
+  /api/payments/v1/orders/{orderId}/transaction:
+    get:
+      tags:
+        - pay-controller
+      summary: Получение информации о статусе заказа
+      operationId: getTransactionInfo
+      produces:
+        - application/json;charset=UTF-8
+      parameters:
+        - in: header
+          name: Authorization
+          type: string
+          description: Bearer secret key
+          required: true
+        - name: orderId
+          in: path
+          description: id заказа
+          required: true
+          type: string
       responses:
         200:
           description: Ответ с успешным результатом.
           schema:
-            "$ref": "#/definitions/EmptyBody"
-      deprecated: false       
-      
+            "$ref": "#/definitions/OrderInformation"
+      deprecated: false
+
+  /api/payments/v1/orders/{orderId}/refunds/{refundId}:
+    post:
+      tags:
+        - pay-controller
+      summary: Возврат средств
+      operationId: postRefund
+      produces:
+        - application/json;charset=UTF-8
+      parameters:
+        - in: header
+          name: Authorization
+          type: string
+          description: Bearer secret key
+          required: true
+        - name: orderId
+          in: path
+          description: id заказа
+          required: true
+          type: string
+        - name: refundId
+          in: path
+          description: id возврата
+          required: true
+          type: string
+        - name: amount
+          in: body
+          description: Сумма возврата
+          required: true
+          type: string
+          schema:
+            "$ref": "#/definitions/Refund"
+      responses:
+        200:
+          description: Ответ.
+          schema:
+            "$ref": "#/definitions/RefundResponse"
+      deprecated: false
+    get:
+      tags:
+        - pay-controller
+      summary: Статус возврата
+      operationId: getRefund
+      produces:
+        - application/json;charset=UTF-8
+      parameters:
+        - in: header
+          name: Authorization
+          type: string
+          description: Bearer secret key
+          required: true
+        - name: orderId
+          in: path
+          description: id заказа
+          required: true
+          type: string
+        - name: refundId
+          in: path
+          description: id возврата
+          required: true
+          type: string
+      responses:
+        200:
+          description: Ответ.
+          schema:
+            "$ref": "#/definitions/RefundResponse"
+      deprecated: false
+
   <URL обработчика уведомлений на стороне партнёра>:
     post:
       tags:
-      - Callback
+        - Callback
       summary: Уведомление о статусе платежа
       operationId: sendCallback
       consumes:
-      - application/json;charset=UTF-8
+        - application/json;charset=UTF-8
       parameters:
-      - name: Callback
-        in: body
-        description: Callback
-        required: true
-        schema:
-          "$ref": "#/definitions/Callback"
+        - name: Callback
+          in: body
+          description: Callback
+          required: true
+          schema:
+            "$ref": "#/definitions/Callback"
       responses:
         200:
-          description: Ответ с успешным результатом.
+          description: Ответ.
           schema:
             "$ref": "#/definitions/EmptyBody"
-      deprecated: false 
-      
+      deprecated: false
+
 definitions:
-  PaymentOptional:
-    type: object
+  Payform:
+    type: string
     required:
-    - publicId
-    - amount
+      - publicId
+      - amount
     properties:
       publicId:
         type: string
         description: Идентификатор магазина
-        maxLength: 12
-        example: 1680000000
+      orderId:
+        type: string
+        description: Идентификатор заказа в магазине
       amount:
         type: BigDecimal
         description: Сумма платежа в рублях
-        example: 1000.50
-    title: Paymeny Optional
+      successUrl:
+        type: URL encoded string
+        description: URL ресурса, куда будет перенаправлен клиент в случае успешного платежа
+        maxLength: 40
+      failUrl:
+        type: URL encoded string
+        description: URL ресурса, куда будет перенаправлен клиент в случае неуспешного платежа
+    title: Payform
   Payment:
     type: object
     required:
-    - publicId
-    - amount
+      - publicId
+      - amount
     properties:
       publicId:
         type: string
         description: Идентификатор магазина
-        maxLength: 12
-        example: 1680000000
+        example: 000001680200002-80200002
       orderId:
         type: string
         description: Идентификатор заказа в магазине
@@ -207,30 +349,35 @@ definitions:
         description: URL ресурса, куда будет перенаправлен клиент в случае неуспешного платежа
         example: https://www.baduniconf.ru/factories/krasny-octyabr/
       extra:
-        type: string
+        type: object
         description: Структура с дополнительными параметрами магазина
         maxLength: 999
-        example: '{ "additionalInfo": "Sweet Cake" }'
+        example: {"additionalInfo": "Sweet Cake"}
     title: TransactionID
-  Callback:
+  acquiring:
     type: object
+    allOf:
+      - $ref: "#/definitions/OrderInformation"
     required:
-    - event
+      - event
     properties:
-      event:
+      code:
         type: string
-        description: Тип сообщения
+        description: Код состояния http запроса
         enum:
-          - payment
-        example: payment
+          - SUCCESS
+          - ERROR
+        example: 'SUCCESS'
       transaction:
         type: object
         required:
-        - transactionId
-        - orderId
-        - amount
+          - id
+          - orderId
+          - status
+          - paymentMethod
+          - amount
         properties:
-          transactionId:
+          id:
             type: long
             description: Идентификатор операции в Райффайзенбанке
             example: 120059
@@ -239,6 +386,41 @@ definitions:
             description: Идентификатор заказа в магазине
             maxLength: 40
             example: testOrder
+          status:
+            type: object
+            required:
+              - value
+              - date
+            properties:
+              value:
+                type: string
+                description: Статус
+                enum:
+                  - SUCCESS
+                  - NOT_FOUND
+                example: SUCCESS
+              date:
+                type: ZonedDateTime
+                format: ISO-8601
+                description: Дата и время проведения
+                example: '2019-07-11T17:45:13+03:00'
+          paymentMethod:
+            type: string
+            description: Тип платежа. При оплате с карт придет значение - "acquiring", при СБП - "sbp"
+            example: acquiring
+          paymentParams:
+            type: object
+            properties:
+              rrn:
+                type: string
+                description: Номер для идентификации
+                maxLength: 12
+                example: 935014591810
+              authCode:
+                type: string
+                description: Код авторизации платежа, полученный от эмитента
+                maxLength: 6
+                example: 025984
           amount:
             type: BigDecimal
             description: Сумма в рублях
@@ -249,41 +431,275 @@ definitions:
             maxLength: 255
             example: Покупка шоколадного торта
           extra:
-            type: string
+            type: object
             description: Структура с дополнительными параметрами магазина
             maxLength: 999
-            example: '{ "additionalInfo": "Tasty Cake" }'
-      status:
+            example: {"additionalInfo": "Sweet Cake"}
+    title: Информация о заказе
+  sbp:
+    type: object
+    allOf:
+      - $ref: "#/definitions/OrderInformation"
+    required:
+      - event
+    properties:
+      code:
+        type: string
+        description: Код состояния http запроса
+        enum:
+          - SUCCESS
+          - ERROR
+        example: 'SUCCESS'
+      transaction:
         type: object
         required:
-        - value
-        - date
+          - id
+          - orderId
+          - status
+          - paymentMethod
+          - amount
         properties:
-          value:
+          id:
+            type: long
+            description: Идентификатор операции в Райффайзенбанке
+            example: 120059
+          orderId:
             type: string
-            description: Статус 
-            enum:
-            - SUCCESS 
-            - DECLINED 
-            example: SUCCESS
-          date:
+            description: Идентификатор заказа в магазине
+            maxLength: 40
+            example: testOrder
+          status:
+            type: object
+            required:
+              - value
+              - date
+            properties:
+              value:
+                type: string
+                description: Статус
+                enum:
+                  - SUCCESS
+                  - NOT_FOUND
+                example: SUCCESS
+              date:
+                type: ZonedDateTime
+                format: ISO-8601
+                description: Дата и время проведения
+                example: '2019-07-11T17:45:13+03:00'
+          paymentMethod:
             type: string
-            format: date-time
-            description: Дата и время проведения 
-            example: '2019-07-11T17:45:13.109227+03:00'    
-      acquiringData :
-        type: object
-        properties:
-          rrn:
+            description: Тип платежа. При оплате с карт придет значение - "acquiring", при СБП - "sbp"
+            example: sbp
+          paymentParams:
+            type: object
+            properties:
+              qrId:
+                type: string
+                description: Уникальный идентификатор QRC, выданный СБП
+                example: 'AD100051KNSNR64I98CRUJUASC9M72QT'
+          amount:
+            type: BigDecimal
+            description: Сумма в рублях
+            example: 12500.50
+          comment:
             type: string
-            description: Номер для идентификации 
-            maxLength: 12
-            example: 935014591810
-          authCode:
-            type: string
-            description: Код авторизации платежа, полученный от эмитента
-            maxLength: 6
-            example: 025984 
-    title: Уведомление о платеже
+            description: Описание платежа
+            maxLength: 255
+            example: Покупка шоколадного торта
+          extra:
+            type: object
+            description: Структура с дополнительными параметрами магазина
+            maxLength: 999
+            example: {"additionalInfo": "Sweet Cake"}
+    title: Информация о заказе
+  OrderInformation:
+    type: object
+    discriminator:
+      mapping:
+  Refund:
+    type: object
+    properties:
+      amount:
+        type: BigDecimal
+        description: Сумма возврата в рублях
+        example: 150
+  RefundResponse:
+    type: object
+    properties:
+      code:
+        type: string
+        description: Код состояния http запроса
+        enum:
+          - SUCCESS
+          - ERROR
+        example: 'SUCCESS'
+      amount:
+        type: BigDecimal
+        description: Сумма возврата врублях
+        example: 150
+      refundStatus:
+        type: string
+        description: Код состояния запроса на возврат
+        enum:
+          - IN_PROGRESS
+          - COMPLETED
+          - DECLINED
+        example: COMPLETED
+    title: RefundResponse
+
+  Callback:
+    type: object
+    discriminator:
+      mapping:
   EmptyBody:
     type: object
+  Acquiring:
+    type: object
+    allOf:
+      - $ref: "#/definitions/Callback"
+    required:
+      - event
+    properties:
+      event:
+        type: string
+        description: Тип сообщения
+        enum:
+          - payment
+        example: payment
+      transaction:
+        type: object
+        required:
+          - id
+          - orderId
+          - status
+        properties:
+          id:
+            type: long
+            description: Идентификатор операции в Райффайзенбанке
+            example: 120059
+          orderId:
+            type: string
+            description: Идентификатор заказа в магазине
+            maxLength: 40
+            example: testOrder
+          status:
+            type: object
+            required:
+              - value
+              - date
+            properties:
+              value:
+                type: string
+                description: Статус
+                enum:
+                  - SUCCESS
+                example: SUCCESS
+              date:
+                type: ZonedDateTime
+                format: ISO-8601
+                description: Дата и время проведения
+                example: '2019-07-11T17:45:13+03:00'
+          paymentMethod:
+            type: string
+            description: Тип платежа. При оплате с карт придет значение - "acquiring", при СБП - "sbp"
+            example: acquiring
+          paymentParams:
+            type: object
+            properties:
+              rrn:
+                type: string
+                description: Номер для идентификации
+                maxLength: 12
+                example: 935014591810
+              authCode:
+                type: string
+                description: Код авторизации платежа, полученный от эмитента
+                maxLength: 6
+                example: 025984
+          amount:
+            type: BigDecimal
+            description: Сумма в рублях
+            example: 12500.50
+          comment:
+            type: string
+            description: Описание платежа
+            maxLength: 255
+            example: Покупка шоколадного торта
+          extra:
+            type: object
+            description: Структура с дополнительными параметрами магазина
+            maxLength: 999
+            example: {"additionalInfo": "Sweet Cake"}
+    title: Уведомление о платеже
+  Sbp:
+    type: object
+    allOf:
+      - $ref: "#/definitions/Callback"
+    required:
+      - event
+    properties:
+      event:
+        type: string
+        description: Тип сообщения
+        enum:
+          - payment
+        example: payment
+      transaction:
+        type: object
+        required:
+          - id
+          - orderId
+          - status
+        properties:
+          id:
+            type: long
+            description: Идентификатор операции в Райффайзенбанке
+            example: 120059
+          orderId:
+            type: string
+            description: Идентификатор заказа в магазине
+            maxLength: 40
+            example: testOrder
+          status:
+            type: object
+            required:
+              - value
+              - date
+            properties:
+              value:
+                type: string
+                description: Статус
+                enum:
+                  - SUCCESS
+                example: SUCCESS
+              date:
+                type: ZonedDateTime
+                format: ISO-8601
+                description: Дата и время проведения
+                example: '2019-07-11T17:45:13+03:00'
+          paymentMethod:
+            type: string
+            description: Тип платежа. При оплате с карт придет значение - "acquiring", при СБП - "sbp"
+            example: sbp
+          paymentParams:
+            type: object
+            properties:
+              qrId:
+                type: string
+                description: Уникальный идентификатор QRC, выданный СБП
+                example: 'AD100051KNSNR64I98CRUJUASC9M72QT'
+          amount:
+            type: BigDecimal
+            description: Сумма в рублях
+            example: 12500.50
+          comment:
+            type: string
+            description: Описание платежа
+            maxLength: 255
+            example: Покупка шоколадного торта
+          extra:
+            type: object
+            description: Структура с дополнительными параметрами магазина
+            maxLength: 999
+            example: {"additionalInfo": "Sweet Cake"}
+    title: Уведомление о платеже

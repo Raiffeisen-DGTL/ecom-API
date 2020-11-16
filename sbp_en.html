@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Raiffeisenbank e-commerce API</title>
+    <title>SBP API - Raiffeisenbank</title>
     <!-- needed for adaptive design -->
     <meta charset="utf-8"/>
     <meta name="viewport" 
@@ -25,7 +25,7 @@
     <script src="./node_modules/redoc/bundles/redoc.standalone.js"> </script>
     <script>
           // initially render first API
-      Redoc.init("./ecom_en.yml",
+      Redoc.init("./sbp_en.yml",
       {
         "hideLOading":true,
         "disableSearch":true,
@@ -46,14 +46,14 @@
             fontFamily: 'Roboto, sans-serif',
             smoothing: 'antialiased',
             optimizeSpeed: true,
-            headings: {//Заголовки и их параметры
+            headings: {//   
               fontFamily: 'Arial, sans-serif',
               fontWeight: '400',
               lineHeight: '1.2em',
             }
           },
-          logo: { // параметры для логотипа
-            gutter: '0px',//Отступы вокруг логотипа
+          logo: { //   
+            gutter: '0px',//  
           },
           rightPanel: {
             backgroundColor: '#2B2D33',
