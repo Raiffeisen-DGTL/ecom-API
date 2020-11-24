@@ -271,7 +271,6 @@ definitions:
   Payment:
     type: object
     required:
-      - createDate
       - qrType
       - sbpMerchantId
       - order
@@ -291,12 +290,6 @@ definitions:
         description: Сумма в рублях. Обязательно для заполнения, если Тип QR = QRDynamic.
         maxLength:
         example: 1110.00
-      createDate:
-        type: string
-        format: YYYY-MM-DD ТHH24:MM:SS±HH:MM
-        description: Время формирования заявки
-        maxLength:
-        example: '2019-07-22T09:14:38.107227+03:00'
       currency:
         type: string
         description: Валюта платежа. Обязательно для заполнения, если заполнена сумма.

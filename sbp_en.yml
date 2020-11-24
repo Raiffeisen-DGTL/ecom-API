@@ -271,7 +271,6 @@ definitions:
   Payment:
     type: object
     required:
-      - createDate
       - qrType
       - sbpMerchantId
       - order
@@ -291,12 +290,6 @@ definitions:
         description: Amount in rubles. Mandatory if QR Type = QRDynamic
         maxLength:
         example: 1110.00
-      createDate:
-        type: string
-        format: YYYY-MM-DD ТHH24:MM:SS±HH:MM
-        description: Application Formation Time
-        maxLength:
-        example: '2019-07-22T09:14:38.107227+03:00'
       currency:
         type: string
         description: Currency of payment. Mandatory if 'amount' filled

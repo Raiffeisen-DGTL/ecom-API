@@ -106,7 +106,7 @@ tags:
       Using the library allows you to open the form in a pop-up window, which provides a seamless script for the client.
       It is also possible to customize the interface of the payment form and transfer additional fields.
 
-      Using the JS library is described in the repository https://github.com/Raiffeisen-DGTL/ecom-payment-sdk
+      Using the JS library is described in the repository https://github.com/Raiffeisen-DGTL/ecom-sdk-javascript
 
       Below is an example of a request for payment:
 
