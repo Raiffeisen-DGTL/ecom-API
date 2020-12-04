@@ -46,6 +46,12 @@ info:
 
     <a href='images/SBP API Raiffeisenbank scheme.html' target='_blank'><img src='images/SBP API Raiffeisenbank scheme.png'></a>
 
+    ## Поддержка 54-ФЗ
+
+    Мы не ограничиваем в выборе решения по фискализации, но рекомендуем воспользоваться решением от наших партнеров:
+    * Интегрироваться с  операторам фискальных данных [АТОЛ.](https://online.atol.ru/lk/Account/Register?partnerUid=18583cd5-dae2-4fb1-a98b-f4b80d891eb0)
+    * Воспользоваться решениями [Paykeeper.](https://raiffeisen-processing.ru)
+
     # Описание API
     Взаимодействие осуществляется по протоколу HTTP с использованием методов GET/POST (в описании каждого запроса явно указан требуемый метод и адрес).
 

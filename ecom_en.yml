@@ -46,6 +46,12 @@ info:
     * a ready-made library that allows you to open a pop-up for entering payment data and transferring complex data structures.
     * redirection of the client to the payment page of Raiffeisenbank
 
+    ## Support 54-ФЗ
+
+    We don't restrict your choice of fiscal solutions, but we recommend using a solution from our partners:
+    * To integrate with the operator's fiscal data [АТОЛ.](https://online.atol.ru/lk/Account/Register?partnerUid=18583cd5-dae2-4fb1-a98b-f4b80d891eb0)
+    * Use the [Paykeeper](https://raiffeisen-processing.ru) solutions.
+
     # API description
     Interaction is conducted with the HTTP protocol using the GET/POST methods (the description of each request clearly indicates the required method and address).
 
@@ -168,6 +174,13 @@ paths:
           name: failUrl
           type: URL encoded string
           description: URL of the resource where the client will be redirected in case of payment failure
+        - in: query
+          name: paymentMethod
+          type: string
+          enum:
+            - ONLY_SBP
+            - ONLY_ACQUIRIN
+          description: Select a payment method
       responses:
         '200':
           description: Billing page.
