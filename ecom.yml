@@ -178,8 +178,8 @@ paths:
           name: paymentMethod
           type: string
           enum:
-          - ONLY_SBP
-          - ONLY_ACQUIRIN
+            - ONLY_SBP
+            - ONLY_ACQUIRING
           description: Выбор метода оплаты
       responses:
         '200':

@@ -179,7 +179,7 @@ paths:
           type: string
           enum:
             - ONLY_SBP
-            - ONLY_ACQUIRIN
+            - ONLY_ACQUIRING
           description: Select a payment method
       responses:
         '200':
