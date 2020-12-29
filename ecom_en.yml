@@ -21,19 +21,6 @@ info:
     For all questions regarding operations with API, please contact Raiffeisenbank Support Service:
     - email: <a href="mailto:ecom@raiffeisen.ru">ecom@raiffeisen.ru</a>
 
-    ## Payment process
-    Demonstration:
-    https://e-commerce.raiffeisen.ru/pay/demo.html
-
-    The user performs the following actions during the payment process:
-    * Selects goods/services into the shopping cart and clicks "Pay".
-    * The store opens up the payment form.
-    * The customer enters the relevant details on the payment form and confirms the payment.
-
-    The payment execution scheme is presented below:
-
-    <a target='_blank'><img src='images/E-commerce Raiffeisenbank scheme_en.png'></a>
-
     ### Preparatory Actions
     In order to accept payments, you need to:
     * submit an application for connection
@@ -51,6 +38,19 @@ info:
     We don't restrict your choice of fiscal solutions, but we recommend using a solution from our partners:
     * To integrate with the operator's fiscal data [АТОЛ.](https://online.atol.ru/lk/Account/Register?partnerUid=18583cd5-dae2-4fb1-a98b-f4b80d891eb0)
     * Use the [Paykeeper](https://raiffeisen-processing.ru) solutions.
+
+    # Payment process
+    Demonstration:
+    https://e-commerce.raiffeisen.ru/pay/demo.html
+
+    The user performs the following actions during the payment process:
+    * Selects goods/services into the shopping cart and clicks "Pay".
+    * The store opens up the payment form.
+    * The customer enters the relevant details on the payment form and confirms the payment.
+
+    The payment execution scheme is presented below:
+
+    <a href='images/E-commerce Raiffeisenbank scheme_en.png' target='_blank'><img src='images/E-commerce Raiffeisenbank scheme_en.png'></a>
 
     # API description
     Interaction is conducted with the HTTP protocol using the GET/POST methods (the description of each request clearly indicates the required method and address).
@@ -70,7 +70,11 @@ info:
 
     IMPORTANT: The secret key must be stored in a secure place, it cannot be published on third-party resources or transferred to third parties.
 
+    You can view your public identifier and generate keys in your [personal account](https://rbo.raiffeisen.ru) in the "Accept payments" tab
+
     Interservice requests are authorized using API secret key (SECRET_KEY). The authorization parameter is specified in the Authorization header, the value of which is formed as "Bearer SECRET_KEY".
+
+    <a href='images/RBO_settings.jpg' target='_blank'><img src='images/RBO_settings.jpg'></a>
 
     In order to generate a secret key, please contact: ecom@raiffeisen.ru
 
@@ -135,6 +139,8 @@ tags:
     description: |
       In order to inform the Merchant site about payments made, HTTP notifications to the address specified in its settings can be used.
 
+      The prod url can be specified in the [personal account] (https://rbo.raiffeisen.ru) in the "Accept payments" tab.
+
       For partners, a notification is presented as an incoming POST request that uses the JSON structure.
 
       A notification is considered accepted if the recipient responded to the request with HTTP 200.
@@ -142,6 +148,34 @@ tags:
       Responses with any other HTTP codes will be considered invalid. Repeated attempts to send will be conducted during the day with increasing intervals.
 
       In order to verify the authenticity of the notification, a signature is added to the data in the x-api-signature-sha256 header, obtained on the basis of the shared secret key and control string (amount|publickId|order|paymentStatus|transactionDate) by way of HMAC-SHA-256.
+
+  - name: Registry
+    x-displayName: 'Registry'
+    description: |
+      To subscribe to the report, send an email to ecom@raiffeisen.ru
+
+      Reports are sent every day.
+
+      If there was no transaction on that day, the report is not sent.
+
+      Report format:
+
+      Column name | Value
+      --------|------------------
+      Мерчант | Store id
+      Дата операции МСК | Date and time of payment
+      Тип | Type transaction
+      id заказа | Order id
+      id возврата | Refund id
+      Комментарий | Comment
+      Способ оплаты | Instant Payment QR - SBP, Payment system name - Acquiring
+      Данные оплаты | QR id - SBP, authCode and rnn - Acquiring
+      id клиента | SBP - masked payer code. Acquiring - masked payer card
+      Сумма | Amount
+      Комиссия | Transaction fee
+      Дополнительные поля | Additional Information
+
+      [Exampl of report](images/ECOMSBPreport.csv)
 
 paths:
   /pay:
@@ -164,7 +198,7 @@ paths:
         - in: query
           name: orderId
           type: string
-          description: Store order ID
+          description: Store order ID.  A-z0-9-',"_:.,
           maxLength: 40
         - in: query
           name: successUrl

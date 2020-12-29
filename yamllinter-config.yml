@@ -1,0 +1,10 @@
+---
+
+extends: default
+
+ignore: |
+  redoc/
+  images/
+
+rules:
+  line-length: disable

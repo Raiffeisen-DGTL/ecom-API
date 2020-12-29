@@ -1,0 +1,334 @@
+---
+swagger: '2.0'
+info:
+  title: API интеграции выплат
+  contact: {
+    email: ecom@raiffeisen.ru,
+    name: Support e-mail
+  }
+  x-logo:
+    url: images/raifflogo.png
+    backgroundColor: '#FFFFFF'
+    altText: Raiff logo
+  description: |
+
+    ## Авторизация
+
+     Авторизация производится посредством секретного ключа API (SECRET_KEY). Параметр авторизации указывается в заголовке Authorization, значение которого формируется как "Bearer SECRET_KEY".
+
+servers:
+  - url: https://test.ecom.raiffeisen.ru
+    description: Test API
+tags:
+  - name: api-controller
+    x-displayName: 'API'
+    description: |
+      Для реализации взаимодействия с партнёром Райффайзенбанк предоставляет API из следующих запросов:
+        * получение списка банков, принимающих выплаты по СБП,
+        * запрос на проведение выплаты,
+        * получение статуса выплаты
+
+paths:
+  /api/payout/v1/sbp/banks -H "Authorization :Bearer SecretKey":
+    get:
+      tags:
+        - api-controller
+      summary: Получение списка банков, принимающих выплаты по СБП
+      operationId: getArrayBanks
+      produces:
+        - application/json;charset=UTF-8
+      parameters:
+        - in: header
+          name: Authorization
+          type: string
+          description: Bearer secret key
+          required: true
+      responses:
+        '200':
+          description: Ответ с успешным результатом.
+          schema:
+            "$ref": "#/definitions/BanksList"
+      deprecated: false
+
+  /api/payout/v1/payouts -H "Authorization :Bearer SecretKey":
+    post:
+      tags:
+        - api-controller
+      summary: Проведение выплаты
+      operationId: payoutUsingPOST_1
+      consumes:
+        - application/json;charset=UTF-8
+      produces:
+        - application/json;charset=UTF-8
+      parameters:
+        - in: header
+          name: Authorization
+          description: Bearer secret key
+          required: true
+        - in: body
+          name: Payout
+          schema:
+            "$ref": "#/definitions/Payout"
+      responses:
+        "200":
+          description: Ответ с успешным результатом.
+          schema:
+            "$ref": "#/definitions/PayoutRes"
+      deprecated: false
+
+  /api/payout/v1/payouts/{id} -H "Authorization :Bearer SecretKey":
+    get:
+      tags:
+        - api-controller
+      summary: Получение информации по платежу
+      operationId: getPayoutInfoUsingGET
+      produces:
+        - application/json;charset=UTF-8
+      parameters:
+        - in: header
+          name: Authorization
+          type: string
+          description: Bearer secret key
+          required: true
+        - name: Id
+          in: path
+          description: Id
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Ответ с успешным результатом.
+          schema:
+            "$ref": "#/definitions/PayoutRes"
+      deprecated: false
+
+  <URL обработчика уведомлений на стороне партнёра>:
+    post:
+      tags:
+        - api-controller
+      summary: Уведомление о статусе платежа
+      operationId: sendCallback
+      consumes:
+        - application/json;charset=UTF-8
+      parameters:
+        - name: x-api-signature-sha256
+          in: header
+          description: SecretKey HMAC-SHA-256 (amount|id|statusValue|statusDate)
+          required: true
+        - name: Callback
+          in: body
+          schema:
+            "$ref": "#/definitions/Callback"
+      responses:
+        200:
+          description: Ответ с успешным результатом.
+          schema:
+            "$ref": "#/definitions/EmptyBody"
+      deprecated: false
+definitions:
+  Payout:
+    type: object
+    properties:
+      id:
+        type: string
+        description: Aa-Zz0-9_-
+        example: 1404fhr7i272a2
+      account:
+        type: string
+        description: Cчет для выплаты
+        example: 40700000000000000000
+      amount:
+        type: BigDecimal
+        description: Сумма в рублях.
+        example: 1110.01
+      currency:
+        type: string
+        description: Валюта платежа.
+        enum:
+          - RUB
+        maxLength: 3
+        example: RUB
+      paymentDetails:
+        type: string
+        description: Назначение платежа.
+        example: Выплата от страховой компании
+      payoutMethod:
+        enum:
+          - SBP
+        description: Тип выплаты
+        example: SBP
+      payoutParams:
+        type: object
+        properties:
+          phone:
+            type: string
+            description: Номер телефона получателя
+            example: '79191234567'
+          bankAlias:
+            type: string
+            description: Код банка получателя из запроса списка банков
+            example: 'RAIFFEISEN'
+      extra:
+        type: object
+        description: Дополнительные данные
+        properties:
+          contract:
+            type: string
+            description: Номер договора для выплат
+            example: '1234567/89012'
+    title: Payout
+  PayoutRes:
+    type: object
+    properties:
+      id:
+        type: string
+        description: Aa-Zz0-9_-
+        example: 1404fhr7i272a2
+      account:
+        type: string
+        description: Cчет для выплаты
+        example: 40700000000000000000
+      amount:
+        type: BigDecimal
+        description: Сумма в рублях.
+        example: 1110.01
+      currency:
+        type: string
+        description: Валюта платежа.
+        enum:
+          - RUB
+        maxLength: 3
+        example: RUB
+      payoutMethod:
+        enum:
+          - SBP
+        description: Тип выплаты
+        example: SBP
+      payoutParams:
+        type: object
+        properties:
+          phone:
+            type: string
+            description: Номер телефона получателя
+            example: '79191234567'
+          bankAlias:
+            type: string
+            description: Код банка получателя из запроса списка банков
+            example: 'RAIFFEISEN'
+      extra:
+        type: object
+        description: Дополнительные данные
+        properties:
+          contract:
+            type: string
+            description: Номер договора для выплат
+            example: '1234567/89012'
+      status:
+        type: object
+        properties:
+          value:
+            enum:
+              - IN_PROGRESS
+              - COMPLETED
+              - DECLINED
+            description: Статус
+            example: 'IN_PROGRESS'
+          data:
+            description: Дата
+            example: '2019-07-11T17:45:13+03:00'
+      createDate:
+        description: Дата создания
+        example: '2019-07-11T17:45:13+03:00'
+    title: PayoutRes
+  BanksList:
+    type: array
+    items:
+      "$ref": "#/definitions/Banks"
+    properties:
+      alias:
+        type: string
+        description: Алиас банка
+        example: 'RAIFFFEISEN'
+    title: BanksList
+  Banks:
+    type: object
+    properties:
+      alias:
+        type: string
+        description: Алиас банка
+        example: 'RAIFFFEISEN'
+      name:
+        type: string
+        description: Название банка
+        example: 'Райффайзенбанк'
+  Callback:
+    type: object
+    properties:
+      event:
+        type: string
+        description: Тип операции
+        example: 'payout'
+      payout:
+        type: object
+        properties:
+          id:
+            type: string
+            description: Aa-Zz0-9_-
+            example: 1404fhr7i272a2
+          account:
+            type: string
+            description: Cчет для выплаты
+            example: 40700000000000000000
+          amount:
+            type: BigDecimal
+            description: Сумма в рублях.
+            example: 1110.01
+          currency:
+            type: string
+            description: Валюта платежа.
+            enum:
+              - RUB
+            maxLength: 3
+            example: RUB
+          payoutMethod:
+            enum:
+              - SBP
+            description: Тип выплаты
+            example: SBP
+          payoutParams:
+            type: object
+            properties:
+              phone:
+                type: string
+                description: Номер телефона получателя
+                example: '79191234567'
+              bankAlias:
+                type: string
+                description: Код банка получателя из запроса списка банков
+                example: 'RAIFFEISEN'
+          extra:
+            type: object
+            description: Дополнительные данные
+            properties:
+              contract:
+                type: string
+                description: Номер договора для выплат
+                example: '1234567/89012'
+          status:
+            type: object
+            properties:
+              value:
+                enum:
+                  - IN_PROGRESS
+                  - COMPLETED
+                  - DECLINED
+                description: Статус
+                example: 'COMPLETED'
+              data:
+                description: Дата
+                example: '2019-07-11T17:45:13+03:00'
+          createDate:
+            description: Дата создания
+            example: '2019-07-11T17:45:13+03:00'
+    title: Callback
+  EmptyBody:

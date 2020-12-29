@@ -40,17 +40,35 @@ info:
     * определяет формат уведомления о факте СБП-платежа
     * предоставляет интерфейс для получения данных по платежу
 
-    ## Общая схема работы
-
-    На рисунке ниже изображена схема информационного обмена c партнёром при реализации платежа по QR-коду.
-
-    <a href='images/SBP API Raiffeisenbank scheme.html' target='_blank'><img src='images/SBP API Raiffeisenbank scheme.png'></a>
-
     ## Поддержка 54-ФЗ
 
     Мы не ограничиваем в выборе решения по фискализации, но рекомендуем воспользоваться решением от наших партнеров:
     * Интегрироваться с  операторам фискальных данных [АТОЛ.](https://online.atol.ru/lk/Account/Register?partnerUid=18583cd5-dae2-4fb1-a98b-f4b80d891eb0)
     * Воспользоваться решениями [Paykeeper.](https://raiffeisen-processing.ru)
+
+    # Общая схема работы
+
+    В случае если прием платежей планируется на сайте или в мобильном приложение рекомендуем использовать [протокол с отображением QR на нашей форме.](https://e-commerce.raiffeisen.ru/api/doc/ecom.html)
+
+    Схема работы с формой:
+
+    <a href='images/E-commerce Raiffeisenbank scheme.png' target='_blank'><img src='images/E-commerce Raiffeisenbank scheme.png'></a>
+
+    Если прием платежей реализуется в физических точках или по каким либо причинам вам не подходит решение с нашей формой , можете использовать протокол описанный ниже.
+
+    На рисунке изображена схема информационного обмена c партнёром при реализации платежа по QR-коду.
+
+    <a href='images/SBP API Raiffeisenbank scheme.png' target='_blank'><img src='images/SBP API Raiffeisenbank scheme.png'></a>
+
+    # Готовые решения
+
+    ## SDK
+    Для более быстрой интеграции вы можете вопоспользоваться нашими SDK:
+    * [Java](https://github.com/Raiffeisen-DGTL/sbp-sdk-java)
+
+    ## CMS
+
+    На данный момент вы можете воспользоваться готовыми решениями нашего партнера [Paykeeper.](https://raiffeisen-processing.ru)
 
     # Описание API
     Взаимодействие осуществляется по протоколу HTTP с использованием методов GET/POST (в описании каждого запроса явно указан требуемый метод и адрес).
@@ -70,7 +88,11 @@ info:
 
      авторизуются посредством секретного ключа API (SECRET_KEY). Параметр авторизации указывается в заголовке Authorization, значение которого формируется как "Bearer SECRET_KEY".
 
-    Для генерации секретного ключа необходимо обратиться по адресу:  ecom@raiffeisen.ru
+    Посмотреть боевой sbpMerchantId и сгенерировать ключи можно в [личном кабинете](https://rbo.raiffeisen.ru) во вкладке "Прием платежей"
+
+    <a href='images/RBO_settings.jpg' target='_blank'><img src='images/RBO_settings.jpg'></a>
+
+    Для генерации тестовых данных необходимо обратиться по адресу:  ecom@raiffeisen.ru
 
     # Мобильная версия и приложение
     При работе в мобильной версии сайта или приложении необходимо перенаправлять клиента по url из параметра payload.
@@ -114,6 +136,8 @@ tags:
     description: |
       Для информирования ТСП о проведенных платежах могут использоваться HTTP-уведомления на адрес, указанный в его настройках.
 
+      Боевой адрес можно указать в [личном кабинете](https://rbo.raiffeisen.ru) во вкладке "Прием платежей"
+
       Для партнёра уведомление представляет собой входящий POST-запрос, который использует JSON-структуру.
 
       Уведомление считается принятым, если получатель ответил на запрос кодом HTTP 200.
@@ -124,6 +148,35 @@ tags:
       Для проверки подлинности уведомления к данным добавляется подпись в заголовке  X-Api-Signature-SHA256, полученная на основе общего секретного ключа и контрольной строки (amount|sbpMerchantId|order|paymentStatus|transactionDate) с помощью HMAC-SHA-256.
 
       Уведомления отправляются с IP 193.28.44.23
+
+  - name: Registry
+    x-displayName: 'Реестр'
+    description: |
+      Для подключения отправки реестров необходимо написать на ecom@raiffeisen.ru
+
+      Реестры по платежам отправляются на ежедневной основе.
+
+      В случае отсуствии операция за день, реестр на следующий день не отправляется.
+
+      Формат реестра:
+
+      Наименование колонки | Значение
+      --------|------------------
+      Мерчант | Идентификатор в системе банка
+      Дата операции МСК | Дата и время проведения операции
+      Тип | Тип операции
+      id заказа | Id заказа в системе партнера (order)
+      id возврата | Id возврата в системе партнера (refundId)
+      Комментарий | Комментарий к заказу
+      Способ оплаты | Instant Payment QR
+      Данные оплаты | QR id
+      id клиента | Маскированный код плательщика
+      Сумма | Сумма транзакции
+      Комиссия | Комиссия по транзакции
+      Дополнительные поля | Дополнительная информация (Пока не используется)
+
+      [Пример реестра](images/SBPreport.csv)
+
 paths:
   /api/sbp/v1/qr/register:
     post:
@@ -148,6 +201,19 @@ paths:
           schema:
             "$ref": "#/definitions/QR"
       deprecated: false
+      x-codeSamples:
+        - lang: 'Java'
+          source: |
+            String order = QRUtils.generateOrderNumber();
+
+            QRDynamic qrCode = new QRDynamic(order, new BigDecimal(100));
+            qrCode.setAccount("40700000000000000000");
+            qrCode.setAdditionalInfo("Доп информация");
+            qrCode.setPaymentDetails("Назначение платежа");
+            qrCode.setQrExpirationDate("2023-07-22T09:14:38.107227+03:00");
+
+            QRUrl response = client.registerQR(qrCode);
+
   /api/sbp/v1/qr/{qrId}/info -H "Authorization :Bearer SecretKey":
     get:
       tags:
@@ -173,6 +239,13 @@ paths:
           schema:
             "$ref": "#/definitions/QR"
       deprecated: false
+      x-codeSamples:
+        - lang: 'Java'
+          source: |
+            String qrIdString = "...";
+            QRId id = new QRId(qrIdString);
+            QRUrl response = client.getQRInfo(id);
+
   /api/sbp/v1/qr/{qrId}/payment-info -H "Authorization :Bearer SecretKey":
     get:
       tags:
@@ -198,6 +271,13 @@ paths:
           schema:
             "$ref": "#/definitions/PaymentInfo"
       deprecated: false
+      x-codeSamples:
+        - lang: 'Java'
+          source: |
+            String qrIdString = "...";
+            QRId id = new QRId(qrIdString);
+            PaymentInfo response = client.getPaymentInfo(id);
+
   /api/sbp/v1/refund -H "Authorization :Bearer SecretKey":
     post:
       tags:
@@ -224,6 +304,18 @@ paths:
           schema:
             "$ref": "#/definitions/RefundResponse"
       deprecated: false
+      x-codeSamples:
+        - lang: 'Java'
+          source: |
+            BigDecimal moneyAmount = new BigDecimal(150);
+            String orderInfo = "...";
+            String refundId = "...";
+            long transactionId = ...;
+
+            RefundInfo refundInfo = new RefundInfo(moneyAmount, orderInfo, refundId);
+
+            RefundStatus response = client.refundPayment(refundInfo);
+
   /api/sbp/v1/refund/{refundId} -H "Authorization :Bearer SecretKey":
     get:
       tags:
@@ -251,6 +343,13 @@ paths:
           schema:
             "$ref": "#/definitions/RefundResponse"
       deprecated: false
+      x-codeSamples:
+        - lang: 'Java'
+          source: |
+            String refundIdString = "...";
+            RefundId refundId = new RefundId(refundIdString);
+
+            RefundStatus response = client.getRefundInfo(refundId);
 
   <URL обработчика уведомлений на стороне партнёра>:
     post:
@@ -293,8 +392,7 @@ definitions:
         example: Доп информация
       amount:
         type: BigDecimal
-        description: Сумма в рублях. Обязательно для заполнения, если Тип QR = QRDynamic.
-        maxLength:
+        description: Сумма в рублях. Обязательно для заполнения, если Тип QR = QRDynamic
         example: 1110.00
       currency:
         type: string
@@ -305,7 +403,7 @@ definitions:
         example: RUB
       order:
         type: string
-        description: Уникальный идентификатор заказа в системе партнёра
+        description: Уникальный идентификатор заказа в системе партнёра. Формат A-z0-9-',"_:.,
         maxLength: 40
         example: 1-22-333
       paymentDetails:
@@ -319,12 +417,12 @@ definitions:
         enum:
           - QRStatic
           - QRDynamic
-        example: QRStatic
+        example: QRDynamic
       qrExpirationDate:
         type: string
         format: YYYY-MM-DD ТHH24:MM:SS±HH:MM
         description: Опциональный параметр для указания срока действия QR-кода. При заполнении не может быть меньше текущей даты и времени. После истечения срока действия QR-кода оплату по нему провести нельзя. Если Тип QR = QRDynamic и поле не заполнено, срок действия будет 3 суток.
-        example: '2023-07-22T09:14:38.107227+03:00'
+        example: '2023-07-22T09:14:38+03:00'
       sbpMerchantId:
         type: string
         description: Идентификатор зарегистрированного партнёра в СБП
@@ -365,7 +463,7 @@ definitions:
         example: 123
       order:
         type: string
-        description: Уникальный идентификатор заказа в системе партнёра
+        description: Уникальный идентификатор заказа в системе партнёра.
         example: '282a60f8-dd75-4286-bde0-af321dd081b3'
       paymentStatus:
         type: string
