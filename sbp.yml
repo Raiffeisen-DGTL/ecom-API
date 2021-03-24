@@ -162,7 +162,7 @@ tags:
 
       Наименование колонки | Значение
       --------|------------------
-      Мерчант | Идентификатор в системе банка
+      Мерчант | Идентификатор в системе СБП
       Дата операции МСК | Дата и время проведения операции
       Тип | Тип операции
       id заказа | Id заказа в системе партнера (order)
@@ -176,6 +176,29 @@ tags:
       Дополнительные поля | Дополнительная информация (Пока не используется)
 
       [Пример реестра](images/SBPreport.csv)
+
+  - name: Errors
+    x-displayName: 'Справочник ошибок'
+    description: |
+      Ответ любого метода содержит код сообщения (code). Если в процессе обработки любого запроса произойдет логическая ошибка, API вернет описание ошибки (message).
+
+      Описание основных ошибок:
+
+      code | message
+      ------------|------
+      ERROR.ACCOUNT_IS_NOT_REGISTERED | Указан неверный счет. Проверьте его или удалите. Параметр является необязательным
+      ERROR.INVALID_REQUEST | Не передан обязательный параметр
+      ERROR.QR_EXPIRATION_DATE_NOT_VALID | Неверная дата истечения QR-кода
+      ERROR.MERCHANT_NOT_REGISTERED | Партнер с ID MA0000000552 не зарегистрирован
+      ERROR.ORDER_NUMBER_ALREADY_REGISTERED | QR-код с номером заказа ***, партнера MA0000000552 и успешными платежами уже зарегистрирован
+      ERROR.INVALID_REQUEST | Передана некорректная сумма платежа
+      ERROR.SBP_MERCHANT_ID_IS_MISSING | SbpMerchantId партнера не указан
+      ERROR.DYNAMIC_QR_WITHOUT_AMOUNT | Не передана сумма для динамического QR-кода
+      ERROR.INVALID_ORDER | В номере заказа поддерживаются A-z09_-.
+      ERROR.NOT_FOUND | QR-код не найден у данного партнера
+      ERROR.REFUND_INSUFFICIENT_FUNDS | Сумма возврата больше суммы остатка по платежу
+      ERROR.INVALID_REQUEST | Сумма возврата не может быть меньше 1 копейки
+      ERROR.REFUND_NOT_FOUND | Возврат с refundId *** не найден
 
 paths:
   /api/sbp/v1/qr/register:
@@ -202,6 +225,21 @@ paths:
             "$ref": "#/definitions/QR"
       deprecated: false
       x-codeSamples:
+        - lang: 'cURL'
+          source: |
+            curl --location --request POST 'https://test.ecom.raiffeisen.ru/api/sbp/v1/qr/register' \
+            --header 'Content-Type: application/json' \
+            --data-raw '{
+            "account": 40700000000000000000,
+            "additionalInfo": "Доп информация",
+            "amount": 1110,
+            "currency": "RUB",
+            "order": "1-22-333",
+            "paymentDetails": "Назначение платежа",
+            "qrType": "QRDynamic",
+            "qrExpirationDate": "2023-07-22T09:14:38+03:00",
+            "sbpMerchantId": "MA0000000552"
+            }'
         - lang: 'Java'
           source: |
             String order = QRUtils.generateOrderNumber();
@@ -240,6 +278,10 @@ paths:
             "$ref": "#/definitions/QR"
       deprecated: false
       x-codeSamples:
+        - lang: 'cURL'
+          source: |
+            curl --location --request GET 'https://test.ecom.raiffeisen.ru/api/sbp/v1/qr/AS6E5A7F9E3A4E648C536EC930AECDF6/info' \
+            --header 'Authorization: Bearer eyJ0eXA***'
         - lang: 'Java'
           source: |
             String qrIdString = "...";
@@ -272,6 +314,10 @@ paths:
             "$ref": "#/definitions/PaymentInfo"
       deprecated: false
       x-codeSamples:
+        - lang: 'cURL'
+          source: |
+            curl --location --request GET 'https://test.ecom.raiffeisen.ru/api/sbp/v1/qr/AS6E5A7F9E3A4E648C536EC930AECDF6/payment-info' \
+            --header 'Authorization: Bearer eyJ0eXA***'
         - lang: 'Java'
           source: |
             String qrIdString = "...";
@@ -305,6 +351,18 @@ paths:
             "$ref": "#/definitions/RefundResponse"
       deprecated: false
       x-codeSamples:
+        - lang: 'cURL'
+          source: |
+            curl --location --request POST 'https://test.ecom.raiffeisen.ru/api/sbp/v1/refund' \
+            --header 'Content-Type: application/json' \
+            --header 'Authorization: Bearer eyJ0eXA***' \
+            --data-raw '{
+            "amount": 150,
+            "order": "test_order_007",
+            "paymentDetails": "Test",
+            "refundId": "test_refundId_007",
+            "transactionId": 41
+            }'
         - lang: 'Java'
           source: |
             BigDecimal moneyAmount = new BigDecimal(150);
@@ -344,6 +402,10 @@ paths:
             "$ref": "#/definitions/RefundResponse"
       deprecated: false
       x-codeSamples:
+        - lang: 'cURL'
+          source: |
+            curl --location --request GET 'https://test.ecom.raiffeisen.ru/api/sbp/v1/refund/111112222200046' \
+            --header 'Authorization: Bearer eyJ0eXA***'
         - lang: 'Java'
           source: |
             String refundIdString = "...";
@@ -366,6 +428,27 @@ paths:
           required: true
           schema:
             "$ref": "#/definitions/Callback"
+      responses:
+        200:
+          description: Ответ с успешным результатом.
+          schema:
+            "$ref": "#/definitions/EmptyBody"
+      deprecated: false
+
+  <Respons>:
+    post:
+      tags:
+        - Errors
+      summary: Errors
+      operationId: ResponesError
+      consumes:
+        - application/json;charset=UTF-8
+      parameters:
+        - name: Error
+          in: body
+          description: Error
+          schema:
+            "$ref": "#/definitions/Errors"
       responses:
         200:
           description: Ответ с успешным результатом.
@@ -421,7 +504,7 @@ definitions:
       qrExpirationDate:
         type: string
         format: YYYY-MM-DD ТHH24:MM:SS±HH:MM
-        description: Опциональный параметр для указания срока действия QR-кода. При заполнении не может быть меньше текущей даты и времени. После истечения срока действия QR-кода оплату по нему провести нельзя. Если Тип QR = QRDynamic и поле не заполнено, срок действия будет 3 суток.
+        description: Опциональный параметр для указания срока действия QR-кода. При заполнении не может быть меньше текущей даты и времени. После истечения срока действия QR-кода оплату по нему провести нельзя. Если Тип QR = QRDynamic и поле не заполнено, срок действия будет 3 суток. ISO 8601
         example: '2023-07-22T09:14:38+03:00'
       sbpMerchantId:
         type: string
@@ -436,6 +519,10 @@ definitions:
         type: string
         description: Дополнительная информация, заполняемая по желанию партнёра при генерации QR-кода. Может быть доступна для пользователя в зависимости от банка.
         example: 'Доп информация'
+      paymentPurpose:
+        type: string
+        description: Назначение платежа.
+        example: 'Назначение платежа'
       amount:
         type: BigDecimal
         description: Сумма платежа
@@ -473,7 +560,7 @@ definitions:
           - DECLINED
           - NO_INFO
           - IN_PROGRESS
-        example: NO_INFO
+        example: SUCCESS
       qrId:
         type: string
         description: Уникальный идентификатор QRC, выданный СБП при запросе генерации QRC
@@ -481,7 +568,7 @@ definitions:
       sbpMerchantId:
         type: string
         description: Уникальный идентификатор партнёра, выданный СБП
-        example: MA0000000553
+        example: MA0000000552
       transactionDate:
         type: string
         format: date-time
@@ -626,4 +713,16 @@ definitions:
         maxLength:
         example: '2020-01-15T13:00:40+03:00'
     title: Callback
+  Errors:
+    type: object
+    properties:
+      code:
+        type: string
+        description: Код сообщения
+        example: 'ERROR.NOT_FOUND'
+      message:
+        type: string
+        description: Описание ошибки
+        example: 'QR не был оплачен'
+    title: Error
   EmptyBody:

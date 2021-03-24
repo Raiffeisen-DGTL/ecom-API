@@ -92,7 +92,7 @@ info:
     For a full payment testing cycle, you must specify an amount of more than 10 rubles.
     Cards:
     * 2200300100000023 12/24 880 - No 3DS
-    * 4000001000000018 12/24 880  PIN for success payment : 1234, 1111  - 3DS
+    * 4000001000000018 12/24 880 - 3DS PIN for success payment 1234,for fail 1111
 
     ## SBP
     For a full payment testing cycle, Raiffeisenbank provides the opportunity to use a demo application for scanning QRC on behalf of the buyer at:
@@ -176,6 +176,19 @@ tags:
       Дополнительные поля | Additional Information
 
       [Exampl of report](images/ECOMSBPreport.csv)
+
+  - name: Errors
+    x-displayName: 'List of errors'
+    description: |
+      The response of any method contains a message code (code). If a logical error occurs during the processing of any request, the API will additionally return a description of the error (message).
+
+      Examples of basic errors:
+
+      code | message
+      ------------|------
+      ERROR.NOT_FOUND | Счет не найден у данного партнера
+      ERROR.REFUND_INSUFFICIENT_FUNDS | Сумма возврата больше суммы остатка по платежу
+      ERROR.INVALID_REQUEST | Некорректные параметры запроса
 
 paths:
   /pay:
@@ -353,7 +366,7 @@ definitions:
         description: Store order ID
       amount:
         type: BigDecimal
-        description: Payment amount in rubles
+        description: Payment amount in rubles. Minimal for test 15 rub.
       successUrl:
         type: URL encoded string
         description: URL of the resource where the client will be redirected in case of successful payment

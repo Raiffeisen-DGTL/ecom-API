@@ -22,10 +22,6 @@ info:
     * Присылает запрос на создание нового держателя карты и получает результат.
     * Присылает запрос на создание карты и получает результат.
 
-    Схема процесса представлена ниже:
-
-    <a target='_blank'><img src='images/Cards API Raiffeisenbank scheme.png'></a>
-
     # API
     Взаимодействие осуществляется по протоколу HTTP с использованием методов GET/POST (в описании каждого запроса явно указан требуемый метод и адрес).
 
@@ -38,7 +34,7 @@ info:
 
     ##  Авторизация
 
-    Для авторизации запросов необходимы:
+    Для авторизация запросов необходимы:
     * companyId - идентификатор,который используется в запросах и не является конфиденциальным
     * secretKey - секретный ключ, который используется для межсервисного взаимодействия.
 
@@ -74,7 +70,7 @@ tags:
   - name: Registry
     x-displayName: 'Реестр'
     description: |
-      Для создания карт по реестру необходимо сформировать реестр в формате .xml(1С) и направить его по интернет-банку(RBO).
+      Для создания карт по реестру необходимо сформировать реестр в формате .xml(1С) или .csv с кодировкой UTF-8 и направить его по интернет-банку(RBO).
 
       Формат реестра:
 
@@ -101,7 +97,9 @@ tags:
       АдресПрописки.Дом | Дом адреса прописки
       МобильныйТелефон | Мобильный телефон сотрудника-держателя
 
-      [Пример XML реестра](images/xml_registry.xml)
+      [xml реестр пример 1 || ](images/xml_registry1.xml)
+      [xml реестр пример 2 || ](images/xml_registry2.xml)
+      [csv реестр пример](images/csv_registry.csv)
 
 paths:
   /api/cards/v1/company/{companyId}/persons/add -H "Authorization :Bearer SecretKey":
@@ -164,7 +162,7 @@ paths:
           schema:
             "$ref": '#/definitions/responses/personsAddResponse'
 
-  /api/cards/v1/bank/branches/ -H "Authorization :Bearer SecretKey":
+  /api/cards/v1/bank/branches/:
     get:
       tags:
         - cards-api
@@ -174,12 +172,6 @@ paths:
         - application/json;charset=UTF-8
       produces:
         - application/json;charset=UTF-8
-      parameters:
-        - in: header
-          name: Authorization
-          type: string
-          description: Bearer secret key
-          required: true
       responses:
         '200':
           description: OK
@@ -268,39 +260,39 @@ definitions:
           example: '1234554-asddsa'
         surname:
           type: string
-          description: Держатель карты.Фамилия
+          description: Фамилия держателя карты.
           example: 'Тестов'
         name:
           type: string
-          description: Держатель карты.Имя
+          description: Имя держателя карты.
           example: 'Тест'
         patronymic:
           type: string
-          description: Держатель карты.Отчество
+          description: Отчество держателя карты.
           example: 'Тестович'
         birthday:
           type: string
           format: YYYY-MM-DD
-          description: Держатель карты.Дата рождения
+          description: Дата рождения держателя карты.
           example: '1980-01-30'
         gender:
           type: string
-          description: Держатель карты.Пол(МALE/FEMALE)
+          description: Пол держателя карты.(МALE/FEMALE)
           enum:
             - МALE
             - FEMALE
           example: 'МALE'
         cellPhone:
           type: string
-          description: "Держатель карты.Номер мобильного телефона"
+          description: "Номер мобильного телефона держателя карты, используется для смс-информирования"
           example: '79123456789'
         transcriptFullName:
           type: string
-          description: "Держатель карты.ФИО в альтернативной транскрипции. Необязательно для заполнения."
+          description: "ФИО держателя карты в альтернативной транскрипции. Необязательно для заполнения."
           example: 'Testov Test Testovich'
         branchId:
           type: string
-          description: "Держатель карты.3-х значный цифровой код Обслуживающего Отделения Банка"
+          description: "3-х значный цифровой код Отделения Банка, куда будет доставлена карта"
           example: '203'
         citizenshipCode:
           type: string
@@ -308,7 +300,7 @@ definitions:
           example: '643'
         secretWords:
           type: string
-          description: "Держатель карты.Кодовое слово. Необязательно для заполнения."
+          description: "Кодовое слово держателя карты. Необязательно для заполнения."
           example: 'secretWords'
         passport:
           type: object
@@ -339,19 +331,19 @@ definitions:
           properties:
             region:
               type: string
-              description: "Паспорт РФ.Регион"
+              description: "Регион адреса прописки"
               example: 'Москва'
             city:
               type: string
-              description: "Паспорт РФ.Город"
+              description: "Город адреса прописки"
               example: 'Москва'
             street:
               type: string
-              description: "Паспорт РФ.Улица"
+              description: "Улица адреса прописки"
               example: 'Октябрьская'
             house:
               type: string
-              description: "Паспорт РФ.Номер дома"
+              description: "Номер дома адреса прописки"
               example: '84'
     personsAddSuccess:
       type: object
@@ -439,22 +431,22 @@ definitions:
         birthday:
           type: string
           format: YYYY-MM-DD
-          description: Держатель карты.Дата рождения
+          description: Дата рождения держателя карты.
           example: '1980.01.30'
         gender:
           type: string
-          description: Держатель карты.Пол(МALE/FEMALE)
+          description: Пол держателя карты.(МALE/FEMALE)
           enum:
             - МALE
             - FEMALE
           example: 'МALE'
         maskedCellPhone:
           type: string
-          description: Держатель карты.Номер мобильного телефона
+          description: Номер мобильного телефона держателя карты, используется для смс-информирования
           example: '7912***6789'
         branchId:
           type: string
-          description: Держатель карты.3-х значный цифровой код Обслуживающего Отделения Банка
+          description: 3-х значный цифровой код Отделения Банка, куда будет доставлена карта
           example: '203'
         passport:
           type: object
@@ -556,4 +548,4 @@ definitions:
         address:
           type: string
           description: Адрес местонахождения Отделения Банка
-          example: '142000 Московская область г.Домодедово мкр-н Центральный ул.Корнеева д.12'
+          example: 'г.Домодедово ул.Корнеева д.12'

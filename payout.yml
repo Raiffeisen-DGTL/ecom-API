@@ -28,8 +28,11 @@ tags:
         * запрос на проведение выплаты,
         * получение статуса выплаты
 
+      Банки, подключенные к приему выплат по СБП вы сможете посмотреть на сайте https://sbp.nspk.ru/participants/ в разделе "Оплата по QR".
+      Мы автоматически поддерживаем актуальный список и возвращаем его для вас в запросе на получение банков частников.
+
 paths:
-  /api/payout/v1/sbp/banks -H "Authorization :Bearer SecretKey":
+  /api/payout/v1/sbp/banks/ -H "Authorization :Bearer SecretKey":
     get:
       tags:
         - api-controller
@@ -233,7 +236,7 @@ definitions:
               - DECLINED
             description: Статус
             example: 'IN_PROGRESS'
-          data:
+          date:
             description: Дата
             example: '2019-07-11T17:45:13+03:00'
       createDate:
@@ -248,7 +251,7 @@ definitions:
       alias:
         type: string
         description: Алиас банка
-        example: 'RAIFFFEISEN'
+        example: 'RAIFFEISEN'
     title: BanksList
   Banks:
     type: object
@@ -256,7 +259,7 @@ definitions:
       alias:
         type: string
         description: Алиас банка
-        example: 'RAIFFFEISEN'
+        example: 'RAIFFEISEN'
       name:
         type: string
         description: Название банка
@@ -324,7 +327,7 @@ definitions:
                   - DECLINED
                 description: Статус
                 example: 'COMPLETED'
-              data:
+              date:
                 description: Дата
                 example: '2019-07-11T17:45:13+03:00'
           createDate:
