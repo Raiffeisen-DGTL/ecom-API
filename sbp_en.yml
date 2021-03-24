@@ -579,6 +579,11 @@ definitions:
         format: int64
         description: Raiffeisenbank payment transaction identifier
         example: 23
+      qrExpirationDate:
+        type: YYYY-MM-DD ТHH24:MM:SS±HH:MM
+        description: Expiration date QR
+        maxLength:
+        example: '2020-01-15T13:00:40+03:00'
     title: PaymentInfo
   QR:
     type: object
