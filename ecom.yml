@@ -118,6 +118,10 @@ tags:
 
       Использование JS-библиотеки описано в репозитории https://github.com/Raiffeisen-DGTL/ecom-sdk-javascript
 
+      Вы можете настроить название, логотип и цвет кнопок на форме в нашем конфигураторе: https://pay.raif.ru/pay/configurator/
+
+      Там же можно получить код для встраивания его в JS библиотеку.
+
       Ниже указан пример запроса на оплату:
 
       <SchemaDefinition schemaRef="#/components/schemas/Payment" />

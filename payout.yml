@@ -12,6 +12,8 @@ info:
     altText: Raiff logo
   description: |
 
+    Свои предложения и идеи о документации можно оставить в репозитории по адресу: https://github.com/Raiffeisen-DGTL/ecom-API/blob/master/payout.yml
+
     ## Авторизация
 
      Авторизация производится посредством секретного ключа API (SECRET_KEY). Параметр авторизации указывается в заголовке Authorization, значение которого формируется как "Bearer SECRET_KEY".

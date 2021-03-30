@@ -118,6 +118,10 @@ tags:
 
       Using the JS library is described in the repository https://github.com/Raiffeisen-DGTL/ecom-sdk-javascript
 
+      You can customize the logo, barnd name and color of the buttons in our configurator: https://pay.raif.ru/pay/configurator/
+
+      And you can get the code to insert it into JS library.
+
       Below is an example of a request for payment:
 
       <SchemaDefinition schemaRef="#/components/schemas/Payment" />
