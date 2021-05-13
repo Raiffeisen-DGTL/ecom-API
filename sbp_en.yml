@@ -79,6 +79,9 @@ info:
 
     The response of any method contains a message code (code). If a logical error occurs during the processing of any request, the API will additionally return a description of the error (message).
 
+    Production url: https://e-commerce.raiffeisen.ru
+    Sandbox url: https://test.ecom.raiffeisen.ru
+
     ## Authorization
     Requests like:
     * receiving information on a QR code
@@ -175,7 +178,18 @@ tags:
       Комиссия | Transaction fee
       Дополнительные поля | Additional Information (Not used yet)
 
-      [Exampl of report](images/SBPreport.csv)
+      <a download='' target='_blank' href='images/SBPreport.csv'>Exampl of report</a>
+
+  - name: Statement
+    x-displayName: 'Statement'
+    description: |
+      You can download the statement in your client bank in format:
+      * <a download='' target='_blank' href='images/test_statement.pdf'>PDF</a>
+      * <a download='' target='_blank' href='images/test_statement_1C.txt'>1C txt</a>
+      * <a download='' target='_blank' href='images/test_statement.xml'>XML</a>
+
+      Payment details have sysytem prefix: operation number , operation type , sbp merchant id.
+      The standart payment purpose is specified in the example.  You can change it, for this you can send paymentDetails in the registration and refund requests.
 
   - name: Errors
     x-displayName: 'List of errors'
@@ -199,6 +213,19 @@ tags:
       ERROR.REFUND_INSUFFICIENT_FUNDS | Сумма возврата больше суммы остатка по платежу
       ERROR.INVALID_REQUEST | Сумма возврата не может быть меньше 1 копейки
       ERROR.REFUND_NOT_FOUND | Возврат с refundId *** не найден
+
+x-tagGroups:
+  - name: API
+    tags:
+      - qr-controller
+      - Callback
+  - name: Comparison
+    tags:
+      - Registry
+      - Statement
+  - name: Reference information
+    tags:
+      - Errors
 
 paths:
   /api/sbp/v1/qr/register:
@@ -252,7 +279,7 @@ paths:
 
             QRUrl response = client.registerQR(qrCode);
 
-  /api/sbp/v1/qr/{qrId}/info -H "Authorization :Bearer SecretKey":
+  /api/sbp/v1/qr/{qrId}/info:
     get:
       tags:
         - qr-controller
@@ -288,7 +315,7 @@ paths:
             QRId id = new QRId(qrIdString);
             QRUrl response = client.getQRInfo(id);
 
-  /api/sbp/v1/qr/{qrId}/payment-info -H "Authorization :Bearer SecretKey":
+  /api/sbp/v1/qr/{qrId}/payment-info:
     get:
       tags:
         - qr-controller
@@ -324,7 +351,7 @@ paths:
             QRId id = new QRId(qrIdString);
             PaymentInfo response = client.getPaymentInfo(id);
 
-  /sbp/v1/refund -H "Authorization :Bearer SecretKey":
+  /sbp/v1/refund:
     post:
       tags:
         - qr-controller
@@ -374,7 +401,7 @@ paths:
 
             RefundStatus response = client.refundPayment(refundInfo);
 
-  /sbp/v1/refund/{refundId} -H "Authorization :Bearer SecretKey":
+  /sbp/v1/refund/{refundId}:
     get:
       tags:
         - qr-controller

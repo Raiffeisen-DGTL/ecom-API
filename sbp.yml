@@ -79,6 +79,9 @@ info:
 
     Ответ любого метода содержит код сообщения (code). Если в процессе обработки любого запроса произойдет логическая ошибка, API вернет дополнительно описание ошибки (message).
 
+    Продовый хост: https://e-commerce.raiffeisen.ru
+    Тестовый хост: https://test.ecom.raiffeisen.ru
+
     ## Авторизация
     Запросы типа:
     * получение информации по QR-коду
@@ -88,11 +91,11 @@ info:
 
      авторизуются посредством секретного ключа API (SECRET_KEY). Параметр авторизации указывается в заголовке Authorization, значение которого формируется как "Bearer SECRET_KEY".
 
+    Для получения тестовых данных для интеграции необходимо обратиться по адресу:  ecom@raiffeisen.ru
+
     Посмотреть боевой sbpMerchantId и сгенерировать ключи можно в [личном кабинете](https://rbo.raiffeisen.ru) во вкладке "Прием платежей"
 
     <a href='images/RBO_settings.jpg' target='_blank'><img src='images/RBO_settings.jpg'></a>
-
-    Для генерации тестовых данных необходимо обратиться по адресу:  ecom@raiffeisen.ru
 
     # Мобильная версия и приложение
     При работе в мобильной версии сайта или приложении необходимо перенаправлять клиента по url из параметра payload.
@@ -175,7 +178,18 @@ tags:
       Комиссия | Комиссия по транзакции
       Дополнительные поля | Дополнительная информация (Пока не используется)
 
-      [Пример реестра](images/SBPreport.csv)
+      <a download='' target='_blank' href='images/SBPreport.csv'>Пример реестра</a>
+
+  - name: Statement
+    x-displayName: 'Выписка'
+    description: |
+      Выписку может выгрузить в банк-клиенте в следующих форматах:
+      * <a download='' target='_blank' href='images/test_statement.pdf'>PDF</a>
+      * <a download='' target='_blank' href='images/test_statement_1C.txt'>1C txt</a>
+      * <a download='' target='_blank' href='images/test_statement.xml'>XML</a>
+
+      В назначение платежа есть системиный префикс: номер проводки , тип операции , идентификатор мерчанта НСПК.
+      В примерах выписки указаны стандартные назначение платежа, вы можете его изменить, для этого необходимо при генерации QR и возвратах передавать параметр paymentDetails с вашими данными, при этом  ваше значение будет идти после системного префикса.
 
   - name: Errors
     x-displayName: 'Справочник ошибок'
@@ -199,6 +213,19 @@ tags:
       ERROR.REFUND_INSUFFICIENT_FUNDS | Сумма возврата больше суммы остатка по платежу
       ERROR.INVALID_REQUEST | Сумма возврата не может быть меньше 1 копейки
       ERROR.REFUND_NOT_FOUND | Возврат с refundId *** не найден
+
+x-tagGroups:
+  - name: API
+    tags:
+      - qr-controller
+      - Callback
+  - name: Сверка
+    tags:
+      - Registry
+      - Statement
+  - name: Справочник
+    tags:
+      - Errors
 
 paths:
   /api/sbp/v1/qr/register:
@@ -252,7 +279,7 @@ paths:
 
             QRUrl response = client.registerQR(qrCode);
 
-  /api/sbp/v1/qr/{qrId}/info -H "Authorization :Bearer SecretKey":
+  /api/sbp/v1/qr/{qrId}/info:
     get:
       tags:
         - qr-controller
@@ -288,7 +315,7 @@ paths:
             QRId id = new QRId(qrIdString);
             QRUrl response = client.getQRInfo(id);
 
-  /api/sbp/v1/qr/{qrId}/payment-info -H "Authorization :Bearer SecretKey":
+  /api/sbp/v1/qr/{qrId}/payment-info:
     get:
       tags:
         - qr-controller
@@ -324,7 +351,7 @@ paths:
             QRId id = new QRId(qrIdString);
             PaymentInfo response = client.getPaymentInfo(id);
 
-  /api/sbp/v1/refund -H "Authorization :Bearer SecretKey":
+  /api/sbp/v1/refund:
     post:
       tags:
         - qr-controller
@@ -374,7 +401,7 @@ paths:
 
             RefundStatus response = client.refundPayment(refundInfo);
 
-  /api/sbp/v1/refund/{refundId} -H "Authorization :Bearer SecretKey":
+  /api/sbp/v1/refund/{refundId}:
     get:
       tags:
         - qr-controller
@@ -465,7 +492,7 @@ definitions:
     properties:
       account:
         type: string
-        description: Счет для зачисления. Не используется в тестовой среде.
+        description: Счет для зачисления. Параметр используется, если необходимо разносить платежи на разные счета. Не используется в тестовой среде.
         maxLength: 20
         example: 40700000000000000001
       additionalInfo:

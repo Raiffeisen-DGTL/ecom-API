@@ -17,8 +17,12 @@ info:
     ## Авторизация
 
      Авторизация производится посредством секретного ключа API (SECRET_KEY). Параметр авторизации указывается в заголовке Authorization, значение которого формируется как "Bearer SECRET_KEY".
+     Продовый хост: https://e-commerce.raiffeisen.ru
+     Тестовый хост: https://test.ecom.raiffeisen.ru
 
 servers:
+  - url: https://e-commerce.raiffeisen.ru
+    description: Production API
   - url: https://test.ecom.raiffeisen.ru
     description: Test API
 tags:
@@ -34,7 +38,7 @@ tags:
       Мы автоматически поддерживаем актуальный список и возвращаем его для вас в запросе на получение банков частников.
 
 paths:
-  /api/payout/v1/sbp/banks/ -H "Authorization :Bearer SecretKey":
+  /api/payout/v1/sbp/banks/:
     get:
       tags:
         - api-controller
@@ -55,7 +59,7 @@ paths:
             "$ref": "#/definitions/BanksList"
       deprecated: false
 
-  /api/payout/v1/payouts -H "Authorization :Bearer SecretKey":
+  /api/payout/v1/payouts:
     post:
       tags:
         - api-controller
@@ -81,7 +85,7 @@ paths:
             "$ref": "#/definitions/PayoutRes"
       deprecated: false
 
-  /api/payout/v1/payouts/{id} -H "Authorization :Bearer SecretKey":
+  /api/payout/v1/payouts/{id}:
     get:
       tags:
         - api-controller
