@@ -1,6 +1,7 @@
 ---
 swagger: '2.0'
 info:
+  version: 1.0.0
   title: Raiffeisenbank e-commerce API
   contact: {
     email: ecom@raiffeisen.ru,
@@ -68,13 +69,17 @@ info:
     * publicId - identifier that is used to open a payment form and is not confidential
     * secretKey - a secret key that is used for interservice communication.
 
+    Production url: https://e-commerce.raiffeisen.ru
+
+    ТSandbox url: https://test.ecom.raiffeisen.ru
+
     IMPORTANT: The secret key must be stored in a secure place, it cannot be published on third-party resources or transferred to third parties.
 
-    You can view your public identifier and generate keys in your [personal account](https://rbo.raiffeisen.ru) in the "Accept payments" tab
+    You can view your public identifier and generate keys in your [personal account](https://www.rbo.raiffeisen.ru/acquiring/mcp#/) in the "Accept payments" tab
+
+    <div align=center><a href='images/createKey.png' target='_blank'><img src='images/createKey.png'></a></div>
 
     Interservice requests are authorized using API secret key (SECRET_KEY). The authorization parameter is specified in the Authorization header, the value of which is formed as "Bearer SECRET_KEY".
-
-    <a href='images/RBO_settings.jpg' target='_blank'><img src='images/RBO_settings.jpg'></a>
 
     In order to generate a secret key, please contact: ecom@raiffeisen.ru
 
@@ -100,6 +105,10 @@ info:
 
     The specified address can be opened in the browser of any device with a camera. No additional software / plugins need to be installed. Then click on the SBP icon (if necessary, allow the browser access to the camera) and bring the QR code image to it.
     If the camera doesn't open, check the url, it has to have https.
+
+    ### Example Demo Screen
+
+    <div align=center><a href='images/example-sbp-1.png' target='_blank'><img src='images/example-sbp-1.png'></a></div
 
 servers:
   - url: https://e-commerce.raiffeisen.ru
@@ -140,7 +149,11 @@ tags:
     description: |
       In order to inform the Merchant site about payments made, HTTP notifications to the address specified in its settings can be used.
 
-      The prod url can be specified in the [personal account] (https://rbo.raiffeisen.ru) in the "Accept payments" tab.
+      The prod url can be specified in the [personal account](https://www.rbo.raiffeisen.ru/acquiring/mcp#/) in the "Accept payments" tab.
+
+      <div align=center><a href='images/callback.png' target='_blank'><img src='images/callback.png'></a></div>
+
+      And prod or test url can be specified with [API.](#operation/postsettingsUrl)
 
       For partners, a notification is presented as an incoming POST request that uses the JSON structure.
 
@@ -206,7 +219,7 @@ paths:
           required: true
         - in: query
           name: amount
-          type: BigDecimal
+          type: number
           description: Payment amount in rubles
           required: true
         - in: query
@@ -216,11 +229,13 @@ paths:
           maxLength: 40
         - in: query
           name: successUrl
-          type: URL encoded string
+          type: string
+          format: URL encoded
           description: URL of the resource where the client will be redirected in case of successful payment
         - in: query
           name: failUrl
-          type: URL encoded string
+          type: string
+          format: URL encoded
           description: URL of the resource where the client will be redirected in case of payment failure
         - in: query
           name: paymentMethod
@@ -291,9 +306,8 @@ paths:
           in: body
           description: Refund Amount
           required: true
-          type: string
-      schema:
-        "$ref": "#/definitions/Refund"
+          schema:
+            "$ref": "#/definitions/Refund"
       responses:
         200:
           description: Answer.
@@ -352,6 +366,33 @@ paths:
             "$ref": "#/definitions/EmptyBody"
       deprecated: false
 
+  /api/settings/v1/callback:
+    post:
+      tags:
+        - Callback
+      summary: Setting url for callback
+      operationId: postsettingsUrl
+      produces:
+        - application/json;charset=UTF-8
+      parameters:
+        - in: header
+          name: Authorization
+          type: string
+          description: Bearer secret key
+          required: true
+        - in: body
+          name: callbackUrl
+          description: Url for callback
+          required: true
+          schema:
+            "$ref": "#/definitions/CallBackSettings"
+      responses:
+        "200":
+          description: Answer.
+          schema:
+            "$ref": "#/definitions/CallBackSettings"
+      deprecated: false
+
 definitions:
   Payform:
     type: string
@@ -366,14 +407,16 @@ definitions:
         type: string
         description: Store order ID
       amount:
-        type: BigDecimal
+        type: number
         description: Payment amount in rubles. Minimal for test 15 rub.
       successUrl:
-        type: URL encoded string
+        type: string
+        format: URL encoded
         description: URL of the resource where the client will be redirected in case of successful payment
         maxLength: 40
       failUrl:
-        type: URL encoded string
+        type: string
+        format: URL encoded
         description: URL of the resource where the client will be redirected in case of payment failure
     title: Payform
   Payment:
@@ -392,7 +435,7 @@ definitions:
         maxLength: 40
         example: orderTest
       amount:
-        type: BigDecimal
+        type: number
         description: Payment amount in rubles
         example: 1000.50
       comment:
@@ -443,7 +486,7 @@ definitions:
           - amount
         properties:
           id:
-            type: long
+            type: number
             description: Raiffeisenbank Transaction ID
             example: 120059
           orderId:
@@ -465,7 +508,7 @@ definitions:
                   - NOT_FOUND
                 example: SUCCESS
               date:
-                type: ZonedDateTime
+                type: string
                 format: ISO-8601
                 description: Date and time
                 example: '2019-07-11T17:45:13+03:00'
@@ -487,7 +530,7 @@ definitions:
                 maxLength: 6
                 example: 025984
           amount:
-            type: BigDecimal
+            type: number
             description: Amount in rubles
             example: 12500.50
           comment:
@@ -525,7 +568,7 @@ definitions:
           - amount
         properties:
           id:
-            type: long
+            type: number
             description: Raiffeisenbank Transaction ID
             example: 120059
           orderId:
@@ -547,7 +590,7 @@ definitions:
                   - NOT_FOUND
                 example: SUCCESS
               date:
-                type: ZonedDateTime
+                type: string
                 format: ISO-8601
                 description: Date and time
                 example: '2019-07-11T17:45:13+03:00'
@@ -563,7 +606,7 @@ definitions:
                 description: Unique QRC ID issued by SBP
                 example: 'AD100051KNSNR64I98CRUJUASC9M72QT'
           amount:
-            type: BigDecimal
+            type: number
             description: Amount in rubles
             example: 12500.50
           comment:
@@ -581,7 +624,7 @@ definitions:
     type: object
     properties:
       amount:
-        type: BigDecimal
+        type: number
         description: refund amount in rubles
         example: 150
   RefundResponse:
@@ -595,7 +638,7 @@ definitions:
           - ERROR
         example: 'SUCCESS'
       amount:
-        type: BigDecimal
+        type: number
         description: refund amount in rubles
         example: 150
       refundStatus:
@@ -607,6 +650,15 @@ definitions:
           - DECLINED
         example: COMPLETED
     title: RefundResponse
+
+  CallBackSettings:
+    type: object
+    properties:
+      callbackUrl:
+        type: string
+        description: Url for callback
+        example: 'https://yoururl.ru'
+    title: callbackSettings
 
   Callback:
     type: object
@@ -633,7 +685,7 @@ definitions:
           - status
         properties:
           id:
-            type: long
+            type: number
             description: Raiffeisenbank Transaction ID
             example: 120059
           orderId:
@@ -654,7 +706,7 @@ definitions:
                   - SUCCESS
                 example: SUCCESS
               date:
-                type: ZonedDateTime
+                type: string
                 format: ISO-8601
                 description: Date and time
                 example: '2019-07-11T17:45:13+03:00'
@@ -676,7 +728,7 @@ definitions:
                 maxLength: 6
                 example: 025984
           amount:
-            type: BigDecimal
+            type: number
             description: Amount in rubles
             example: 12500.50
           comment:
@@ -711,7 +763,7 @@ definitions:
           - status
         properties:
           id:
-            type: long
+            type: number
             description: Raiffeisenbank Transaction ID
             example: 120059
           orderId:
@@ -732,7 +784,7 @@ definitions:
                   - SUCCESS
                 example: SUCCESS
               date:
-                type: ZonedDateTime
+                type: string
                 format: ISO-8601
                 description: Date and time
                 example: '2019-07-11T17:45:13+03:00'
@@ -748,7 +800,7 @@ definitions:
                 description: Unique QRC ID issued by SBP
                 example: 'AD100051KNSNR64I98CRUJUASC9M72QT'
           amount:
-            type: BigDecimal
+            type: number
             description: Amount in rubles
             example: 12500.50
           comment:

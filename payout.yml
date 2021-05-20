@@ -1,6 +1,7 @@
 ---
 swagger: '2.0'
 info:
+  version: 1.0.0
   title: API интеграции выплат
   contact: {
     email: ecom@raiffeisen.ru,
@@ -24,7 +25,7 @@ servers:
   - url: https://e-commerce.raiffeisen.ru
     description: Production API
   - url: https://test.ecom.raiffeisen.ru
-    description: Test API
+    description: Sandbox API
 tags:
   - name: api-controller
     x-displayName: 'API'
@@ -54,7 +55,7 @@ paths:
           required: true
       responses:
         '200':
-          description: Ответ с успешным результатом.
+          description: Ответ с успешным результатом
           schema:
             "$ref": "#/definitions/BanksList"
       deprecated: false
@@ -80,7 +81,7 @@ paths:
             "$ref": "#/definitions/Payout"
       responses:
         "200":
-          description: Ответ с успешным результатом.
+          description: Ответ с успешным результатом
           schema:
             "$ref": "#/definitions/PayoutRes"
       deprecated: false
@@ -106,7 +107,7 @@ paths:
           type: string
       responses:
         '200':
-          description: Ответ с успешным результатом.
+          description: Ответ с успешным результатом
           schema:
             "$ref": "#/definitions/PayoutRes"
       deprecated: false
@@ -130,7 +131,7 @@ paths:
             "$ref": "#/definitions/Callback"
       responses:
         200:
-          description: Ответ с успешным результатом.
+          description: Ответ с успешным результатом
           schema:
             "$ref": "#/definitions/EmptyBody"
       deprecated: false
@@ -147,19 +148,19 @@ definitions:
         description: Cчет для выплаты
         example: 40700000000000000000
       amount:
-        type: BigDecimal
-        description: Сумма в рублях.
+        type: number
+        description: Сумма в рублях
         example: 1110.01
       currency:
         type: string
-        description: Валюта платежа.
+        description: Валюта платежа
         enum:
           - RUB
         maxLength: 3
         example: RUB
       paymentDetails:
         type: string
-        description: Назначение платежа.
+        description: Назначение платежа
         example: Выплата от страховой компании
       payoutMethod:
         enum:
@@ -177,6 +178,13 @@ definitions:
             type: string
             description: Код банка получателя из запроса списка банков
             example: 'RAIFFEISEN'
+      incomeTypeCode:
+        type: string
+        enum:
+          - "1"
+          - "2"
+          - "3"
+        description: Код вида дохода<br/>[Значения описаны тут](http://www.consultant.ru/document/cons_doc_LAW_353568/527cf8edd2262cb7068cafd44ed596d9a05dd237/)
       extra:
         type: object
         description: Дополнительные данные
@@ -188,67 +196,9 @@ definitions:
     title: Payout
   PayoutRes:
     type: object
-    properties:
-      id:
-        type: string
-        description: Aa-Zz0-9_-
-        example: 1404fhr7i272a2
-      account:
-        type: string
-        description: Cчет для выплаты
-        example: 40700000000000000000
-      amount:
-        type: BigDecimal
-        description: Сумма в рублях.
-        example: 1110.01
-      currency:
-        type: string
-        description: Валюта платежа.
-        enum:
-          - RUB
-        maxLength: 3
-        example: RUB
-      payoutMethod:
-        enum:
-          - SBP
-        description: Тип выплаты
-        example: SBP
-      payoutParams:
-        type: object
-        properties:
-          phone:
-            type: string
-            description: Номер телефона получателя
-            example: '79191234567'
-          bankAlias:
-            type: string
-            description: Код банка получателя из запроса списка банков
-            example: 'RAIFFEISEN'
-      extra:
-        type: object
-        description: Дополнительные данные
-        properties:
-          contract:
-            type: string
-            description: Номер договора для выплат
-            example: '1234567/89012'
-      status:
-        type: object
-        properties:
-          value:
-            enum:
-              - IN_PROGRESS
-              - COMPLETED
-              - DECLINED
-            description: Статус
-            example: 'IN_PROGRESS'
-          date:
-            description: Дата
-            example: '2019-07-11T17:45:13+03:00'
-      createDate:
-        description: Дата создания
-        example: '2019-07-11T17:45:13+03:00'
-    title: PayoutRes
+    discriminator:
+      mapping:
+
   BanksList:
     type: array
     items:
@@ -289,12 +239,12 @@ definitions:
             description: Cчет для выплаты
             example: 40700000000000000000
           amount:
-            type: BigDecimal
-            description: Сумма в рублях.
+            type: number
+            description: Сумма в рублях
             example: 1110.01
           currency:
             type: string
-            description: Валюта платежа.
+            description: Валюта платежа
             enum:
               - RUB
             maxLength: 3
@@ -315,6 +265,13 @@ definitions:
                 type: string
                 description: Код банка получателя из запроса списка банков
                 example: 'RAIFFEISEN'
+          incomeTypeCode:
+            type: string
+            enum:
+              - "1"
+              - "2"
+              - "3"
+            description: Код вида дохода<br/>[Значения описаны тут](http://www.consultant.ru/document/cons_doc_LAW_353568/527cf8edd2262cb7068cafd44ed596d9a05dd237/)
           extra:
             type: object
             description: Дополнительные данные
@@ -341,3 +298,155 @@ definitions:
             example: '2019-07-11T17:45:13+03:00'
     title: Callback
   EmptyBody:
+  COMPLETED:
+    type: object
+    allOf:
+      - $ref: "#/definitions/PayoutRes"
+    properties:
+      id:
+        type: string
+        description: Aa-Zz0-9_-
+        example: 1404fhr7i272a2
+      account:
+        type: string
+        description: Cчет для выплаты
+        example: 40700000000000000000
+      amount:
+        type: number
+        description: Сумма в рублях
+        example: 1110.01
+      currency:
+        type: string
+        description: Валюта платежа
+        enum:
+          - RUB
+        maxLength: 3
+        example: RUB
+      payoutMethod:
+        enum:
+          - SBP
+        description: Тип выплаты
+        example: SBP
+      payoutParams:
+        type: object
+        properties:
+          phone:
+            type: string
+            description: Номер телефона получателя
+            example: '79191234567'
+          bankAlias:
+            type: string
+            description: Код банка получателя из запроса списка банков
+            example: 'RAIFFEISEN'
+      incomeTypeCode:
+        type: string
+        enum:
+          - "1"
+          - "2"
+          - "3"
+        description: Код вида дохода<br/>[Значения описаны тут](http://www.consultant.ru/document/cons_doc_LAW_353568/527cf8edd2262cb7068cafd44ed596d9a05dd237/)
+      extra:
+        type: object
+        description: Дополнительные данные
+        properties:
+          contract:
+            type: string
+            description: Номер договора для выплат
+            example: '1234567/89012'
+      status:
+        type: object
+        properties:
+          value:
+            enum:
+              - IN_PROGRESS
+              - COMPLETED
+              - DECLINED
+            description: Статус
+            example: 'COMPLETED'
+          date:
+            description: Дата
+            example: '2019-07-11T17:45:13+03:00'
+      createDate:
+        description: Дата создания
+        example: '2019-07-11T17:45:13+03:00'
+    title: PayoutRes
+  DECLINED:
+    type: object
+    allOf:
+      - $ref: "#/definitions/PayoutRes"
+    properties:
+      id:
+        type: string
+        description: Aa-Zz0-9_-
+        example: 1404fhr7i272a2
+      account:
+        type: string
+        description: Cчет для выплаты
+        example: 40700000000000000000
+      amount:
+        type: number
+        description: Сумма в рублях
+        example: 1110.01
+      currency:
+        type: string
+        description: Валюта платежа
+        enum:
+          - RUB
+        maxLength: 3
+        example: RUB
+      payoutMethod:
+        enum:
+          - SBP
+        description: Тип выплаты
+        example: SBP
+      payoutParams:
+        type: object
+        properties:
+          phone:
+            type: string
+            description: Номер телефона получателя
+            example: '79191234567'
+          bankAlias:
+            type: string
+            description: Код банка получателя из запроса списка банков
+            example: 'RAIFFEISEN'
+      incomeTypeCode:
+        type: string
+        enum:
+          - "1"
+          - "2"
+          - "3"
+        description: Код вида дохода<br/>[Значения описаны тут](http://www.consultant.ru/document/cons_doc_LAW_353568/527cf8edd2262cb7068cafd44ed596d9a05dd237/)
+      extra:
+        type: object
+        description: Дополнительные данные
+        properties:
+          contract:
+            type: string
+            description: Номер договора для выплат
+            example: '1234567/89012'
+      status:
+        type: object
+        properties:
+          value:
+            enum:
+              - IN_PROGRESS
+              - COMPLETED
+              - DECLINED
+            description: Статус
+            example: 'DECLINED'
+          declineReason:
+            enum:
+              - TIMEOUT
+              - BANK_NOT_SUPPORTED
+              - RECEIVER_ACCOUNT_ERROR
+              - SYSTEM_ERROR
+            description: Причина отклонения операции
+            example: RECEIVER_ACCOUNT_ERROR
+          date:
+            description: Дата
+            example: '2019-07-11T17:45:13+03:00'
+      createDate:
+        description: Дата создания
+        example: '2019-07-11T17:45:13+03:00'
+    title: PayoutRes

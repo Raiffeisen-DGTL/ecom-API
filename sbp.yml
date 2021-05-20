@@ -1,6 +1,7 @@
 ---
 swagger: '2.0'
 info:
+  version: 1.0.0
   title: API интеграции Системы Быстрых Платежей (СБП)
   contact: {
     email: ecom@raiffeisen.ru,
@@ -80,6 +81,7 @@ info:
     Ответ любого метода содержит код сообщения (code). Если в процессе обработки любого запроса произойдет логическая ошибка, API вернет дополнительно описание ошибки (message).
 
     Продовый хост: https://e-commerce.raiffeisen.ru
+
     Тестовый хост: https://test.ecom.raiffeisen.ru
 
     ## Авторизация
@@ -93,9 +95,9 @@ info:
 
     Для получения тестовых данных для интеграции необходимо обратиться по адресу:  ecom@raiffeisen.ru
 
-    Посмотреть боевой sbpMerchantId и сгенерировать ключи можно в [личном кабинете](https://rbo.raiffeisen.ru) во вкладке "Прием платежей"
+    Посмотреть боевой sbpMerchantId и сгенерировать ключи можно в [личном кабинете](https://www.rbo.raiffeisen.ru/acquiring/mcp#/) во вкладке "Прием платежей"
 
-    <a href='images/RBO_settings.jpg' target='_blank'><img src='images/RBO_settings.jpg'></a>
+    <div align=center><a href='images/createKey.png' target='_blank'><img src='images/createKey.png'></a></div>
 
     # Мобильная версия и приложение
     При работе в мобильной версии сайта или приложении необходимо перенаправлять клиента по url из параметра payload.
@@ -107,15 +109,12 @@ info:
     ## Приложение для тестирования
 
     Для полного цикла тестирования оплаты Райффайзенбанк предоставляет возможность использования демо-приложения для сканирования QRC от имени покупателя по адресу:
-    https://rfuture.site
-
-    * Логин - demo
-    * Пароль - demo
+    https://pay.raif.ru/pay/rfuture/
 
     Указанный адрес можно открыть в браузере любого устройства, где есть камера. Никакого дополнительного софта/плагинов устанавливать не нужно. Далее нажать на значок СБП (при необходимости разрешить браузеру доступ к камере) и поднести к ней изображение QR-кода.
     Если камера не открылась, проверьте что в адресе указан проткол https.
 
-    ## Пример экранов демо-приложения
+    ### Пример экранов демо-приложения
 
     <div align=center><a href='images/example-sbp-1.png' target='_blank'><img src='images/example-sbp-1.png'></a></div>
 
@@ -139,7 +138,11 @@ tags:
     description: |
       Для информирования ТСП о проведенных платежах могут использоваться HTTP-уведомления на адрес, указанный в его настройках.
 
-      Боевой адрес можно указать в [личном кабинете](https://rbo.raiffeisen.ru) во вкладке "Прием платежей"
+      Боевой адрес можно указать в [личном кабинете](https://www.rbo.raiffeisen.ru/acquiring/mcp#/) во вкладке "Прием платежей"
+
+      <div align=center><a href='images/callback.png' target='_blank'><img src='images/callback.png'></a></div>
+
+      Так же адрес для тестовой и боевой среды можно указать с помощью [метода в API](#operation/postsettingsUrl).
 
       Для партнёра уведомление представляет собой входящий POST-запрос, который использует JSON-структуру.
 
@@ -159,7 +162,7 @@ tags:
 
       Реестры по платежам отправляются на ежедневной основе.
 
-      В случае отсуствии операция за день, реестр на следующий день не отправляется.
+      В случае отсуствия операций за день, реестр на следующий день не отправляется.
 
       Формат реестра:
 
@@ -462,12 +465,38 @@ paths:
             "$ref": "#/definitions/EmptyBody"
       deprecated: false
 
-  <Respons>:
+  /api/settings/v1/callback:
+    post:
+      tags:
+        - Callback
+      summary: Настройка url для callback
+      operationId: postsettingsUrl
+      produces:
+        - application/json;charset=UTF-8
+      parameters:
+        - in: header
+          name: Authorization
+          type: string
+          description: Bearer secret key
+          required: true
+        - in: body
+          name: callbackUrl
+          description: Url для приема уведомлений
+          required: true
+          schema:
+            "$ref": "#/definitions/CallBackSettings"
+      responses:
+        "200":
+          description: Ответ с успешным результатом.
+          schema:
+            "$ref": "#/definitions/CallBackSettings"
+      deprecated: false
+  <Response>:
     post:
       tags:
         - Errors
       summary: Errors
-      operationId: ResponesError
+      operationId: ResponseError
       consumes:
         - application/json;charset=UTF-8
       parameters:
@@ -501,7 +530,7 @@ definitions:
         maxLength: 140
         example: Доп информация
       amount:
-        type: BigDecimal
+        type: number
         description: Сумма в рублях. Обязательно для заполнения, если Тип QR = QRDynamic
         example: 1110.00
       currency:
@@ -551,11 +580,11 @@ definitions:
         description: Назначение платежа.
         example: 'Назначение платежа'
       amount:
-        type: BigDecimal
+        type: number
         description: Сумма платежа
         example: 12399.00
       code:
-        type:
+        type: string
         description: Код сообщения
         maxLength: 140
         example: SUCCESS
@@ -571,7 +600,7 @@ definitions:
         enum:
           - RUB
       merchantId:
-        type: long
+        type: number
         format: int32
         description: Уникальный идентификатор партнёра, выданный банком
         example: 123
@@ -607,9 +636,9 @@ definitions:
         description: Идентификатор операции платежа в Райффайзенбанке
         example: 23
       qrExpirationDate:
-        type: YYYY-MM-DD ТHH24:MM:SS±HH:MM
+        type: string
+        format: YYYY-MM-DD ТHH24:MM:SS±HH:MM
         description: Время истечения срока жизни QR
-        maxLength:
         example: '2020-01-15T13:00:40+03:00'
     title: PaymentInfo
   QR:
@@ -645,7 +674,7 @@ definitions:
     type: object
     properties:
       amount:
-        type: BigDecimal
+        type: number
         description: Сумма возврата в рублях
         example: 150
       order:
@@ -664,7 +693,7 @@ definitions:
         maxLength: 255
         example: 'test_refundId_007'
       transactionId:
-        type: long
+        type: number
         description: Идентификатор операции платежа в Райффайзенбанке, используется для возвратов по статическому QR
         example: 41
     title: Refund
@@ -676,7 +705,7 @@ definitions:
         description: Код состояния http запроса
         example: 'SUCCESS'
       amount:
-        type: BigDecimal
+        type: number
         description: Сумма возврата в рублях
         example: 150
       refundStatus:
@@ -692,7 +721,7 @@ definitions:
     type: object
     properties:
       transactionId:
-        type: long
+        type: number
         description: Идентификатор операции платежа в Райффайзенбанке
         example: 41
       qrId:
@@ -706,14 +735,12 @@ definitions:
         maxLength: 12
         example: MA0000000279
       merchantId:
-        type: long
+        type: number
         description: Идентификатор ТСП в Райффайзенбанке
-        maxLength:
         example: 1780672001
       amount:
-        type: BigDecimal
+        type: number
         description: Сумма в рублях
-        maxLength:
         example: 10
       currency:
         type: string
@@ -721,9 +748,9 @@ definitions:
         maxLength: 3
         example: RUB
       transactionDate:
-        type: YYYY-MM-DD ТHH24:MM:SS±HH:MM
+        type: string
+        format: YYYY-MM-DD ТHH24:MM:SS±HH:MM
         description: Дата и время проведения платежа
-        maxLength:
         example: '2020-01-15T16:01:49.043924+03:00'
       paymentStatus:
         type: string
@@ -740,11 +767,19 @@ definitions:
         maxLength: 40
         example: testOrder
       createDate:
-        type: YYYY-MM-DD ТHH24:MM:SS±HH:MM
+        type: string
+        format: YYYY-MM-DD ТHH24:MM:SS±HH:MM
         description: Время формирования заявки
-        maxLength:
         example: '2020-01-15T13:00:40+03:00'
     title: Callback
+  CallBackSettings:
+    type: object
+    properties:
+      callbackUrl:
+        type: string
+        description: Url для приема уведомлений
+        example: 'https://yoururl.ru'
+    title: callbackSettings
   Errors:
     type: object
     properties:

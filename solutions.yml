@@ -73,7 +73,7 @@ tags:
 
      **Сайт:**
 
-     https://kassa.bifit.com/
+     https://kassa.bifit.com/partnerlead/
 
      **Сфера деятельности:**
 
@@ -157,7 +157,7 @@ tags:
 
      **Сайт:**
 
-     https://paykeeper.ru/
+     https://raiffeisen-processing.ru/
 
      **Сфера деятельности:**
 
@@ -231,6 +231,29 @@ tags:
 
      Инструкция по подключению и настройке СБП: https://ru.iiko.help/articles/#!special-iiko/reiffeisen-sbp
 
+  - name: Invoice
+    x-displayName: Invoice
+    description: |
+     <a href='images/logoinvoice.png' target='_blank'><img src='images/logoinvoice.png'></a>
+
+     **Сайт:**
+
+     https://raiffeisen.invoice.su/
+
+     **Сфера деятельности:**
+
+     Любые направления
+
+     **Описание:**
+
+     Настроит оплату в мессенджере Telegram для ваших сотрудников. Создаст защищенные чаты для каждой торговой точки, чтобы кассиры со своих смартфонов создавали QR-коды, показывали покупателям и проверяли статусы оплат
+
+     Подключит к программе лояльности, чтобы ваши клиенты могли получать бонусные баллы при оплате по QR-кодам у вас и в других точках
+
+     **Инструкция:**
+
+     https://invoice.su/integration
+
   - name: 1cbitrix
     x-displayName: 1c-Bitrix
     description: |
@@ -246,7 +269,7 @@ tags:
 
      **Партнер:**
 
-     https://paykeeper.ru/
+     https://raiffeisen-processing.ru/
 
      PayKeeper — один из крупнейших российских интеграторов, партнер Райффайзенбанка
      специализируется на интернет-эквайринге
@@ -281,7 +304,7 @@ tags:
 
      **Партнер:**
 
-     https://paykeeper.ru/
+     https://raiffeisen-processing.ru/
 
      PayKeeper — один из крупнейших российских интеграторов, партнер Райффайзенбанка
      специализируется на интернет-эквайринге
@@ -316,7 +339,7 @@ tags:
 
      **Партнер:**
 
-     https://paykeeper.ru/
+     https://raiffeisen-processing.ru/
 
      PayKeeper — один из крупнейших российских интеграторов, партнер Райффайзенбанка
      специализируется на интернет-эквайринге
@@ -351,7 +374,7 @@ tags:
 
      **Партнер:**
 
-     https://paykeeper.ru/
+     https://raiffeisen-processing.ru/
 
      PayKeeper — один из крупнейших российских интеграторов, партнер Райффайзенбанка
      специализируется на интернет-эквайринге
@@ -386,7 +409,7 @@ tags:
 
      **Партнер:**
 
-     https://paykeeper.ru/
+     https://raiffeisen-processing.ru/
 
      PayKeeper — один из крупнейших российских интеграторов, партнер Райффайзенбанка
      специализируется на интернет-эквайринге
@@ -421,7 +444,7 @@ tags:
 
      **Партнер:**
 
-     https://paykeeper.ru/
+     https://raiffeisen-processing.ru/
 
      PayKeeper — один из крупнейших российских интеграторов, партнер Райффайзенбанка
      специализируется на интернет-эквайринге
@@ -461,6 +484,7 @@ x-tagGroups:
       - paykeeper
       - directvision
       - iiko
+      - Invoice
   - name: Онлайн (ECOM и СБП)
     tags:
       - 1cbitrix

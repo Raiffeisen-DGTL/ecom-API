@@ -1,6 +1,7 @@
 ---
 swagger: '2.0'
 info:
+  version: 1.0.0
   title: Fast Payment System Integration API (SBP)
   contact: {
     email: ecom@raiffeisen.ru,
@@ -80,6 +81,7 @@ info:
     The response of any method contains a message code (code). If a logical error occurs during the processing of any request, the API will additionally return a description of the error (message).
 
     Production url: https://e-commerce.raiffeisen.ru
+
     Sandbox url: https://test.ecom.raiffeisen.ru
 
     ## Authorization
@@ -91,9 +93,9 @@ info:
 
     are authorized using the API secret key (SECRET_KEY). The authorization parameter is specified in the Authorization header, the value of which is formed as "Bearer SECRET_KEY".
 
-    You can view your sbpMerchantId and generate keys in your [personal account](https://rbo.raiffeisen.ru) in the "Accept payments" tab
+    You can view your sbpMerchantId and generate keys in your [personal account](https://www.rbo.raiffeisen.ru/acquiring/mcp#/) in the "Accept payments" tab
 
-    <a href='images/RBO_settings.jpg' target='_blank'><img src='images/RBO_settings.jpg'></a>
+    <div align=center><a href='images/createKey.png' target='_blank'><img src='images/createKey.png'></a></div>
 
     To generate a test data, please contact:  ecom@raiffeisen.ru
 
@@ -107,15 +109,12 @@ info:
     ## Testing app
 
     For a full payment testing cycle, Raiffeisenbank provides the opportunity to use a demo application for scanning QRC on behalf of the buyer at:
-    https://rfuture.site
-
-    * Login - demo
-    * Password - demo
+    https://pay.raif.ru/pay/rfuture/
 
     The specified address can be opened in the browser of any device with a camera. No additional software / plugins need to be installed. Then click on the SBP icon (if necessary, allow the browser access to the camera) and bring the QR code image to it.
     If the camera doesn't open, check the url, it has to have https.
 
-    ## Example Demo Screen
+    ### Example Demo Screen
 
     <div align=center><a href='images/example-sbp-1.png' target='_blank'><img src='images/example-sbp-1.png'></a></div>
 
@@ -135,11 +134,15 @@ tags:
         * money back - can be made both for the full amount of the payment, and for a partial one. However, the amount of partial refund requests should not exceed the total amount of the order,
         * receiving information on return.
   - name: Callback
-    x-displayName: 'Payment notice'
+    x-displayName: 'Payment notification'
     description: |
       To inform the merchant about the payments made, HTTP notifications to the address specified in its settings can be used.
 
-      The prod url can be specified in the [personal account] (https://rbo.raiffeisen.ru) in the "Accept payments" tab.
+      The prod url can be specified in the [personal account](https://www.rbo.raiffeisen.ru/acquiring/mcp#/) in the "Accept payments" tab.
+
+      <div align=center><a href='images/callback.png' target='_blank'><img src='images/callback.png'></a></div>
+
+      And prod or test url can be specified with [API.](#operation/postsettingsUrl)
 
       For a partner, a notification is an incoming POST request that uses a JSON structure.
 
@@ -462,12 +465,39 @@ paths:
             "$ref": "#/definitions/EmptyBody"
       deprecated: false
 
-  <Respons>:
+  /api/settings/v1/callback:
+    post:
+      tags:
+        - Callback
+      summary: Setting url for callback
+      operationId: postsettingsUrl
+      produces:
+        - application/json;charset=UTF-8
+      parameters:
+        - in: header
+          name: Authorization
+          type: string
+          description: Bearer secret key
+          required: true
+        - in: body
+          name: callbackUrl
+          description: Url for callback
+          required: true
+          schema:
+            "$ref": "#/definitions/CallBackSettings"
+      responses:
+        "200":
+          description: Answer.
+          schema:
+            "$ref": "#/definitions/CallBackSettings"
+      deprecated: false
+
+  <Response>:
     post:
       tags:
         - Errors
       summary: Errors
-      operationId: ResponesError
+      operationId: ResponseError
       consumes:
         - application/json;charset=UTF-8
       parameters:
@@ -501,7 +531,7 @@ definitions:
         maxLength: 140
         example: Additional information
       amount:
-        type: BigDecimal
+        type: number
         description: Amount in rubles. Mandatory if QR Type = QRDynamic
         example: 1110.00
       currency:
@@ -551,11 +581,11 @@ definitions:
         description: Purpose of payment.
         example: 'Purpose of payment'
       amount:
-        type: BigDecimal
+        type: number
         description: Amount of payment
         example: 12399.00
       code:
-        type:
+        type: string
         description: Message code
         maxLength: 140
         example: SUCCESS
@@ -571,7 +601,7 @@ definitions:
         enum:
           - RUB
       merchantId:
-        type: long
+        type: number
         format: int32
         description: Unique partner identifier issued by the bank
         example: 123
@@ -607,9 +637,9 @@ definitions:
         description: Raiffeisenbank payment transaction identifier
         example: 23
       qrExpirationDate:
-        type: YYYY-MM-DD ТHH24:MM:SS±HH:MM
+        type: string
+        format: YYYY-MM-DD ТHH24:MM:SS±HH:MM
         description: Expiration date QR
-        maxLength:
         example: '2020-01-15T13:00:40+03:00'
     title: PaymentInfo
   QR:
@@ -645,7 +675,7 @@ definitions:
     type: object
     properties:
       amount:
-        type: BigDecimal
+        type: number
         description: Refund amount in rubles
         example: 150
       order:
@@ -664,7 +694,7 @@ definitions:
         maxLength: 255
         example: 'test_refundId_007'
       transactionId:
-        type: long
+        type: number
         description: Raiffeisenbank payment transaction identifier used for static QR returns
         example: 41
     title: Refund
@@ -676,7 +706,7 @@ definitions:
         description: HTTP request status code
         example: 'SUCCESS'
       amount:
-        type: BigDecimal
+        type: number
         description: Refund amount in rubles
         example: 150
       refundStatus:
@@ -692,7 +722,7 @@ definitions:
     type: object
     properties:
       transactionId:
-        type: long
+        type: number
         description: Raiffeisenbank payment transaction identifier
         example: 41
       qrId:
@@ -706,14 +736,12 @@ definitions:
         maxLength: 12
         example: "MA0000000279"
       merchantId:
-        type: long
+        type: number
         description: Merchant identifier in Raiffeisenbank
-        maxLength:
         example: "1780672001"
       amount:
-        type: BigDecimal
+        type: number
         description: Amount in rubles
-        maxLength:
         example: 10
       currency:
         type: string
@@ -721,9 +749,9 @@ definitions:
         maxLength: 3
         example: "RUB"
       transactionDate:
-        type: YYYY-MM-DD ТHH24:MM:SS±HH:MM
+        type: string
+        format: YYYY-MM-DD ТHH24:MM:SS±HH:MM
         description: Date and time of payment
-        maxLength:
         example: "2020-01-15T16:01:49.043924+03:00"
       paymentStatus:
         type: string
@@ -740,11 +768,19 @@ definitions:
         maxLength: 40
         example: "string"
       createDate:
-        type: YYYY-MM-DD ТHH24:MM:SS±HH:MM
+        type: string
+        format: YYYY-MM-DD ТHH24:MM:SS±HH:MM
         description: Application Formation Time
-        maxLength:
         example: '2020-01-15T13:00:40+03:00'
     title: Callback
+  CallBackSettings:
+    type: object
+    properties:
+      callbackUrl:
+        type: string
+        description: Url for callback
+        example: 'https://yoururl.ru'
+    title: callbackSettings
   Errors:
     type: object
     properties:
