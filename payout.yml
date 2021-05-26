@@ -142,6 +142,7 @@ definitions:
       id:
         type: string
         description: Aa-Zz0-9_-
+        maxLength: 20
         example: 1404fhr7i272a2
       account:
         type: string
@@ -233,6 +234,7 @@ definitions:
           id:
             type: string
             description: Aa-Zz0-9_-
+            maxLength: 20
             example: 1404fhr7i272a2
           account:
             type: string
@@ -378,6 +380,7 @@ definitions:
       id:
         type: string
         description: Aa-Zz0-9_-
+        maxLength: 20
         example: 1404fhr7i272a2
       account:
         type: string
