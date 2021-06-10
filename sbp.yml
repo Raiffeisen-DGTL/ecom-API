@@ -1,7 +1,6 @@
 ---
 swagger: '2.0'
 info:
-  version: 1.0.0
   title: API интеграции Системы Быстрых Платежей (СБП)
   contact: {
     email: ecom@raiffeisen.ru,
@@ -12,6 +11,7 @@ info:
     backgroundColor: '#FFFFFF'
     altText: Raiff logo
   description: |
+
     Свои предложения и идеи о документации можно оставить в репозитории по адресу: https://github.com/Raiffeisen-DGTL/ecom-API/blob/master/sbp.yml
 
     # Подключение к СБП
@@ -119,9 +119,9 @@ info:
     <div align=center><a href='images/example-sbp-1.png' target='_blank'><img src='images/example-sbp-1.png'></a></div>
 
 servers:
-  - url: https://e-commerce.raiffeisen.ru
+  - url: https://e-commerce.raiffeisen.ru/api
     description: Production API
-  - url: https://test.ecom.raiffeisen.ru
+  - url: https://test.ecom.raiffeisen.ru/api
     description: Sandbox API
 tags:
   - name: qr-controller
@@ -217,6 +217,12 @@ tags:
       ERROR.INVALID_REQUEST | Сумма возврата не может быть меньше 1 копейки
       ERROR.REFUND_NOT_FOUND | Возврат с refundId *** не найден
 
+  - name: 02.06.2021
+    x-displayName: '02.06.2021'
+    description: |
+      * Добавили [новый метод отмены QR-кода](#operation/cancelUsingPOST_1)
+      * Появилась [новая версия запроса на получения данных по QR-коду](#operation/getStatusUsingGET)
+
 x-tagGroups:
   - name: API
     tags:
@@ -229,9 +235,11 @@ x-tagGroups:
   - name: Справочник
     tags:
       - Errors
-
+  - name: История изменений
+    tags:
+      - 02.06.2021
 paths:
-  /api/sbp/v1/qr/register:
+  /sbp/v1/qr/register:
     post:
       tags:
         - qr-controller
@@ -282,7 +290,38 @@ paths:
 
             QRUrl response = client.registerQR(qrCode);
 
-  /api/sbp/v1/qr/{qrId}/info:
+  /sbp/v2/qrs/{qrId}:
+    delete:
+      tags:
+        - qr-controller
+      summary: Отмена QR-кода
+      operationId: cancelUsingPOST_1
+      consumes:
+        - application/json;charset=UTF-8
+      produces:
+        - application/json;charset=UTF-8
+      parameters:
+        - in: header
+          name: Authorization
+          type: string
+          description: Bearer secret key
+          required: true
+        - name: qrId
+          in: path
+          description: qrId
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Ответ с успешным результатом.
+          schema:
+            "$ref": "#/definitions/EmptyBody"
+      deprecated: false
+      x-codeSamples:
+        - lang: 'cURL'
+          source: |
+            curl --location --request DELETE 'https://test.ecom.raiffeisen.ru/api/sbp/v2/qrs/ADAC306DDBF443CA94EBE3FA85CA4872'\
+            --header 'Authorization: Bearer eyJ0eXA***'
     get:
       tags:
         - qr-controller
@@ -305,8 +344,39 @@ paths:
         '200':
           description: Ответ с успешным результатом.
           schema:
-            "$ref": "#/definitions/QR"
+            "$ref": "#/definitions/QR2"
       deprecated: false
+      x-codeSamples:
+        - lang: 'cURL'
+          source: |
+            curl --location --request GET 'https://test.ecom.raiffeisen.ru/api/sbp/v2/qrs/AS6E5A7F9E3A4E648C536EC930AECDF6' \
+            --header 'Authorization: Bearer eyJ0eXA***'
+
+  /sbp/v1/qr/{qrId}/info:
+    get:
+      tags:
+        - qr-controller
+      summary: Получение данных по зарегистрированному ранее QR-коду
+      operationId: getStatusUsingGETOld
+      produces:
+        - application/json;charset=UTF-8
+      parameters:
+        - in: header
+          name: Authorization
+          type: string
+          description: Bearer secret key
+          required: true
+        - name: qrId
+          in: path
+          description: qrId
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Ответ с успешным результатом.
+          schema:
+            "$ref": "#/definitions/QR"
+      deprecated: true
       x-codeSamples:
         - lang: 'cURL'
           source: |
@@ -318,7 +388,7 @@ paths:
             QRId id = new QRId(qrIdString);
             QRUrl response = client.getQRInfo(id);
 
-  /api/sbp/v1/qr/{qrId}/payment-info:
+  /sbp/v1/qr/{qrId}/payment-info:
     get:
       tags:
         - qr-controller
@@ -354,7 +424,7 @@ paths:
             QRId id = new QRId(qrIdString);
             PaymentInfo response = client.getPaymentInfo(id);
 
-  /api/sbp/v1/refund:
+  /sbp/v1/refund:
     post:
       tags:
         - qr-controller
@@ -404,7 +474,7 @@ paths:
 
             RefundStatus response = client.refundPayment(refundInfo);
 
-  /api/sbp/v1/refund/{refundId}:
+  /sbp/v1/refund/{refundId}:
     get:
       tags:
         - qr-controller
@@ -459,13 +529,13 @@ paths:
           schema:
             "$ref": "#/definitions/Callback"
       responses:
-        200:
+        '200':
           description: Ответ с успешным результатом.
           schema:
             "$ref": "#/definitions/EmptyBody"
       deprecated: false
 
-  /api/settings/v1/callback:
+  /settings/v1/callback:
     post:
       tags:
         - Callback
@@ -506,11 +576,9 @@ paths:
           schema:
             "$ref": "#/definitions/Errors"
       responses:
-        200:
-          description: Ответ с успешным результатом.
+        "200":
           schema:
             "$ref": "#/definitions/EmptyBody"
-      deprecated: false
 definitions:
   Payment:
     type: object
@@ -665,6 +733,40 @@ definitions:
         maxLength: 999
         example: 'https://e-commerce.raiffeisen.ru/api/sbp/v1/qr/AD100004BAL7227F9BNP6KNE007J9B3K/image'
     title: QR
+  QR2:
+    type: object
+    properties:
+      qrId:
+        type: string
+        description: Идентификатор зарегистрированного QRС в СБП
+        maxLength: 32
+        example: 'AD100004BAL7227F9BNP6KNE007J9B3K'
+      qrStatus:
+        type: string
+        description: Код состояния QR кода
+        enum:
+          - NEW
+          - IN_PROGRES
+          - CANCELLED
+          - EXPIRED
+          - PAID
+        example: NEW
+      qrExpirationDate:
+        type: string
+        format: YYYY-MM-DD ТHH24:MM:SS±HH:MM
+        description: Опциональный параметр для указания срока действия QR-кода. При заполнении не может быть меньше текущей даты и времени. После истечения срока действия QR-кода оплату по нему провести нельзя. Если Тип QR = QRDynamic и поле не заполнено, срок действия будет 3 суток. ISO 8601
+        example: '2023-07-22T09:14:38+03:00'
+      payload:
+        type: string
+        description: Данные для самостоятельной генерации изображения зарегистрированного QR-кода в СБП. При открытии с мобильного устройства, запускает банковское приложение клиента или список выбора банка.
+        maxLength: 999
+        example: 'https://qr.nspk.ru/AD100004BAL7227F9BNP6KNE007J9B3K?type=02&bank=100000000007&sum=1&cur=RUB&crc=AB75'
+      qrUrl:
+        type: string
+        description: URL с изображением зарегистрированного QR-кода в СБП
+        maxLength: 999
+        example: 'https://e-commerce.raiffeisen.ru/api/sbp/v1/qr/AD100004BAL7227F9BNP6KNE007J9B3K/image'
+    title: QR
   Refund:
     required:
       - amount
@@ -690,7 +792,7 @@ definitions:
       refundId:
         type: string
         description: Уникальный идентификатор запроса на возврат
-        maxLength: 255
+        maxLength: 40
         example: 'test_refundId_007'
       transactionId:
         type: number
@@ -793,3 +895,4 @@ definitions:
         example: 'QR не был оплачен'
     title: Error
   EmptyBody:
+    type: object
