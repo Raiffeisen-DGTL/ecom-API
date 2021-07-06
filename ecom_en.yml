@@ -243,6 +243,13 @@ paths:
             - ONLY_SBP
             - ONLY_ACQUIRING
           description: Select a payment method
+        - in: query
+          name: locale
+          type: string
+          enum:
+            - ru
+            - en
+          description: Langueage on form
       responses:
         '200':
           description: Billing page.

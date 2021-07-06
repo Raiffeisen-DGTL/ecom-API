@@ -243,6 +243,13 @@ paths:
             - ONLY_SBP
             - ONLY_ACQUIRING
           description: Выбор метода оплаты
+        - in: query
+          name: locale
+          type: string
+          enum:
+            - ru
+            - en
+          description: Выбор языка формы , по умолчанию ru
       responses:
         '200':
           description: Платежная страница.

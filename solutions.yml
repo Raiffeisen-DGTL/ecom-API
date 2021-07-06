@@ -247,6 +247,33 @@ tags:
 
      https://invoice.su/integration
 
+  - name: joinposter
+    x-displayName: Joinposter
+    description: |
+     <a href='images/logoinvoice.png' target='_blank'><img src='images/logoinvoice.png'></a>
+
+     **Сайт:**
+
+     [https://joinposter.com](https://joinposter.com)
+
+     **Сфера деятельности:**
+
+     Ресторан, Кафе, Столовая, Кофейня, Фудтрак
+
+     **Описание:**
+
+     Технологический партнер Райффайзенбанк компания Invoice реализовала интеграцию с Joinposter для всех клиентов Райффайзенбанк.
+
+     Joinposter – это облачная программа, включающая в себя функционал программного обеспечения для онлайн-кассы согласно 54-ФЗ,  товарного и складского учета, приема заказов, аналитики, управления продажами и маркетинга
+
+     **Инструкция:**
+
+     1. Открыть счет в Райффайзенбанк
+
+     2. Оставить заявку на подключение к сервису на лендинге партнера https://raiffeisen.invoice.su/
+
+     3. Установить модуль https://joinposter.com/applications/invoice
+
   - name: 1cbitrix
     x-displayName: 1c-Bitrix
     description: |
@@ -478,6 +505,7 @@ x-tagGroups:
       - directvision
       - iiko
       - Invoice
+      - joinposter
   - name: Онлайн (ECOM и СБП)
     tags:
       - 1cbitrix
