@@ -47,13 +47,15 @@ info:
     * Интегрироваться с  операторам фискальных данных [АТОЛ.](https://online.atol.ru/lk/Account/Register?partnerUid=18583cd5-dae2-4fb1-a98b-f4b80d891eb0)
     * Воспользоваться решениями [Paykeeper.](https://raiffeisen-processing.ru)
 
-    # Общая схема работы
+    # Общие схемы работы
+
+    ## Схема работы с формой
 
     B случае если прием платежей планируется на сайте или в мобильном приложение рекомендуем использовать [протокол с отображением QR на нашей форме.](https://e-commerce.raiffeisen.ru/api/doc/ecom.html)
 
-    Схема работы с формой:
-
     <a href='images/E-commerce Raiffeisenbank scheme.png' target='_blank'><img src='images/E-commerce Raiffeisenbank scheme.png'></a>
+
+    ## Схема работы по прямому протоколу СБП
 
     Если прием платежей реализуется в физических точках или по каким либо причинам вам не подходит решение с нашей формой , можете использовать протокол описанный ниже.
 
@@ -61,6 +63,23 @@ info:
 
     <a href='images/SBP API Raiffeisenbank scheme.png' target='_blank'><img src='images/SBP API Raiffeisenbank scheme.png'></a>
 
+    ## Схема работы с подписками
+
+    Вы можете предлагать клиенту привязать оплату по СБП к программе лояльности или к аккаунту в вашем сервисе. Для этого вы можете сгенерировать QR и отобразить его клиенту, либо перенаправить его на специальную ссылку, которая есть в ответе на запрос генерации QR на подписку.
+
+    После по уникальному идентификатору подписки вы можете обращаться за безакцептным списание средств с клиента за ваши товары и услуги.
+
+    <a href='images/subscriptions.png' target='_blank'><img src='images/subscriptions.png'></a>
+
+    ## Схема работа по подпискам с оплатой
+
+    Так же есть схема когда одним запросом получается QR на получение оплаты и заведения подписки.
+
+    В данном случае клиент проводит оплату и после ему отображается окно с предложением подключения подписки.
+
+    Клиент может провести оплату, но отказаться от подписки. Так же клиент может провести оплату с приложения банка, который не подклбчен к сервису подписок.
+
+    <a href='images/subscriptionsandpayment.png' target='_blank'><img src='images/subscriptionsandpayment.png'></a>
     # Готовые решения
 
     ## SDK
@@ -133,8 +152,23 @@ tags:
         * получение данных по платежу,
         * возврат денежных средств - может быть выполнен в любое время после проведения оплаты на полную сумму платежа или частичную. Однако сумма частичных запросов на возврат не должна превышать общую сумму заказа.
         * получение информации по возврату.
+
+        [Схема взаимодействия.](#section/Obshaya-shema-raboty/Shema-raboty-po-pryamomu-protokolu-SBP)
+
+  - name: qr-subscription
+    x-displayName: 'Подписки'
+    description: |
+      Для подключения подписок необходимо дополнительная настройка со стороны банка.
+        Для реализации возможны два сценария :
+        * отдельно подписка с последующими платежами
+
+        [Схема взаимодействия.](#section/общие-схемы-работы/схема-работы-с-подписками)
+        * подписка с оплатой
+
+        [Схема взаимодействия.](#section/общие-схемы-работы/схема-работа-по-подпискам-с-оплатой)
+
   - name: Callback
-    x-displayName: 'Уведомление о платеже'
+    x-displayName: 'Уведомления'
     description: |
       Для информирования ТСП о проведенных платежах могут использоваться HTTP-уведомления на адрес, указанный в его настройках.
 
@@ -223,10 +257,16 @@ tags:
       * Добавили [новый метод отмены QR-кода](#operation/cancelUsingPOST_1)
       * Появилась [новая версия запроса на получения данных по QR-коду](#operation/getStatusUsingGET)
 
+  - name: 06.07.2021
+    x-displayName: '06.07.2021'
+    description: |
+      * Реализовали [сервис подписок](#operation/qr-subscription)
+
 x-tagGroups:
   - name: API
     tags:
       - qr-controller
+      - qr-subscription
       - Callback
   - name: Сверка
     tags:
@@ -238,12 +278,63 @@ x-tagGroups:
   - name: История изменений
     tags:
       - 02.06.2021
+      - 06.07.2021
 paths:
+  /sbp/v1/subscriptions:
+    post:
+      tags:
+        - qr-subscription
+      summary: Создание QR для подписки
+      operationId: postSubscriptions
+      consumes:
+        - application/json;charset=UTF-8
+      produces:
+        - application/json;charset=UTF-8
+      parameters:
+        - in: body
+          name: subscription
+          description: Метод позволяет зарегистрировать QR для последующей привязки счета клиента в выбранном банке. Для мобильного интерфейса используется диплинк, который возвращается в qr.payload. Создание подписки выполняется без авторизации, что позволяет использовать метод на сайте и в мобильном приложении.
+          required: true
+          schema:
+            "$ref": "#/definitions/Subscription"
+      responses:
+        "200":
+          description: Ответ с успешным результатом.
+          schema:
+            "$ref": "#/definitions/ResSubscription"
+      deprecated: false
+
+  /sbp/v1/subscriptions/{subscriptionId}:
+    get:
+      tags:
+        - qr-subscription
+      summary: Получение информации по подписке
+      operationId: getSubscriptionsInfo
+      produces:
+        - application/json;charset=UTF-8
+      parameters:
+        - in: header
+          name: Authorization
+          type: string
+          description: Bearer secret key
+          required: true
+        - name: subscriptionId
+          in: path
+          description: Идентификатор подписки
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Ответ с успешным результатом.
+          schema:
+            "$ref": "#/definitions/SubscriptionsInfo"
+      deprecated: false
+
   /sbp/v1/qr/register:
     post:
       tags:
         - qr-controller
-      summary: Регистрация QR-кода
+      summary: Регистрация QR
       operationId: registerUsingPOST_1
       consumes:
         - application/json;charset=UTF-8
@@ -252,7 +343,7 @@ paths:
       parameters:
         - in: body
           name: payment
-          description: Регистрация QR кода выполяется без авторизации, что позволяет сгенерировать его на сайте или приложении.
+          description: Регистрация QR кода выполяется без авторизации, что позволяет сгенерировать его на сайте или приложении. Данный метод позволяет генерировать как статический QR кода , так и динамечкие QR кода. Так же с помощью данного метода вы можете сгенерировать QR код для оплаты с подпиской.
           required: true
           schema:
             "$ref": "#/definitions/Payment"
@@ -268,7 +359,7 @@ paths:
             curl --location --request POST 'https://test.ecom.raiffeisen.ru/api/sbp/v1/qr/register' \
             --header 'Content-Type: application/json' \
             --data-raw '{
-            "account": 40700000000000000000,
+            "account": "40700000000000000000",
             "additionalInfo": "Доп информация",
             "amount": 1110,
             "currency": "RUB",
@@ -294,7 +385,7 @@ paths:
     delete:
       tags:
         - qr-controller
-      summary: Отмена QR-кода
+      summary: Отмена QR кода
       operationId: cancelUsingPOST_1
       consumes:
         - application/json;charset=UTF-8
@@ -513,7 +604,7 @@ paths:
 
             RefundStatus response = client.getRefundInfo(refundId);
 
-  <URL обработчика уведомлений на стороне партнёра>:
+  <URL обработчика уведомлений по платежам на стороне партнёра>:
     post:
       tags:
         - Callback
@@ -528,6 +619,28 @@ paths:
           required: true
           schema:
             "$ref": "#/definitions/Callback"
+      responses:
+        '200':
+          description: Ответ с успешным результатом.
+          schema:
+            "$ref": "#/definitions/EmptyBody"
+      deprecated: false
+
+  <URL обработчика уведомлений о подписках на стороне партнёра>:
+    post:
+      tags:
+        - Callback
+      summary: Уведомление о статусе подписки
+      operationId: sendCallbackSubscriptions
+      consumes:
+        - application/json;charset=UTF-8
+      parameters:
+        - name: CallbackSubscriptions
+          in: body
+          description: Callback
+          required: true
+          schema:
+            "$ref": "#/definitions/CallbackSubscriptions"
       responses:
         '200':
           description: Ответ с успешным результатом.
@@ -579,6 +692,71 @@ paths:
         "200":
           schema:
             "$ref": "#/definitions/EmptyBody"
+
+  /sbp/v1/subscriptions/{subscriptionId}/orders:
+    post:
+      tags:
+        - qr-subscription
+      summary: Запрос на совершение платежа по подписке
+      operationId: postSubscriptionsPayment
+      consumes:
+        - application/json;charset=UTF-8
+      produces:
+        - application/json;charset=UTF-8
+      parameters:
+        - in: header
+          name: Authorization
+          type: string
+          description: Bearer secret key
+          required: true
+        - name: subscriptionId
+          in: path
+          description: Идентификатор подписики
+          required: true
+          type: string
+        - in: body
+          name: subscription
+          description: Метод позволяет создать заказ и инициировать списание со счета клиента в рамках созданной подписки. При успешном списании будет направлено стандартное уведомление об оплате.
+          required: true
+          schema:
+            "$ref": "#/definitions/SubscriptionPayment"
+      responses:
+        "200":
+          description: Ответ с успешным результатом.
+          schema:
+            "$ref": "#/definitions/SubscriptionsPaymentInfo"
+      deprecated: false
+
+  /sbp/v1/subscriptions/{subscriptionId}/orders/{id}:
+    get:
+      tags:
+        - qr-subscription
+      summary: Проверка статуса платежа по подписке
+      operationId: getSubscriptionsPaymentInfo
+      produces:
+        - application/json;charset=UTF-8
+      parameters:
+        - in: header
+          name: Authorization
+          type: string
+          description: Bearer secret key
+          required: true
+        - name: subscriptionId
+          in: path
+          description: Идентификатор подписки
+          required: true
+          type: string
+        - name: id
+          in: path
+          description: Идентификатор заказа
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Ответ с успешным результатом.
+          schema:
+            "$ref": "#/definitions/SubscriptionsPaymentInfo"
+      deprecated: false
 definitions:
   Payment:
     type: object
@@ -635,6 +813,17 @@ definitions:
         description: Идентификатор зарегистрированного партнёра в СБП
         maxLength: 12
         example: MA0000000552
+      subscription:
+        type: object
+        properties:
+          id:
+            type: string
+            description: Идентификатор подписки.
+            example: '120059'
+          purpose:
+            type: string
+            description: Описание подписки которое увидит клиент в приложении банка.
+            example: Подписка на услуги
     title: Payment
   PaymentInfo:
     type: object
@@ -669,6 +858,7 @@ definitions:
           - RUB
       merchantId:
         type: number
+        format: int32
         description: Уникальный идентификатор партнёра, выданный банком
         example: 123
       order:
@@ -745,7 +935,7 @@ definitions:
         description: Код состояния QR кода
         enum:
           - NEW
-          - IN_PROGRESS
+          - IN_PROGRES
           - CANCELLED
           - EXPIRED
           - PAID
@@ -895,3 +1085,205 @@ definitions:
     title: Error
   EmptyBody:
     type: object
+  Subscription:
+    type: object
+    properties:
+      id:
+        type: string
+        description: Идентификатор подписки.
+        example: '120059'
+      subscriptionPurpose:
+        type: string
+        description: Описание подписки которое увидит клиент в приложении банка.
+        example: Подписка на услуги
+      sbpMerchantId:
+        description: Идентификатор зарегистрированного партнёра в СБП
+        maxLength: 12
+        example: MA0000000552
+  ResSubscription:
+    type: object
+    properties:
+      id:
+        type: string
+        description: Идентификатор подписки.
+        example: '120059'
+      createDate:
+        type: string
+        format: date-time
+        description: Время формирования заявки
+        example: '2020-01-31T09:14:38.107227+03:00'
+      status:
+        enum:
+          - INACTIVE
+          - SUBSCRIBED
+          - UNSUBSCRIBED
+        example: 'INACTIVE'
+      qr:
+        type: object
+        properties:
+          id:
+            type: string
+            description: Уникальный идентификатор QR кода
+            example: AD100004BAL7227F9BNP6KNE007J9B3K
+          payload:
+            type: string
+            description: Данные для самостоятельной генерации изображения зарегистрированного QR-кода в СБП. При открытии с мобильного устройства, запускает банковское приложение клиента или список выбора банка.
+            example: 'https://sub.nspk.ru/AS3D33FC7B034DEEA8A365142E1DE737?type=03&bank=10000001&crc=C08B'
+          url:
+            type: string
+            description: URL с изображением зарегистрированного QR-кода в СБП
+            example: 'https://test.ecom.raiffeisen.ru/api/sbp/v1/qr/AS3D33FC7B034DEEA8A365142E1DE737/image'
+  SubscriptionsInfo:
+    type: object
+    properties:
+      id:
+        type: string
+        description: Идентификатор подписки.
+        example: '120059'
+      bank:
+        type: string
+        description: Идентификатор банка в котором осуществленна подписка.
+        example: 'someBank'
+      createDate:
+        type: string
+        format: date-time
+        description: Время формирования заявки
+        example: '2020-01-31T09:14:38.107227+03:00'
+      status:
+        enum:
+          - INACTIVE
+          - SUBSCRIBED
+          - UNSUBSCRIBED
+        example: 'INACTIVE'
+      qr:
+        type: object
+        properties:
+          id:
+            type: string
+            description: Уникальный идентификатор QR кода
+            example: AD100004BAL7227F9BNP6KNE007J9B3K
+          payload:
+            type: string
+            description: Данные для самостоятельной генерации изображения зарегистрированного QR-кода в СБП. При открытии с мобильного устройства, запускает банковское приложение клиента или список выбора банка.
+            example: 'https://sub.nspk.ru/AS3D33FC7B034DEEA8A365142E1DE737?type=03&bank=10000001&crc=C08B'
+          url:
+            type: string
+            description: URL с изображением зарегистрированного QR-кода в СБП
+            example: 'https://test.ecom.raiffeisen.ru/api/sbp/v1/qr/AS3D33FC7B034DEEA8A365142E1DE737/image'
+  CallbackSubscriptions:
+    type: object
+    properties:
+      event:
+        type: string
+        description: Тип уведомления.
+        example: 'subscription'
+      subscription:
+        type: object
+        properties:
+          id:
+            type: string
+            description: Идентификатор подписки.
+            example: '120059'
+          bank:
+            type: string
+            description: Идентификатор банка в котором осуществленна подписка.
+            example: 'someBank'
+          createDate:
+            type: string
+            format: date-time
+            description: Время формирования заявки
+            example: '2020-01-31T09:14:38.107227+03:00'
+          status:
+            example: 'SUBSCRIBED'
+          qr:
+            type: object
+            properties:
+              id:
+                type: string
+                description: Уникальный идентификатор QR кода
+                example: AD100004BAL7227F9BNP6KNE007J9B3K
+              payload:
+                type: string
+                description: Данные для самостоятельной генерации изображения зарегистрированного QR-кода в СБП. При открытии с мобильного устройства, запускает банковское приложение клиента или список выбора банка.
+                example: 'https://sub.nspk.ru/AS3D33FC7B034DEEA8A365142E1DE737?type=03&bank=10000001&crc=C08B'
+              url:
+                type: string
+                description: URL с изображением зарегистрированного QR-кода в СБП
+                example: 'https://test.ecom.raiffeisen.ru/api/sbp/v1/qr/AS3D33FC7B034DEEA8A365142E1DE737/image'
+  SubscriptionPayment:
+    type: object
+    properties:
+      account:
+        type: string
+        description: Счет для зачисления. Параметр используется, если необходимо разносить платежи на разные счета. Не используется в тестовой среде.
+        maxLength: 20
+        example: 40700000000000000001
+      additionalInfo:
+        type: string
+        description: Дополнительная информация, заполняемая по желанию партнёра. Может быть доступна для пользователя в зависимости от банка.
+        maxLength: 140
+        example: Доп информация
+      amount:
+        type: number
+        description: Сумма в рублях.
+        example: 1110.00
+      currency:
+        type: string
+        description: Валюта платежа.
+        enum:
+          - RUB
+        maxLength: 3
+        example: RUB
+      order:
+        type: string
+        description: Уникальный идентификатор заказа в системе партнёра. Формат A-z0-9-',"_:.,
+        maxLength: 40
+        example: 1-22-333
+      paymentDetails:
+        type: string
+        description: Назначение платежа. Необязательно для заполнения.
+        maxLength: 185
+        example: Назначение платежа
+    title: SubscriptionPayment
+  SubscriptionsPaymentInfo:
+    type: object
+    properties:
+      additionalInfo:
+        type: string
+        description: Дополнительная информация, заполняемая по желанию партнёра при генерации QR-кода. Может быть доступна для пользователя в зависимости от банка.
+        example: 'Доп информация'
+      paymentDetails:
+        type: string
+        description: Назначение платежа.
+        example: 'Назначение платежа'
+      amount:
+        type: number
+        description: Сумма платежа
+        example: 12399.00
+      currency:
+        type: string
+        description: Валюта платежа
+        maxLength: 3
+        enum:
+          - RUB
+      order:
+        type: string
+        description: Уникальный идентификатор заказа в системе партнёра.
+        example: '282a60f8-dd75-4286-bde0-af321dd081b3'
+      paymentStatus:
+        type: string
+        description: Статус платежа
+        enum:
+          - SUCCESS
+          - DECLINED
+          - IN_PROGRESS
+        example: SUCCESS
+      qrId:
+        type: string
+        description: Уникальный идентификатор QRC, выданный СБП при запросе генерации QRC
+        example: AD100051KNSNR64I98CRUJUASC9M72QT
+      sbpMerchantId:
+        type: string
+        description: Уникальный идентификатор партнёра, выданный СБП
+        example: MA0000000552
+    title: SubscriptionsPaymentInfo

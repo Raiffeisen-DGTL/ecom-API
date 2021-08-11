@@ -49,17 +49,34 @@ info:
 
     # General scheme of work
 
+    ## Working with a form:
     To accept payments online on the website or in the mobile application, you can use [QR-code opening protocol in the form.](https://e-commerce.raiffeisen.ru/api/doc/ecom_en.html)
-
-    This scheme shows working with a form:
 
     <a href='images/E-commerce Raiffeisenbank scheme_en.png' target='_blank'><img src='images/E-commerce Raiffeisenbank scheme_en.png'></a>
 
-    To receive funds in physical stores, you can use the protocol below.
+    ## White labele SBP API
 
     The figure below shows the scheme of information exchange with a partner when making a payment using a QR-code.
 
     <a href='images/SBP API Raiffeisenbank scheme_en.png' target='_blank'><img src='images/SBP API Raiffeisenbank scheme_en.png'></a>
+
+    ## Subscription scheme
+
+    You can offer the client to link the SBP payment to the loyalty program or to an account in your service. To do this, you can generate a QR code and display it to the client or redirect it via a special link that is located in the response to the request to create a QR code for a subscription.
+
+    After that, using the unique subscription identifier, you can apply for debiting funds from the client for your goods and services without the client's acceptance.
+
+    <a href='images/subscriptions.png' target='_blank'><img src='images/subscriptions.png'></a>
+
+    ## Payment and subscription scheme
+
+    There is also a scheme in which one request receives a QR code to receive payment and subscription.
+
+    In this case, the client makes a payment, after which a window is displayed with a proposal to activate the subscription.
+
+    The customer can pay but unsubscribe. Also, the client can make a payment from a bank application that does not support subscriptions.
+
+    <a href='images/subscriptionsandpayment.png' target='_blank'><img src='images/subscriptionsandpayment.png'></a>
 
     # Ready solutions
 
@@ -133,6 +150,17 @@ tags:
         * receipt of payment data,
         * money back - can be made both for the full amount of the payment, and for a partial one. However, the amount of partial refund requests should not exceed the total amount of the order,
         * receiving information on return.
+  - name: qr-subscription
+    x-displayName: 'Subscription'
+    description: |
+      To enable the subscription, additional configuration is required from the bank.
+        There are two possible scenarios for implementation:
+        * Subscription
+
+        [Scheme.](#section/General-scheme-of-work/Subscription-scheme)
+        * Payment and subscription
+
+        [Scheme.](#section/General-scheme-of-work/Payment-and-subscription-scheme)
   - name: Callback
     x-displayName: 'Payment notification'
     description: |
@@ -223,10 +251,16 @@ tags:
       * Add [new method for cancel the QR-code](#operation/cancelUsingPOST_1)
       * Updated [version of the mehod: "Receiving data on a previously registered QR code"](#operation/getStatusUsingGET)
 
+  - name: 06.07.2021
+    x-displayName: '06.07.2021'
+    description: |
+      * Add [subscriptions service](#operation/qr-subscription)
+
 x-tagGroups:
   - name: API
     tags:
       - qr-controller
+      - qr-subscription
       - Callback
   - name: Comparison
     tags:
@@ -238,8 +272,59 @@ x-tagGroups:
   - name: Change history
     tags:
       - 02.06.2021
+      - 06.07.2021
 
 paths:
+  /sbp/v1/subscriptions:
+    post:
+      tags:
+        - qr-subscription
+      summary: Create QR for subscription
+      operationId: postSubscriptions
+      consumes:
+        - application/json;charset=UTF-8
+      produces:
+        - application/json;charset=UTF-8
+      parameters:
+        - in: body
+          name: subscription
+          description: Method for create subscription QR-code. Use qr.payload for mobile version site or app.
+          required: true
+          schema:
+            "$ref": "#/definitions/Subscription"
+      responses:
+        "200":
+          description: Answer with a successful result.
+          schema:
+            "$ref": "#/definitions/ResSubscription"
+      deprecated: false
+
+  /sbp/v1/subscriptions/{subscriptionId}:
+    get:
+      tags:
+        - qr-subscription
+      summary: Get information of subscription
+      operationId: getSubscriptionsInfo
+      produces:
+        - application/json;charset=UTF-8
+      parameters:
+        - in: header
+          name: Authorization
+          type: string
+          description: Bearer secret key
+          required: true
+        - name: subscriptionId
+          in: path
+          description: Id subscription
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Answer with a successful result.
+          schema:
+            "$ref": "#/definitions/SubscriptionsInfo"
+      deprecated: false
+
   /sbp/v1/qr/register:
     post:
       tags:
@@ -513,7 +598,7 @@ paths:
 
             RefundStatus response = client.getRefundInfo(refundId);
 
-  <Partner Notification Handler URL>:
+  <Partner Notification Handler URL for payment info>:
     post:
       tags:
         - Callback
@@ -528,6 +613,28 @@ paths:
           required: true
           schema:
             "$ref": "#/definitions/Callback"
+      responses:
+        '200':
+          description: Answer with a successful result
+          schema:
+            "$ref": "#/definitions/EmptyBody"
+      deprecated: false
+
+  <Partner Notification Handler URL for subscription info>:
+    post:
+      tags:
+        - Callback
+      summary: Subscription Status Notification
+      operationId: sendCallbackSubscriptions
+      consumes:
+        - application/json;charset=UTF-8
+      parameters:
+        - name: CallbackSubscriptions
+          in: body
+          description: Callback
+          required: true
+          schema:
+            "$ref": "#/definitions/CallbackSubscriptions"
       responses:
         '200':
           description: Answer with a successful result
@@ -580,6 +687,71 @@ paths:
         "200":
           schema:
             "$ref": "#/definitions/EmptyBody"
+
+  /sbp/v1/subscriptions/{subscriptionId}/orders:
+    post:
+      tags:
+        - qr-subscription
+      summary: Request for payment about subscription
+      operationId: postSubscriptionsPayment
+      consumes:
+        - application/json;charset=UTF-8
+      produces:
+        - application/json;charset=UTF-8
+      parameters:
+        - in: header
+          name: Authorization
+          type: string
+          description: Bearer secret key
+          required: true
+        - name: subscriptionId
+          in: path
+          description: Subscription id
+          required: true
+          type: string
+        - in: body
+          name: subscription
+          description: Method for create payment about subscription
+          required: true
+          schema:
+            "$ref": "#/definitions/SubscriptionPayment"
+      responses:
+        "200":
+          description: Answer with a successful result
+          schema:
+            "$ref": "#/definitions/SubscriptionsPaymentInfo"
+      deprecated: false
+
+  /sbp/v1/subscriptions/{subscriptionId}/orders/{id}:
+    get:
+      tags:
+        - qr-subscription
+      summary: Check payment status with subscription
+      operationId: getSubscriptionsPaymentInfo
+      produces:
+        - application/json;charset=UTF-8
+      parameters:
+        - in: header
+          name: Authorization
+          type: string
+          description: Bearer secret key
+          required: true
+        - name: subscriptionId
+          in: path
+          description: Subscription id
+          required: true
+          type: string
+        - name: id
+          in: path
+          description: Order id
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Answer with a successful result
+          schema:
+            "$ref": "#/definitions/SubscriptionsPaymentInfo"
+      deprecated: false
 definitions:
   Payment:
     type: object
@@ -896,3 +1068,205 @@ definitions:
     title: Error
   EmptyBody:
     type: object
+  Subscription:
+    type: object
+    properties:
+      id:
+        type: string
+        description: Subscription id
+        example: '120059'
+      subscriptionPurpose:
+        type: string
+        description: Subscription info about client
+        example: Подписка на услуги
+      sbpMerchantId:
+        description: Id with SBP
+        maxLength: 12
+        example: MA0000000552
+  ResSubscription:
+    type: object
+    properties:
+      id:
+        type: string
+        description: Subscription id
+        example: '120059'
+      createDate:
+        type: string
+        format: date-time
+        description: Subscription creation date
+        example: '2020-01-31T09:14:38.107227+03:00'
+      status:
+        enum:
+          - INACTIVE
+          - SUBSCRIBED
+          - UNSUBSCRIBED
+        example: 'INACTIVE'
+      qr:
+        type: object
+        properties:
+          id:
+            type: string
+            description: QR ID
+            example: AD100004BAL7227F9BNP6KNE007J9B3K
+          payload:
+            type: string
+            description: Data for self-generating an image of a registered QR code in SBP. If it's opened on mobile then  opens  users' banking app or bank selection list.
+            example: 'https://sub.nspk.ru/AS3D33FC7B034DEEA8A365142E1DE737?type=03&bank=10000001&crc=C08B'
+          url:
+            type: string
+            description: URL with registered QR-code in SBP
+            example: 'https://test.ecom.raiffeisen.ru/api/sbp/v1/qr/AS3D33FC7B034DEEA8A365142E1DE737/image'
+  SubscriptionsInfo:
+    type: object
+    properties:
+      id:
+        type: string
+        description: Subscription id
+        example: '120059'
+      bank:
+        type: string
+        description: Bank name
+        example: 'someBank'
+      createDate:
+        type: string
+        format: date-time
+        description: Subscription creation date
+        example: '2020-01-31T09:14:38.107227+03:00'
+      status:
+        enum:
+          - INACTIVE
+          - SUBSCRIBED
+          - UNSUBSCRIBED
+        example: 'INACTIVE'
+      qr:
+        type: object
+        properties:
+          id:
+            type: string
+            description: QR id
+            example: AD100004BAL7227F9BNP6KNE007J9B3K
+          payload:
+            type: string
+            description: Data for self-generating an image of a registered QR code in SBP. If it's opened on mobile then  opens  users' banking app or bank selection list.
+            example: 'https://sub.nspk.ru/AS3D33FC7B034DEEA8A365142E1DE737?type=03&bank=10000001&crc=C08B'
+          url:
+            type: string
+            description: URL with registered QR-code in SBP
+            example: 'https://test.ecom.raiffeisen.ru/api/sbp/v1/qr/AS3D33FC7B034DEEA8A365142E1DE737/image'
+  CallbackSubscriptions:
+    type: object
+    properties:
+      event:
+        type: string
+        description: Notification type
+        example: 'subscription'
+      subscription:
+        type: object
+        properties:
+          id:
+            type: string
+            description: Subscription id
+            example: '120059'
+          bank:
+            type: string
+            description: Bank name
+            example: 'someBank'
+          createDate:
+            type: string
+            format: date-time
+            description: Subscription creation date
+            example: '2020-01-31T09:14:38.107227+03:00'
+          status:
+            example: 'SUBSCRIBED'
+          qr:
+            type: object
+            properties:
+              id:
+                type: string
+                description: QR id
+                example: AD100004BAL7227F9BNP6KNE007J9B3K
+              payload:
+                type: string
+                description: Data for self-generating an image of a registered QR code in SBP. If it's opened on mobile then  opens  users' banking app or bank selection list.
+                example: 'https://sub.nspk.ru/AS3D33FC7B034DEEA8A365142E1DE737?type=03&bank=10000001&crc=C08B'
+              url:
+                type: string
+                description: URL with registered QR-code in SBP
+                example: 'https://test.ecom.raiffeisen.ru/api/sbp/v1/qr/AS3D33FC7B034DEEA8A365142E1DE737/image'
+  SubscriptionPayment:
+    type: object
+    properties:
+      account:
+        type: string
+        description: Account for crediting.
+        maxLength: 20
+        example: 40700000000000000001
+      additionalInfo:
+        type: string
+        description: Additional information to be filled out at the request of the partner when generating the QR code
+        maxLength: 140
+        example: Доп информация
+      amount:
+        type: number
+        description: Amount in rubles.
+        example: 1110.00
+      currency:
+        type: string
+        description: Currency of payment.
+        enum:
+          - RUB
+        maxLength: 3
+        example: RUB
+      order:
+        type: string
+        description: Unique identifier of the order in the partner system.  A-z0-9-',"_:.,
+        maxLength: 40
+        example: 1-22-333
+      paymentDetails:
+        type: string
+        description: Purpose of payment. Optional to fill out.
+        maxLength: 185
+        example: Назначение платежа
+    title: SubscriptionPayment
+  SubscriptionsPaymentInfo:
+    type: object
+    properties:
+      additionalInfo:
+        type: string
+        description: Additional information to be filled out at the request of the partner when generating the QR code
+        example: 'Доп информация'
+      paymentDetails:
+        type: string
+        description: Purpose of payment. Optional to fill out.
+        example: 'Назначение платежа'
+      amount:
+        type: number
+        description: Amount in rubles.
+        example: 12399.00
+      currency:
+        type: string
+        description: Currency of payment.
+        maxLength: 3
+        enum:
+          - RUB
+      order:
+        type: string
+        description: Unique identifier of the order in the partner system.  A-z0-9-',"_:.,
+        example: '282a60f8-dd75-4286-bde0-af321dd081b3'
+      paymentStatus:
+        type: string
+        description: Payment status
+        enum:
+          - SUCCESS
+          - DECLINED
+          - IN_PROGRESS
+        example: SUCCESS
+      qrId:
+        type: string
+        description: QR id
+        example: AD100051KNSNR64I98CRUJUASC9M72QT
+      sbpMerchantId:
+        type: string
+        description: Id with SBP
+        example: MA0000000552
+    title: SubscriptionsPaymentInfo

@@ -1,0 +1,772 @@
+---
+swagger: '2.0'
+info:
+  title: API для фискализации чеков
+  contact: {
+    email: SME_Acquiring@raiffeisen.ru,
+    name: Support e-mail
+  }
+  x-logo:
+    url: images/raifflogo.png
+    backgroundColor: '#FFFFFF'
+    altText: Raiff logo
+  description: |
+
+    Свои предложения и идеи о документации можно оставить в репозитории по адресу: https://github.com/Raiffeisen-DGTL/ecom-API/blob/master/fiscal.yml
+
+    # Оплата по 54-ФЗ
+
+    По закону от 22.05.2003 № 54–ФЗ "О применении контрольно-кассовой техники при осуществлении расчетов в Российской Федерации" при оплате товаров, работ или услуг необходимо формировать фискальный чек и отправлять его в налоговую с помощью кассы.
+
+    Если вам нужно отправлять чеки, вы можете делать это с нашей помощью или самостоятельно.
+
+    # Подключение к фискализации
+
+    Услуга фискализации чеков доступна для клиентов банка, подключивших один из продуктов:
+    * Интернет-эквайринг
+    * СБП
+
+    ## Инструкция
+    1. Зарегистрируйтесь в сервисе ["АТОЛ Онлайн"](https://online.atol.ru/lk/Account/Register?partnerUid=18583cd5-dae2-4fb1-a98b-f4b80d891eb0) и подключите онлайн-кассу.
+    2. Заключите договор с [оператором фискальных данных](https://www.nalog.gov.ru/rn77/related_activities/registries/fiscaloperators/).
+    3. Оформите заявку на фискализацию одним из способов ниже:
+    * по E-mail <a href="mailto:SME_Acquiring@raiffeisen.ru?subject=Подключение к фискализации&body=Добрый день!%0A%0AПросьба подключить услугу фискализации.">SME_Acquiring@raiffeisen.ru</a>
+    * через менеджера банка
+
+    # Общая схема работы
+
+    Схема работы:
+
+    <a href='images/fiscalization.svg' target='_blank'><img src='images/fiscalization.svg'></a>
+
+servers:
+  - url: https://e-commerce.raiffeisen.ru/api
+    description: Production API
+  - url: https://test.ecom.raiffeisen.ru/api
+    description: Sandbox API
+tags:
+  - name: authorization
+    x-displayName: 'Авторизация'
+    description: |
+      Для успешной авторизации необходимо использовать:
+        * secretKey - секретный ключ, который используется для межсервисного взаимодействия. Данный ключ мерчант получает при регистрации.
+
+      BАЖНО: Секретный ключ необходимо хранить в защищенном месте, нельзя публиковать на сторонних ресурсах или передавать третьим лицам.
+
+      Межсервисные запросы авторизуются посредством секретного ключа API (SECRET_KEY). Параметр авторизации указывается в заголовке Authorization, значение которого формируется как "Bearer SECRET_KEY".
+
+  - name: fiscal-controller
+    x-displayName: 'Методы API'
+    description: |
+      Для фискализации чеков через партнёра Райффайзенбанк предоставляет API из следующих запросов:
+        * Сохранение чека,
+        * Регистрация чека,
+        * Получение статуса чека.
+
+      Bзаимодействие осуществляется по протоколу HTTP с использованием методов POST, PUT, GET.
+
+      В описании каждого запроса явно указаны требуемые метод, адрес и параметры.
+
+      POST-запросы используют JSON-структуру, PUT- и GET-запросы работают со строками запросов.
+
+      Ответ любого метода возвращает HTTP-код. Если при обработке запроса происходит ошибка, API дополнительно возвращает ее описание.
+
+  - name: errors
+    x-displayName: 'Справочник ошибок'
+    description: |
+      Ответ любого метода содержит код сообщения (code).
+      Если в процессе обработки любого запроса произойдет логическая ошибка, API вернет описание ошибки (message).
+
+      Описание основных ошибок:
+
+      code | message
+      ------------|------
+      FISCAL_CLIENT_NOT_FOUND | Фискальный клиент {value} не найден
+      MERCHANT_NOT_FOUND | Мерчант с publicId = {value} не зарегистрирован в сервисе
+      CREDENTIALS_NOT_FOUND | Учетные данные ОФД для мерчанта с publicId = {value} не найдены
+      RECEIPT_TYPE_NOT_SUPPORTED | Регистрация чеков типа {value} не поддерживается
+      RECEIPT_VALIDATION_FAILED | Чек не прошел валидацию. Причина: {value}
+      RECEIPT_NOT_FOUND | Чек с id = {value} не найден
+      RECEIPT_ALREADY_IN_PROGRESS | Чек {value} в процессе регистрации, действие невозможно
+      RECEIPT_ALREADY_REGISTERED | Чек {value} уже зарегистрирован, действие невозможно
+      RECEIPT_ALREADY_FAILED | Регистрация чека {value} завершилась ошибкой, действие невозможно
+      TOKEN_REQUEST_FAILED | Не удалось получить токен для отправки чека в ОФД
+      RECEIPT_REGISTRATION_FAILED | Не удалось зарегистрировать чек {value}
+      STATUS_REQUEST_FAILED | Не удалось запросить статус чека ofdId = {value} мерчанта с publicId = {value}
+
+  - name: 07.07.2021
+    x-displayName: '07.07.2021'
+    description: |
+      * Первоначальная версия документации
+
+  - name: 13.07.2021
+    x-displayName: '13.07.2021'
+    description: |
+      * Добавлена диаграмма последовательности
+      * Описаны методы и параметры API
+      * Приведен справочник ошибок
+      * Добавлено описание ошибок для каждого метода
+
+  - name: 28.07.2021
+    x-displayName: '28.07.2021'
+    description: |
+      * Обновлено описание методов API
+      * Изменена обязательность параметра для имени покупателя (client/name)
+      * Добавлено описание ошибки 400 Bad Request
+      * Дополнен справочник ошибок
+
+x-tagGroups:
+  - name: API
+    tags:
+      - authorization
+      - fiscal-controller
+  - name: Справочник
+    tags:
+      - errors
+  - name: История изменений
+    tags:
+      - 07.07.2021
+      - 13.07.2021
+      - 28.07.2021
+paths:
+  /fiscal/v1/receipts/sell:
+    post:
+      tags:
+        - fiscal-controller
+      summary: Сохранение чека прихода
+      description:
+        Метод предназначен для создания нового чека прихода с указанным receiptNumber.
+        Также позволяет обновить уже существующий чек прихода при повторном запросе с тем же receiptNumber.
+        Метод возвращает тело чека, а также его тип и статус в дополнительных параметрах ответа.
+
+        Если в ответ на запрос получена ошибка RECEIPT_ALREADY_FAILED, необходимо создать новый чек.
+      consumes:
+        - application/json;charset=UTF-8
+      produces:
+        - application/json;charset=UTF-8
+      parameters:
+        - in: header
+          name: Authorization
+          type: string
+          description: Bearer secret key
+          required: true
+        - in: body
+          name: Receipt
+          required: true
+          schema:
+            "$ref": "#/definitions/Receipt"
+      responses:
+        "200":
+          description: Ответ с успешным результатом
+          schema:
+            "$ref": "#/definitions/Response"
+        "400":
+          description: Ответ с неуспешным результатом
+          schema:
+            "$ref": "#/definitions/Error400"
+        "403":
+          description: Ответ с неуспешным результатом
+          schema:
+            "$ref": "#/definitions/Error403"
+        "409":
+          description: Ответ с неуспешным результатом
+          schema:
+            "$ref": "#/definitions/Error409"
+      deprecated: false
+      x-codeSamples:
+        - lang: 'cURL'
+          source: |
+            curl --location --request POST 'https://test.ecom.raiffeisen.ru/api/fiscal/v1/receipts/sell' \
+            --header 'content-type: application/json' \
+            --header 'Authorization: Bearer eyJ0eXA***' \
+            --data-raw'
+            {
+              "receiptNumber": 3000827351831,
+              "client": {
+                  "email": "customer@domain.ru",
+                  "name": "Иванов Иван Иванович"
+              },
+              "items": [
+              {
+                  "name": "Шоколадные конфеты",
+                  "price": 600.00,
+                  "quantity": 2,
+                  "amount": 1200.00,
+                  "measurementUnit": "кг",
+                  "nomenclatureCode": 1704909900,
+                  "vat": {
+                      "type": "vat20",
+                      "amount": 200
+                  }
+              },
+              {
+                  "name": "Вода минеральная 1л",
+                  "price": 120.00,
+                  "quantity": 20,
+                  "amount": 2400.00,
+                  "measurementUnit": "шт",
+                  "vat": {
+                      "type": "vat20",
+                      "amount": 400.0
+                  }
+              }
+              ],
+              "total": 3600.00
+            }'
+
+  /fiscal/v1/receipts/sell/{receiptNumber}:
+    put:
+      tags:
+        - fiscal-controller
+      summary: Регистрация чека прихода
+      description: >
+        Метод предназначен для отправки чека прихода на регистрацию в ОФД.
+        Метод возвращает тело чека, а также его тип и статус в дополнительных параметрах ответа.
+        После отправки чека на регистрацию он будет недоступен для редактирования.
+
+        Если в ответ на запрос получена ошибка RECEIPT_ALREADY_FAILED,
+        необходимо создать новый чек и повторить попытку регистрации.
+      produces:
+        - application/json;charset=UTF-8
+      parameters:
+        - in: path
+          name: receiptNumber
+          type: string
+          description: Уникальный номер чека
+          maxLength: 128
+          required: true
+        - in: header
+          name: Authorization
+          type: string
+          description: Bearer secret key
+          required: true
+      responses:
+        "200":
+          description: Ответ с успешным результатом
+          schema:
+            "$ref": "#/definitions/Response"
+        "403":
+          description: Ответ с неуспешным результатом
+          schema:
+            "$ref": "#/definitions/Error403"
+        "404":
+          description: Ответ с неуспешным результатом
+          schema:
+            "$ref": "#/definitions/Error404"
+        "409":
+          description: Ответ с неуспешным результатом
+          schema:
+            "$ref": "#/definitions/Error409"
+        "500":
+          description: Ответ с неуспешным результатом
+          schema:
+            "$ref": "#/definitions/Error500"
+      deprecated: false
+      x-codeSamples:
+        - lang: 'cURL'
+          source: |
+            curl --location --request PUT 'https://test.ecom.raiffeisen.ru/api/fiscal/v1/receipts/sell/3000827351831' \
+            --header 'Authorization: Bearer eyJ0eXA***'
+
+    get:
+      tags:
+        - fiscal-controller
+      summary: Получение статуса чека прихода
+      description: >
+        Метод предназначен для получения актуального статуса чека прихода.
+        Чек может принимать один из четырех статусов:
+          * "NEW" – чек создан и может быть отредактирован перед отправкой на регистрацию,
+          * "IN_PROGRESS" – чек в процессе регистрации,
+          * "DONE" – чек успешно зарегистрирован,
+          * "FAILED" – при регистрации чека возникла ошибка.
+
+        Метод возвращает тело чека, а также его тип и статус в дополнительных параметрах ответа.
+      produces:
+        - application/json;charset=UTF-8
+      parameters:
+        - in: path
+          name: receiptNumber
+          type: string
+          description: Уникальный номер чека
+          maxLength: 128
+          required: true
+        - in: header
+          name: Authorization
+          type: string
+          description: Bearer secret key
+          required: true
+      responses:
+        "200":
+          description: Ответ с успешным результатом
+          schema:
+            "$ref": "#/definitions/Response"
+        "403":
+          description: Ответ с неуспешным результатом
+          schema:
+            "$ref": "#/definitions/Error403"
+        "404":
+          description: Ответ с неуспешным результатом
+          schema:
+            "$ref": "#/definitions/Error404"
+      deprecated: false
+      x-codeSamples:
+        - lang: 'cURL'
+          source: |
+            curl --location --request GET 'https://test.ecom.raiffeisen.ru/api/fiscal/v1/receipts/sell/3000827351831' \
+            --header 'Authorization: Bearer eyJ0eXA***'
+
+  /fiscal/v1/receipts/refund:
+    post:
+      tags:
+        - fiscal-controller
+      summary: Сохранение чека возврата
+      description: >
+        Метод предназначен для создания нового чека возврата с указанным receiptNumber.
+        Также позволяет обновить уже существующий чек возврата при повторном запросе с тем же receiptNumber.
+        Метод возвращает тело чека, а также его тип и статус в дополнительных параметрах ответа.
+
+        Если в ответ на запрос получена ошибка RECEIPT_ALREADY_FAILED, необходимо создать новый чек.
+      consumes:
+        - application/json;charset=UTF-8
+      produces:
+        - application/json;charset=UTF-8
+      parameters:
+        - in: header
+          name: Authorization
+          type: string
+          description: Bearer secret key
+          required: true
+        - in: body
+          name: Receipt
+          required: true
+          schema:
+            "$ref": "#/definitions/Receipt"
+      responses:
+        "200":
+          description: Ответ с успешным результатом
+          schema:
+            "$ref": "#/definitions/Response"
+        "400":
+          description: Ответ с неуспешным результатом
+          schema:
+            "$ref": "#/definitions/Error400"
+        "403":
+          description: Ответ с неуспешным результатом
+          schema:
+            "$ref": "#/definitions/Error403"
+        "409":
+          description: Ответ с неуспешным результатом
+          schema:
+            "$ref": "#/definitions/Error409"
+      deprecated: false
+      x-codeSamples:
+        - lang: 'cURL'
+          source: |
+            curl --location --request POST 'https://test.ecom.raiffeisen.ru/api/fiscal/v1/receipts/refund' \
+            --header 'content-type: application/json' \
+            --header 'Authorization: Bearer eyJ0eXA***' \
+            --data-raw'
+            {
+              "receiptNumber": 3000827351831,
+              "client": {
+                  "email": "customer@domain.ru",
+                  "name": "Иванов Иван Иванович"
+              },
+              "items": [
+              {
+                  "name": "Шоколадные конфеты",
+                  "price": 600.00,
+                  "quantity": 2,
+                  "amount": 1200.00,
+                  "measurementUnit": "кг",
+                  "nomenclatureCode": 1704909900,
+                  "vat": {
+                      "type": "vat20",
+                      "amount": 200
+                  }
+              },
+              {
+                  "name": "Вода минеральная 1л",
+                  "price": 120.00,
+                  "quantity": 20,
+                  "amount": 2400.00,
+                  "measurementUnit": "шт",
+                  "vat": {
+                      "type": "vat20",
+                      "amount": 400.0
+                  }
+              }
+              ],
+              "total": 3600.00
+            }'
+
+  /fiscal/v1/receipts/refund/{receiptNumber}:
+    put:
+      tags:
+        - fiscal-controller
+      summary: Регистрация чека возврата
+      description: >
+        Метод предназначен для отправки чека возврата на регистрацию в ОФД.
+        Метод возвращает тело чека, а также его тип и статус в дополнительных параметрах ответа.
+        После отправки чека на регистрацию он будет недоступен для редактирования.
+
+        Если в ответ на запрос получена ошибка RECEIPT_ALREADY_FAILED,
+        необходимо создать новый чек и повторить попытку регистрации.
+      produces:
+        - application/json;charset=UTF-8
+      parameters:
+        - in: path
+          name: receiptNumber
+          type: string
+          description: Уникальный номер чека
+          maxLength: 128
+          required: true
+        - in: header
+          name: Authorization
+          type: string
+          description: Bearer secret key
+          required: true
+      responses:
+        "200":
+          description: Ответ с успешным результатом
+          schema:
+            "$ref": "#/definitions/Response"
+        "403":
+          description: Ответ с неуспешным результатом
+          schema:
+            "$ref": "#/definitions/Error403"
+        "404":
+          description: Ответ с неуспешным результатом
+          schema:
+            "$ref": "#/definitions/Error404"
+        "409":
+          description: Ответ с неуспешным результатом
+          schema:
+            "$ref": "#/definitions/Error409"
+        "500":
+          description: Ответ с неуспешным результатом
+          schema:
+            "$ref": "#/definitions/Error500"
+      deprecated: false
+      x-codeSamples:
+        - lang: 'cURL'
+          source: |
+            curl --location --request PUT 'https://test.ecom.raiffeisen.ru/api/fiscal/v1/receipts/refund/3000827351831' \
+            --header 'Authorization: Bearer eyJ0eXA***'
+
+    get:
+      tags:
+        - fiscal-controller
+      summary: Получение статуса чека возврата
+      description: >
+        Метод предназначен для получения актуального статуса чека возврата.
+        Чек может принимать один из четырех статусов:
+          * "NEW" – чек создан и может быть отредактирован перед отправкой на регистрацию,
+          * "IN_PROGRESS" – чек в процессе регистрации,
+          * "DONE" – чек успешно зарегистрирован,
+          * "FAILED" – при регистрации чека возникла ошибка.
+
+        Метод возвращает тело чека, а также его тип и статус в дополнительных параметрах ответа.
+      produces:
+        - application/json;charset=UTF-8
+      parameters:
+        - in: path
+          name: receiptNumber
+          type: string
+          description: Уникальный номер чека
+          maxLength: 128
+          required: true
+        - in: header
+          name: Authorization
+          type: string
+          description: Bearer secret key
+          required: true
+      responses:
+        "200":
+          description: Ответ с успешным результатом
+          schema:
+            "$ref": "#/definitions/Response"
+        "403":
+          description: Ответ с неуспешным результатом
+          schema:
+            "$ref": "#/definitions/Error403"
+        "404":
+          description: Ответ с неуспешным результатом
+          schema:
+            "$ref": "#/definitions/Error404"
+      deprecated: false
+      x-codeSamples:
+        - lang: 'cURL'
+          source: |
+            curl --location --request GET 'https://test.ecom.raiffeisen.ru/api/fiscal/v1/receipts/refund/3000827351831' \
+            --header 'Authorization: Bearer eyJ0eXA***'
+
+definitions:
+  Receipt:
+    type: object
+    required:
+      - receiptNumber
+      - client
+      - items
+      - total
+    properties:
+      receiptNumber:
+        type: string
+        description: Уникальный номер чека, который создается на стороне мерчанта. Выполняет роль сквозного идентификатора. Формат A-Za-z0-9_-
+        maxLength: 128
+        example: 3000827351831
+      client:
+        type: object
+        required:
+          - email
+        description: Данные о покупателе
+        properties:
+          email:
+            type: string
+            description: Электронный адрес покупателя для отправки чека
+            maxLength: 64
+            example: customer@domain.ru
+          name:
+            type: string
+            description: ФИО покупателя
+            maxLength: 256
+            example: Иванов Иван Иванович
+      items:
+        type: array
+        description: Позиции чека
+        items:
+          type: object
+          required:
+            - name
+            - price
+            - quantity
+            - amount
+            - vat
+          properties:
+            name:
+              type: string
+              description: Наименование товара, работы, услуги, иного предмета расчета
+              maxLength: 128
+              example: Шоколадные конфеты
+            price:
+              type: bigDecimal (8, 2)
+              description: Цена за единицу товара, работы, услуги, иного предмета расчета в рублях
+              example: 1000.00
+            quantity:
+              type: bigDecimal (5, 3)
+              description: Количество/вес
+              example: 1.2
+            amount:
+              type: bigDecimal (8, 2)
+              description: Сумма в рублях
+              example: 1200.00
+            measurementUnit:
+              type: string
+              description: Единица измерения товара, работы, услуги, иного предмета расчета
+              maxLength: 16
+              example: кг
+            nomenclatureCode:
+              type: string
+              description: Код товара
+              maxLength: 150
+              example: 1704909900
+            vat:
+              type: object
+              required:
+                - type
+                - amount
+              description: Данные о налоге на позицию чека
+              properties:
+                type:
+                  type: string
+                  description: Ставка НДС
+                  enum:
+                    - none
+                    - vat0
+                    - vat10
+                    - vat110
+                    - vat20
+                    - vat120
+                  example: vat20
+                amount:
+                  type: bigDecimal (8, 2)
+                  description: Сумма налога на позицию чека в рублях
+                  example: 200.00
+      total:
+        type: bigDecimal (8, 2)
+        description: Итоговая сумма чека
+        example: 1200.00
+    title: Receipt
+  Response:
+    type: object
+    required:
+      - receiptNumber
+      - receiptType
+      - status
+      - client
+      - items
+      - total
+    properties:
+      receiptNumber:
+        type: string
+        description: Уникальный номер чека, который создается на стороне мерчанта. Выполняет роль сквозного идентификатора. Формат A-Za-z0-9_-
+        maxLength: 128
+        example: 3000827351831
+      receiptType:
+        type: string
+        description: Тип чека
+        enum:
+          - SELL
+          - REFUND
+        example: SELL
+      status:
+        type: string
+        description: Статус регистрации чека
+        enum:
+          - NEW
+          - IN_PROGRESS
+          - DONE
+          - FAILED
+        example: NEW
+      client:
+        type: object
+        required:
+          - email
+        description: Данные о покупателе
+        properties:
+          email:
+            type: string
+            description: Электронный адрес покупателя для отправки чека
+            maxLength: 64
+            example: customer@domain.ru
+          name:
+            type: string
+            description: ФИО покупателя
+            maxLength: 256
+            example: Иванов Иван Иванович
+      items:
+        type: array
+        description: Позиции чека
+        items:
+          type: object
+          required:
+            - name
+            - price
+            - quantity
+            - amount
+            - vat
+          properties:
+            name:
+              type: string
+              description: Наименование товара, работы, услуги, иного предмета расчета
+              maxLength: 128
+              example: Шоколадные конфеты
+            price:
+              type: bigDecimal (8, 2)
+              description: Цена за единицу товара, работы, услуги, иного предмета расчета в рублях
+              example: 1000.00
+            quantity:
+              type: bigDecimal (5, 3)
+              description: Количество/вес
+              example: 1.2
+            amount:
+              type: bigDecimal (8, 2)
+              description: Сумма в рублях
+              example: 1200.00
+            measurementUnit:
+              type: string
+              description: Единица измерения товара, работы, услуги, иного предмета расчета
+              maxLength: 16
+              example: кг
+            nomenclatureCode:
+              type: string
+              description: Код товара
+              maxLength: 150
+              example: 1704909900
+            vat:
+              type: object
+              required:
+                - type
+                - amount
+              description: Данные о налоге на позицию чека
+              properties:
+                type:
+                  type: string
+                  description: Ставка НДС
+                  enum:
+                    - none
+                    - vat0
+                    - vat10
+                    - vat110
+                    - vat20
+                    - vat120
+                  example: vat20
+                amount:
+                  type: bigDecimal (8, 2)
+                  description: Сумма налога на позицию чека в рублях
+                  example: 200.00
+      total:
+        type: bigDecimal (8, 2)
+        description: Итоговая сумма чека
+        example: 1200.00
+    title: Response
+  Error400:
+    type: object
+    properties:
+      code:
+        type: string
+        description: Код ошибки
+        example: 'RECEIPT_VALIDATION_FAILED'
+      message:
+        type: string
+        description: Описание ошибки
+        example: 'Чек не прошел валидацию. Причина: {value}'
+    title: Error400
+  Error403:
+    type: object
+    properties:
+      code:
+        type: string
+        description: Код ошибки
+        example: 'MERCHANT_NOT_FOUND'
+      message:
+        type: string
+        description: Описание ошибки
+        example: 'Мерчант с publicId = {value} не зарегистрирован в сервисе'
+    title: Error403
+  Error404:
+    type: object
+    properties:
+      code:
+        type: string
+        description: Код ошибки
+        example: 'RECEIPT_NOT_FOUND'
+      message:
+        type: string
+        description: Описание ошибки
+        example: 'Чек с id = {value} не найден'
+    title: Error404
+  Error409:
+    type: object
+    properties:
+      code:
+        type: string
+        description: Код ошибки
+        example: 'RECEIPT_ALREADY_IN_PROGRESS'
+      message:
+        type: string
+        description: Описание ошибки
+        example: 'Чек {value} в процессе регистрации, действие невозможно'
+    title: Error409
+  Error500:
+    type: object
+    properties:
+      code:
+        type: string
+        description: Код ошибки
+        example: 'RECEIPT_REGISTRATION_FAILED'
+      message:
+        type: string
+        description: Описание ошибки
+        example: 'Не удалось зарегистрировать чек {value}'
+    title: Error500

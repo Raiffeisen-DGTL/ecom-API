@@ -484,6 +484,33 @@ tags:
 
      Спустя 6 месяцев клиент может отказаться от услуг PayKeeper и осуществлять поддержку самостоятельно
 
+  - name: retailcrm
+    x-displayName: RetailCRM
+    description: |
+     <a href='images/logoinvoice.png' target='_blank'><img src='images/logoinvoice.png'></a>
+
+     **Инструкция:**
+
+     https://www.retailcrm.ru/marketplace/invoice
+
+     **Решения:**
+
+     СБП
+
+     **Партнер:**
+
+      [https://invoice.su/](https://raiffeisen.invoice.su/)
+
+      Retailcrm – это специализированная CRM-система для интернет-торговли.
+
+      Технологический партнер Райффайзенбанк компания Invoice реализовала интеграцию с RetailCRM для всех клиентов Райффайзенбанка.
+
+      С помощью RetailCRM вы можете:
+      * выставлять счета на оплату через Invoice
+      * автоматически изменять статус оплаты в RetailCRM после оплаты счета
+      * производить возврат из заказа RetailCRM
+
+
   - name: sbp
     x-displayName: СБП
     description: |
@@ -514,6 +541,7 @@ x-tagGroups:
       - umi
       - joomla
       - modx
+      - retailcrm
   - name: SDK
     tags:
       - sbp

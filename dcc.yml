@@ -51,7 +51,7 @@ info:
     ## Список отделений для получения карт
     [Список отделений для получения карт](https://docs.google.com/spreadsheets/d/1lT-qOCGrAW7u9IFn8tDWwO1bnUt_gNPEncINGvVVbKE)
 
-    # API
+    # Об API
     После заключения договора вам придет письмо о подключении к сервису с авторизационными данными.
     1. Интегрируйте наш API с вашей учетной системой.
     2. Отправляйте список сотрудников.
@@ -76,11 +76,11 @@ info:
 servers:
   - url: https://pay.raif.ru
     description: Production API (uses live data)
-  - url: https://test.pay.raif.ru
+  - url: https://pay-test.raif.ru
     description: Sandbox API
 tags:
   - name: cards-api
-    x-displayName: 'Методы API'
+    x-displayName: 'Выпуск карт'
     description: |
       Для реализации взаимодействия Райффайзенбанк предоставляет API:
       * запрос на создание держателя карты с ипользованием HTTP;
@@ -88,6 +88,27 @@ tags:
       * запрос на создание карты с ипользованием HTTP;
       * получение общей информации по карте.
       * получение списка отделений для выдачи карт.
+
+  - name: callback-api
+    x-displayName: 'Уведомления об операциях'
+    description: |
+      Для информирования Компании о проведенных операциях по картам могут использоваться уведомления на адрес, указанный в настройках.
+      В составе API имеется следующий функционал:
+      * уведомление о блокировке средств на карте(статус HOLD);
+      * уведомление о списании средств по счету(статус CAPTURE);
+      * запрос на отправку уведомления в тестовом контуре с иcпользованием HTTP;
+
+      Взаимодействия осуществляются через протокол HTTP посредством метода POST как для исходящих из банка сообщений, так и для входящих.
+
+      Адрес для тестовой и боевой среды можно указать с помощью [метода в API](#operation/postsettingsUrl).
+
+      Для партнёра уведомление представляет собой входящий POST-запрос, который использует JSON-структуру.
+
+      Уведомление считается принятым, если получатель ответил на запрос кодом HTTP 200.
+
+      Ответы с любыми другими HTTP-кодами будут считаться невалидными. Повторные попытки отправки будут проводиться в течение суток с нарастающим интервалом.
+
+      Для проверки подлинности уведомления к данным добавляется подпись в заголовке  x-api-signature-sha256, полученная на основе общего секретного ключа и контрольной строки (amount|cardId|creationDate|id|type) с помощью HMAC-SHA-256.
 
   - name: Errors
     x-displayName: 'Справочник ошибок'
@@ -249,6 +270,97 @@ paths:
           schema:
             "$ref": '#/definitions/responses/cardsAddResponse'
 
+  <URL обработчика уведомлений на стороне партнёра>:
+    post:
+      tags:
+        - callback-api
+      summary: Уведомление об операциях по картам
+      operationId: sendCallback
+      consumes:
+        - application/json;charset=UTF-8
+      parameters:
+        - name: Callback
+          in: body
+          description: Callback
+          required: true
+          schema:
+            "$ref": "#/definitions/Callback"
+      responses:
+        200:
+          description: Ответ.
+          schema:
+            "$ref": "#/definitions/EmptyBody"
+      deprecated: false
+
+  /api/cards/v1/callback/settings/:
+    post:
+      tags:
+        - callback-api
+      summary: Установка URL для уведомлений
+      operationId: postsettingsUrl
+      produces:
+        - application/json;charset=UTF-8
+      parameters:
+        - in: header
+          name: Authorization
+          type: string
+          description: Bearer secret key
+          required: true
+        - in: body
+          name: url
+          description: URL для приема уведомлений
+          required: true
+          schema:
+            "$ref": "#/definitions/CallBackSettings"
+      responses:
+        "200":
+          description: Ответ с успешным результатом.
+          schema:
+            "$ref": "#/definitions/EmptyBody"
+        "400":
+          description: Ответ с неуспешным результатом.
+          schema:
+            "$ref": "#/definitions/CallBackSettingsBadRequest"
+        "401":
+          description: Ответ с неуспешным результатом.
+          schema:
+            "$ref": "#/definitions/CallBackSettingsUnauthorized"
+        "500":
+          description: Ответ с неуспешным результатом.
+          schema:
+            "$ref": "#/definitions/CallBackSettingsInternalServerError"
+      deprecated: false
+
+  /api/prevcards/v1/callback/send-message:
+    post:
+      tags:
+        - callback-api
+      summary: Запрос на получение тестового сообщения в интеграционной среде
+      operationId: sendTestCallback
+      produces:
+        - application/json;charset=UTF-8
+      parameters:
+        - in: body
+          name: statusValue
+          required: true
+          schema:
+            "$ref": "#/definitions/TestCallBackSettings"
+        - in: body
+          name: url
+          description: URL для приема уведомлений
+          required: true
+          schema:
+            "$ref": "#/definitions/TestCallBackSettings"
+      responses:
+        "200":
+          description: Ответ с успешным результатом.
+          schema:
+            "$ref": "#/definitions/EmptyBody"
+        "400":
+          description: Ответ с неуспешным результатом.
+          schema:
+            "$ref": "#/definitions/CallBackSendMessageBadRequest"
+
 definitions:
   securitySchemes:
     SECRET_KEY:
@@ -407,6 +519,20 @@ definitions:
           description: Статус обработки запроса
         collection:
           $ref: '#/definitions/schemas/cardsAddRequest'
+    sendCallbackRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          descripttion: Тип уведомления.
+          enum:
+            - HOLD
+            - CAPTURE
+          example: CAPTURE
+        url:
+          type: string
+          description: URL для отправки уведомления.
+          example: 'https://yoururl.ru'
 
   responses:
     personsAddResponse:
@@ -562,3 +688,379 @@ definitions:
           type: string
           description: Адрес местонахождения Отделения Банка
           example: 'г.Домодедово ул.Корнеева д.12'
+  CallBackSettings:
+    type: object
+    allOf:
+      - $ref: "#/definitions/CallBackSettings"
+    required:
+      - url
+    properties:
+      url:
+        type: string
+        description: URL, куда требуется отправлять уведомления по всем статусам.
+        example: 'https://yoururl.ru'
+      statusValues:
+        type: array
+        description: Статус операции. Необязательный параметр, если не отправить, то URL будет указан для всех статусов.
+        items:
+          type: string
+          enum:
+            - HOLD
+            - CAPTURE
+          example: 'HOLD'
+  TestCallBackSettings:
+    type: object
+    allOf:
+      - $ref: "#/definitions/TestCallBackSettings"
+    required:
+      - statusValue
+      - url
+    properties:
+      url:
+        type: string
+        description: URL, куда требуется отправить сформированное уведомление.
+        example: 'https://yoururl.ru'
+      statusValue:
+        type: string
+        description: Статус операции, по которому будет сформировано и отправлено тестовое сообщение
+        enum:
+          - HOLD
+          - CAPTURE
+        example: 'HOLD'
+  CallBackSettingsUnauthorized:
+    type: object
+    properties:
+      timestamp:
+        type: YYYY-MM-DD ТHH24:MM:SS±HH:MM
+        description: Дата и время операции
+        example: '2020-01-15T16:01:49.043924+03:00'
+      status:
+        type: string
+        description: HTTP-код
+        example: '401'
+      error:
+        type: string
+        description: Ошибка
+        example: 'Unauthorized'
+      message:
+        type: string
+        description: 'Описание ошибки'
+        example: ''
+      path:
+        type: string
+        description: URL, по которому была вызвана ошибка
+        example: '/api/cards/v1/callback/settings/'
+    title: CallBackSettingsUnauthorized
+  CallBackSettingsBadRequest:
+    type: object
+    properties:
+      code:
+        type: string
+        description: Код ошибки
+        example: 'ERROR.INVALID_URL'
+      message:
+        type: string
+        description: Описание ошибки
+        example: 'URL Protocol should be http or https'
+    title: CallBackSettingsBadRequest
+  CallBackSettingsInternalServerError:
+    type: object
+    properties:
+      timestamp:
+        type: YYYY-MM-DD ТHH24:MM:SS±HH:MM
+        description: Дата и время операции
+        example: '2020-01-15T16:01:49.043924+03:00'
+      status:
+        type: string
+        description: HTTP-код
+        example: '500'
+      error:
+        type: string
+        description: Ошибка
+        example: 'Internal Server Error'
+      message:
+        type: string
+        description: 'Описание ошибки'
+        example: ''
+      path:
+        type: string
+        description: URL, по которому была вызвана ошибка
+        example: '/api/cards/v1/callback/settings/'
+    title: CallBackSettingsInternalServerError
+  CallBackSendMessageBadRequest:
+    type: object
+    properties:
+      code:
+        type: string
+        description: Код ошибки
+        example: 'ERROR.INVALID_STATUS'
+      message:
+        type: string
+        description: Описание ошибки
+        example: 'Status value should be HOLD or CAPTURE, actual status is null'
+    title: CallBackSendMessageBadRequest
+  Callback:
+    type: object
+    discriminator:
+      mapping:
+  EmptyBody:
+    type: object
+  HOLD:
+    type: object
+    allOf:
+      - $ref: "#/definitions/Callback"
+    required:
+      - event
+    properties:
+      event:
+        type: string
+        description: Тип события
+        enum:
+          - DCC.OPERATION
+        example: DCC.OPERATION
+      clientId:
+        type: string
+        description: Id компании(CNUM)
+        example: 'CNUM01'
+      operation:
+        type: object
+        required:
+          - id
+          - accountMovementType
+          - created
+          - authorization
+          - status
+          - card
+          - merchant
+        properties:
+          id:
+            type: string
+            description: Идентификатор операции в Райффайзенбанке
+            example: 'be313e48-c501-58e6-be55-422498c7d86f'
+          accountMovementType:
+            type: string
+            description: Операция списания(DEBIT)/зачисления(CREDIT) денежных средств
+            enum:
+              - DEBIT
+              - CREDIT
+            example: 'DEBIT'
+          created:
+            type: YYYY-MM-DD ТHH24:MM:SS±HH:MM
+            description: Дата и время обработки операции
+            maxLength:
+            example: '2020-01-15T16:01:49.043924+03:00'
+          authorization:
+            type: object
+            required:
+              - amount
+              - currency
+            properties:
+              amount:
+                type: number
+                description: Сумма операции
+                example: 20.88
+              currency:
+                type: string
+                description: Валюта операции
+                example: 'EUR'
+          status:
+            type: object
+            required:
+              - value
+              - dateTime
+            properties:
+              value:
+                type: string
+                description: Статус
+                enum:
+                  - HOLD
+                example: HOLD
+              dateTime:
+                type: YYYY-MM-DD ТHH24:MM:SS±HH:MM
+                description: Дата и время операции
+                maxLength:
+                example: '2020-01-15T16:01:49.043924+03:00'
+          card:
+            type: object
+            required:
+              - id
+              - maskedNumber
+            properties:
+              id:
+                type: string
+                description: Внутрибанковский уникальный идентификатор карты
+                maxLength: 8
+                example: 14901823
+              maskedNumber:
+                type: string
+                description: Маскированный номер карты
+                maxLength: 16
+                example: '553496******0091'
+          merchant:
+            type: object
+            required:
+              - mcc
+              - label
+              - name
+              - city
+              - country
+            properties:
+              mcc:
+                type: string
+                description: MCC — код вида торговой точки
+                maxLength: 4
+                example: 5499
+              label:
+                type: string
+                description: Расшифровка MCC
+                example: 'Различные продовольственные магазины'
+              name:
+                type: string
+                description: Название торговой точки
+                example: 'ГАСТРОНОМ'
+              city:
+                type: string
+                description: Город торговой точки
+                example: 'RYAZAN'
+              country:
+                type: string
+                description: Страна торговой точки
+                example: 'RU'
+    title: Уведомление о платеже
+  CAPTURE:
+    type: object
+    allOf:
+      - $ref: "#/definitions/Callback"
+    required:
+      - event
+    properties:
+      event:
+        type: string
+        description: Тип события
+        enum:
+          - DCC.OPERATION
+        example: DCC.OPERATION
+      clientId:
+        type: string
+        description: Id компании(CNUM)
+        example: 'CNUM01'
+      operation:
+        type: object
+        required:
+          - id
+          - accountMovementType
+          - created
+          - authorization
+          - status
+          - transaction
+          - card
+          - merchant
+        properties:
+          id:
+            type: string
+            description: Идентификатор операции в Райффайзенбанке
+            example: 'be313e48-c501-58e6-be55-422498c7d86f'
+          accountMovementType:
+            type: string
+            description: Операция списания(DEBIT)/зачисления(CREDIT) денежных средств
+            enum:
+              - DEBIT
+              - CREDIT
+            example: 'DEBIT'
+          created:
+            type: YYYY-MM-DD ТHH24:MM:SS±HH:MM
+            description: Дата и время обработки операции
+            maxLength:
+            example: '2020-01-15T16:01:49.043924+03:00'
+          authorization:
+            type: object
+            required:
+              - amount
+              - currency
+            properties:
+              amount:
+                type: number
+                description: Сумма операции
+                example: 20.88
+              currency:
+                type: string
+                description: Валюта операции
+                example: 'EUR'
+          status:
+            type: object
+            required:
+              - value
+              - dateTime
+            properties:
+              value:
+                type: string
+                description: Статус
+                enum:
+                  - CAPTURE
+                example: CAPTURE
+              dateTime:
+                type: YYYY-MM-DD ТHH24:MM:SS±HH:MM
+                description: Дата и время операции
+                maxLength:
+                example: '2020-01-15T16:01:49.043924+03:00'
+          transaction:
+            type: object
+            required:
+              - amount
+              - currency
+            properties:
+              amount:
+                type: number
+                description: Сумма списания по счету
+                example: 1439.88
+              currency:
+                type: string
+                description: Валюта списания по счету
+                example: 'RUB'
+          card:
+            type: object
+            required:
+              - id
+              - maskedNumber
+            properties:
+              id:
+                type: string
+                description: Внутрибанковский уникальный идентификатор карты
+                maxLength: 8
+                example: 14901823
+              maskedNumber:
+                type: string
+                description: Маскированный номер карты
+                maxLength: 16
+                example: '553496******0091'
+          merchant:
+            type: object
+            required:
+              - mcc
+              - label
+              - name
+              - city
+              - country
+            properties:
+              mcc:
+                type: string
+                description: MCC — код вида торговой точки
+                maxLength: 4
+                example: 5499
+              label:
+                type: string
+                description: Расшифровка MCC
+                example: 'Различные продовольственные магазины'
+              name:
+                type: string
+                description: Название торговой точки
+                example: 'ГАСТРОНОМ'
+              city:
+                type: string
+                description: Город торговой точки
+                example: 'RYAZAN'
+              country:
+                type: string
+                description: Страна торговой точки
+                example: 'RU'
+    title: Уведомление о платеже

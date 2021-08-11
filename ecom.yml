@@ -53,7 +53,7 @@ info:
     <a href='images/E-commerce Raiffeisenbank scheme.png' target='_blank'><img src='images/E-commerce Raiffeisenbank scheme.png'></a>
 
     # API
-    Взаимодействие осуществляется по протоколу HTTP с использованием методов GET/POST (в описании каждого запроса явно указан требуемый метод и адрес).
+    Bзаимодействие осуществляется по протоколу HTTP с использованием методов GET/POST (в описании каждого запроса явно указан требуемый метод и адрес).
 
     POST-запросы используют JSON-аргументы, GET-запросы работают со строками запросов.
 
@@ -72,7 +72,7 @@ info:
 
     Тестовый хост: https://test.ecom.raiffeisen.ru
 
-    ВАЖНО: Секретный ключ необходимо хранить в защищенном месте, нельзя публиковать на сторонних ресурсах или передавать третьим лицам.
+    BАЖНО: Секретный ключ необходимо хранить в защищенном месте, нельзя публиковать на сторонних ресурсах или передавать третьим лицам.
 
     Межсервисные запросы авторизуются посредством секретного ключа API (SECRET_KEY). Параметр авторизации указывается в заголовке Authorization, значение которого формируется как "Bearer SECRET_KEY".
 
@@ -95,8 +95,8 @@ info:
     ## Эквайринг
     Для полного цикла тестирования оплаты необходимо указывать сумму платежа больше 10 рублей.
     Карты для тестовой среды:
-    * 2200300100000023 12/24 880 - без 3DS
-    * 2201382000000021 12/24 880 - с 3DS пин для успешной оплаты 1234 , для получения ошибки 1111
+
+    * 4000001000000018 12/24 880 - с 3DS пин для успешной оплаты 1234 , для получения ошибки 1111
 
     ## СБП
     Для полного цикла тестирования оплаты Райффайзенбанк предоставляет возможность использования демо-приложения для сканирования QRC от имени покупателя по адресу:
@@ -224,7 +224,7 @@ paths:
         - in: query
           name: orderId
           type: string
-          description: Идентификатор заказа в магазине. Формат A-z0-9-',"_:.,
+          description: Идентификатор заказа в магазине. Формат A-z0-9-_.
           maxLength: 40
         - in: query
           name: successUrl
@@ -463,6 +463,104 @@ definitions:
         description: Структура с дополнительными параметрами магазина
         maxLength: 999
         example: {"additionalInfo": "Sweet Cake"}
+      paymentMethod:
+        type: string
+        enum:
+          - ONLY_SBP
+          - ONLY_ACQUIRING
+        description: Выбор метода оплаты. Если значение не передано, отображается общая форма.
+      locale:
+        type: string
+        enum:
+          - ru
+          - en
+        description: Выбор языка формы , по умолчанию ru
+      receiptNumber:
+        type: string
+        description: Уникальный номер чека, который создается на стороне мерчанта. Выполняет роль сквозного идентификатора. Формат A-Za-z0-9_-
+        maxLength: 128
+        example: 3000827351831
+      client:
+        type: object
+        required:
+          - email
+        description: Данные о покупателе
+        properties:
+          email:
+            type: string
+            description: Электронный адрес покупателя для отправки чека
+            maxLength: 64
+            example: customer@domain.ru
+          name:
+            type: string
+            description: ФИО покупателя
+            maxLength: 256
+            example: Иванов Иван Иванович
+      items:
+        type: array
+        description: Позиции чека (не более 100 объектов)
+        items:
+          type: object
+          required:
+            - name
+            - price
+            - quantity
+            - amount
+            - vat
+          properties:
+            name:
+              type: string
+              description: Наименование товара, работы, услуги, иного предмета расчета
+              maxLength: 128
+              example: Шоколадные конфеты
+            price:
+              type: number
+              description: Цена за единицу товара, работы, услуги, иного предмета расчета в рублях (8 символов на целую часть, 2 - на дробную)
+              example: 1000.00
+            quantity:
+              type: number
+              description: Количество/вес (5 символов на целую часть, 3 - на дробную)
+              example: 1.2
+            amount:
+              type: number
+              description: Сумма в рублях (8 символов на целую часть, 2 - на дробную)
+              example: 1200.00
+            measurementUnit:
+              type: string
+              description: Единица измерения товара, работы, услуги, иного предмета расчета
+              maxLength: 16
+              example: кг
+            nomenclatureCode:
+              type: string
+              description: Код товара
+              maxLength: 150
+              example: 1704909900
+            vat:
+              type: object
+              required:
+                - type
+                - amount
+              description: Данные о налоге на позицию чека
+              properties:
+                type:
+                  type: string
+                  description: Ставка НДС
+                  enum:
+                    - none
+                    - vat0
+                    - vat10
+                    - vat110
+                    - vat20
+                    - vat120
+                  example: vat20
+                amount:
+                  type: number
+                  description: Сумма налога на позицию чека в рублях (8 символов на целую часть, 2 - на дробную)
+                  example: 200.00
+      total:
+        type: number
+        description: Итоговая сумма чека (8 символов на целую часть, 2 - на дробную)
+        example: 1200.00
     title: TransactionID
   acquiring:
     type: object

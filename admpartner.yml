@@ -1,0 +1,410 @@
+---
+swagger: '2.0'
+info:
+  title: Документация по АДМ Райффайзенбанк
+  contact: {
+    email: Adm_product@raiffeisen.ru,
+    name: Support e-mail
+  }
+  x-logo:
+    url: images/raifflogo.png
+    backgroundColor: '#FFFFFF'
+    altText: Raiff logo
+  description: |
+
+    Для реализации взаимодействия с Партнёром Райффайзенбанк предоставляет API из следующих запросов:
+      * получение данных о событии инкассации
+      * пополнению счета ЮЛ с устройства АДМ
+      * получение списка доспуных шаблонов зачисления для доверенного лица
+
+    Для комфортного взаимодейтсвия с Райффайзенбанк рекомендуем реализовать на стороне Партнёра следующий метод API:
+      * получение списка платежей по устройствам за указанный период даты-времени
+
+    # Описание API
+
+    Bзаимодействие осуществляется по протоколу HTTP с использованием методов GET/POST (в описании каждого запроса явно указан требуемый метод и адрес).
+
+    POST-запросы используют JSON-аргументы, GET-запросы работают со строками запросов.
+
+    API всегда возвращает ответ в формате JSON, независимо от типа запроса.
+
+    Если в процессе обработки любого запроса произойдет логическая ошибка, API вернет идентификатор ошибки в параметре code и дополнительно описание ошибки (message).
+
+    # Авторизация
+
+    Авторизация производится посредством секретного ключа API (SECRET_KEY). Параметр авторизации указывается в заголовке Authorization, значение которого формируется как "Bearer SECRET_KEY".
+
+    Так же настраивается список IP с которых система будет пропускать запросы.
+
+    Продовый хост: https://adm.raiffeisen.ru
+
+    Тестовый хост: https://test.adm.raiffeisen.ru
+
+    # Параметры ошибок
+
+    Ответ любого метода содержит код сообщения (code). Если в процессе обработки любого запроса произойдет логическая ошибка, API вернет дополнительно описание ошибки (message).
+
+    HTTP-код | Описание
+    --------|-----------------------------
+    200 | Запрос успешно выполнен. В теле сообщения находятся данные запроса.
+    400 | Ошибка в параметрах запроса (отсутствие требуемых параметров или их некорректный формат).
+    404 | Не найден запрошенный АДМ.
+    500 | Bнутренняя ошибка в работе сервиса.
+
+servers:
+  - url: https://adm.raiffeisen.ru/api
+    description: Production API
+  - url: https://test.adm.raiffeisen.ru/api
+    description: Sandbox API
+tags:
+  - name: collection
+    x-displayName: 'Получение данных о событии инкассации'
+    description: |
+      Данный метод создает записи о инкассации АДМ. В запросе передается сумма и дата инкассации. Метод вызывается при открытии ящика АДМ инкассаторами.
+
+  - name: payments
+    x-displayName: 'Пополнению счета ЮЛ с устройства АДМ'
+    description: |
+      Данный метод создает записи о всех платежах, прошедших через АДМ
+
+  - name: templates
+    x-displayName: 'Получение списка доспуных шаблонов зачисления для доверенного лица'
+    description: |
+      Данный метод производит авторизацию доверенных лиц и доступных им шаблонов для зачисления наличных в АДМ.
+
+  - name: registry
+    x-displayName: 'Получение списка платежей'
+    description: |
+        Данный метод должен возвращать список всех зарегистрированных платежей в процессинге на указанном устройстве АДМ з
+
+x-tagGroups:
+  - name: API Raiffeisen Bank
+    tags:
+      - collection
+      - payments
+      - templates
+  - name: Partner's API
+    tags:
+      - registry
+
+
+paths:
+  /v1/register/adm/{admId}/payments/?startPaymentDate={}endPaymentDate={}:
+    get:
+      tags:
+        - registry
+      summary: Получение списка платежей на указанном устройстве АДМ за указанный период времени
+      operationId: getArrayPayments
+      produces:
+        - application/json;charset=UTF-8
+      parameters:
+        - in: header
+          name: Authorization
+          type: string
+          description: Bearer secret key
+          required: true
+        - name: admId
+          in: path
+          description: Идентификатор устройства АДМ
+          required: true
+          type: integer($int32)
+        - name: startPaymentDate
+          in: path
+          description: Дата начала выборки
+          required: true
+          type: string
+        - name: endPaymentDate
+          in: path
+          description: Дата окончания выборки
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Ответ с успешным результатом
+          schema:
+            "$ref": "#/definitions/Registry"
+      deprecated: false
+
+  /v1/adm/{admId}/collect:
+    post:
+      tags:
+        - collection
+      summary: Получение данных о событии инкассации
+      operationId: collectionPayments
+      produces:
+        - application/json;charset=UTF-8
+      parameters:
+        - in: header
+          name: Authorization
+          type: string
+          description: Bearer secret key
+          required: true
+        - name: admId
+          in: path
+          description: Идентификатор устройства АДМ
+          required: true
+          type: integer($int32)
+        - in: body
+          name: collection
+          description: Тело запроса
+          required: true
+          schema:
+            "$ref": "#/definitions/PayCollection"
+      responses:
+        '200':
+          description: Ответ с успешным результатом
+          schema:
+            "$ref": "#/definitions/Collection"
+        deprecated: false
+
+  /v1/adm/{admId}/payment:
+    post:
+      tags:
+        - payments
+      summary: Пополнению счета ЮЛ с устройства АДМ
+      operationId: clientsPayments
+      produces:
+        - application/json;charset=UTF-8
+      parameters:
+        - in: header
+          name: Authorization
+          type: string
+          description: Bearer secret key
+          required: true
+        - name: admId
+          in: path
+          description: Идентификатор устройства АДМ
+          required: true
+          type: integer($int32)
+        - in: body
+          name: payments
+          description: Тело запроса
+          required: true
+          schema:
+            "$ref": "#/definitions/PaymentsClient"
+      responses:
+        '200':
+          description: Ответ с успешным результатом
+          schema:
+            "$ref": "#/definitions/Payments"
+        deprecated: false
+
+  /v1/payers/{payerId}/paymentsTemplates:
+    get:
+      tags:
+        - templates
+      summary: Получение списка доспуных шаблонов зачисления для доверенного лица
+      operationId: getPaymentsTemplates
+      produces:
+        - application/json;charset=UTF-8
+      parameters:
+        - in: header
+          name: Authorization
+          type: string
+          description: Bearer secret key
+          required: true
+        - name: payerId
+          in: path
+          description: Идентификатор доверенного лица
+          required: true
+          type: integer($int32)
+      responses:
+        '200':
+          description: Ответ с успешным результатом
+          schema:
+            "$ref": "#/definitions/Templates"
+        deprecated: false
+
+definitions:
+  Registry:
+    type: array
+    items:
+      type: object
+      properties:
+        paymentid:
+          type: string
+          description: Идентификатор платежа
+          example: "240221164054872001"
+        payerId:
+          type: string
+          description: Идентификатор доверенного лица (тот, кто вносил деньги)
+          example: "5031964"
+        templateId:
+          type: string
+          description: Идентификатор шаблона платежа для зачисления
+          example: "57fd1f23-11bd-44c4-abfe-5f0c6710725f"
+        amount:
+          type: string
+          description: Сумма платежа
+          example: "100.01"
+        currency:
+          type: string
+          description: Валюта платежа
+          example: "643"
+        paymnetDate:
+          type: string
+          description: Отметка времени о проведении перевода на устройстве АДМ (формат ISO-8601)
+          example: "2021-02-24T16:40:47.000+00:00"
+        processingDate:
+          type: string
+          description: Отметка времени о проведении перевода в процессинге (формат ISO-8601)
+          example: "2021-02-24T16:40:54.873+00:00"
+        status:
+          type: string
+          enum:
+            - "PENDING"
+            - "SUCCESS"
+            - "ERROR"
+          description: Статус платежа
+          example: "SUCCESS"
+        receiptId:
+          type: string
+          description: Идентификатор чека
+          example: "240221164038329001XX"
+    title: Registry
+  PayCollection:
+    type: object
+    properties:
+      cashAmount:
+        type: string
+        description: Сумма инкассации
+        example: "100.00"
+      eventDate:
+        type: string
+        description: Дата инкассации
+        example: "2021-02-24T16:40:47.000+00:00"
+      lastPaymentId:
+        type: string
+        description: Идентификатор последнего платежа в цикле инкассации
+        example: "24022116402001"
+    title: PayCollection
+  Collection:
+    type: object
+    properties:
+      collection:
+        type: object
+        properties:
+          cashAmount:
+            type: string
+            description: Сумма инкассации
+            example: "100.00"
+          eventDate:
+            type: string
+            description: Дата инкассации
+            example: "2021-02-24T16:40:47.000+00:00"
+          lastPaymentId:
+            type: string
+            description: Идентификатор последнего платежа в цикле инкассации
+            example: "24022116402001"
+      status:
+        type: string
+        enum:
+          - "PENDING"
+          - "SUCCESS"
+          - "ERROR"
+        description: Статус платежа
+        example: "SUCCESS"
+    title: Collection
+  PaymentsClient:
+    type: object
+    properties:
+      accountId:
+        type: string
+        description: Идентификатор счета Клиента
+        example: "12121001"
+      amount:
+        type: string
+        description: Сумма платежа
+        example: "100.00"
+      currency:
+        type: string
+        description: Валюта платежа
+        example: "643"
+      payerId:
+        type: string
+        description: Идентификатор доверенного лица (тот, кто вносил деньги)
+        example: "5031964"
+      paymnetDate:
+        type: string
+        description: Отметка времени о проведении платежа на устройстве АДМ (формат ISO-8601)
+        example: "2021-02-24T16:40:47.000+00:00"
+      paymentid:
+        type: string
+        description: Идентификатор платежа
+        example: "240221164054872001"
+      processingDate:
+        type: string
+        description: Отметка времени о проведении платежа в процессинге (формат ISO-8601)
+        example: "2021-02-24T16:40:54.873+00:00"
+    title: PaymentsClient
+  Payments:
+    type: object
+    properties:
+      payment:
+        type: object
+        properties:
+          accountId:
+            type: string
+            description: Идентификатор счета Клиента
+            example: "12121001"
+          amount:
+            type: string
+            description: Сумма платежа
+            example: "100.00"
+          currency:
+            type: string
+            description: Валюта платежа
+            example: "643"
+          payerId:
+            type: string
+            description: Идентификатор доверенного лица (тот, кто вносил деньги)
+            example: "5031964"
+          paymnetDate:
+            type: string
+            description: Отметка времени о проведении платежа на устройстве АДМ (формат ISO-8601)
+            example: "2021-02-24T16:40:47.000+00:00"
+          paymentid:
+            type: string
+            description: Идентификатор платежа
+            example: "240221164054872001"
+          processingDate:
+            type: string
+            description: Отметка времени о проведении платежа в процессинге (формат ISO-8601)
+            example: "2021-02-24T16:40:54.873+00:00"
+      status:
+        type: string
+        enum:
+          - "PENDING"
+          - "SUCCESS"
+          - "ERROR"
+        description: Статус платежа
+        example: "SUCCESS"
+    title: Payments
+  Templates:
+    type: object
+    properties:
+      payerFullName:
+        type: string
+        description: Полное имя доверенного лица
+        example: "Иванов В.А"
+      paymentsTemplates:
+        type: object
+        description: Список шаблонов зачисления
+        properties:
+          templateId:
+            type: string
+            description: Идентификатор шаблона для зачисления
+            example: "7a3077b7-7ba0-4add-8f16-c0309b78be5b"
+          accountId:
+            type: string
+            description: Идентификатор счета компании
+            example: "40702810900000148030"
+          title:
+            type: string
+            description: Заголовок шаблона зачисления
+            example: "Касса 1"
+      status:
+        type: string
+        description: Статус обработки запроса
+        example: "SUCCESS"
+    title: Templates

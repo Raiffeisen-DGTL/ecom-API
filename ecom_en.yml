@@ -95,8 +95,8 @@ info:
     ## E-commerce
     For a full payment testing cycle, you must specify an amount of more than 10 rubles.
     Cards:
-    * 2200300100000023 12/24 880 - No 3DS
-    * 2201382000000021 12/24 880 - 3DS PIN for success payment 1234,for fail 1111
+
+    * 4000001000000018 12/24 880 - 3DS PIN for success payment 1234,for fail 1111
 
     ## SBP
     For a full payment testing cycle, Raiffeisenbank provides the opportunity to use a demo application for scanning QRC on behalf of the buyer at:
@@ -224,7 +224,7 @@ paths:
         - in: query
           name: orderId
           type: string
-          description: Store order ID.  A-z0-9-',"_:.,
+          description: Store order ID.  A-z0-9-_.
           maxLength: 40
         - in: query
           name: successUrl
@@ -463,6 +463,104 @@ definitions:
         description: Structure with additional store options
         maxLength: 999
         example: {"additionalInfo": "Sweet Cake"}
+      paymentMethod:
+        type: string
+        enum:
+          - ONLY_SBP
+          - ONLY_ACQUIRING
+        description: Choosing a payment method.
+      locale:
+        type: string
+        enum:
+          - ru
+          - en
+        description: Select the form language, by default ru
+      receiptNumber:
+        type: string
+        description: A unique receipt number that is created on the merchant's side. Serves as a pass-through identifier. Format A-Za-z0-9_-
+        maxLength: 128
+        example: 3000827351831
+      client:
+        type: object
+        required:
+          - email
+        description: Customer details
+        properties:
+          email:
+            type: string
+            description: Customer's email address to send the receipt
+            maxLength: 64
+            example: customer@domain.ru
+          name:
+            type: string
+            description: Customer's name
+            maxLength: 256
+            example: Ivanov Ivan Ivanovich
+      items:
+        type: array
+        description: Receipt positions (no more than 100 objects)
+        items:
+          type: object
+          required:
+            - name
+            - price
+            - quantity
+            - amount
+            - vat
+          properties:
+            name:
+              type: string
+              description: Name of goods, work, service, other subject of calculation
+              maxLength: 128
+              example: Chocolate candies
+            price:
+              type: number
+              description: Price per unit of goods, work, services, other subject of calculation in rubles (8 characters for a whole part, 2 - for a fractional part)
+              example: 1000.00
+            quantity:
+              type: number
+              description: Quantity / weight (5 characters for a whole part, 3 - for a fractional part)
+              example: 1.2
+            amount:
+              type: number
+              description: Amount in rubles (8 characters for a whole part, 2 - for a fractional part)
+              example: 1200.00
+            measurementUnit:
+              type: string
+              description: Unit of measurement of goods, work, services, other subject of calculation
+              maxLength: 16
+              example: Kg
+            nomenclatureCode:
+              type: string
+              description: Product code
+              maxLength: 150
+              example: 1704909900
+            vat:
+              type: object
+              required:
+                - type
+                - amount
+              description: Tax data on the receipt item
+              properties:
+                type:
+                  type: string
+                  description: VAT rate
+                  enum:
+                    - none
+                    - vat0
+                    - vat10
+                    - vat110
+                    - vat20
+                    - vat120
+                  example: vat20
+                amount:
+                  type: number
+                  description: Tax amount per receipt position in rubles (8 characters for a whole part, 2 - for a fractional part)
+                  example: 200.00
+      total:
+        type: number
+        description: The total amount of the receipt (8 characters for a whole part, 2 - for a fractional part)
+        example: 1200.00
     title: TransactionID
   OrderInformation:
     type: object
