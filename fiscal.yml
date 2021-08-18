@@ -87,9 +87,7 @@ tags:
       RECEIPT_TYPE_NOT_SUPPORTED | Регистрация чеков типа {value} не поддерживается
       RECEIPT_VALIDATION_FAILED | Чек не прошел валидацию. Причина: {value}
       RECEIPT_NOT_FOUND | Чек с id = {value} не найден
-      RECEIPT_ALREADY_IN_PROGRESS | Чек {value} в процессе регистрации, действие невозможно
-      RECEIPT_ALREADY_REGISTERED | Чек {value} уже зарегистрирован, действие невозможно
-      RECEIPT_ALREADY_FAILED | Регистрация чека {value} завершилась ошибкой, действие невозможно
+      RECEIPT_STATUS_CONFLICT | Чек {value} в статусе {value}, действие невозможно
       TOKEN_REQUEST_FAILED | Не удалось получить токен для отправки чека в ОФД
       RECEIPT_REGISTRATION_FAILED | Не удалось зарегистрировать чек {value}
       STATUS_REQUEST_FAILED | Не удалось запросить статус чека ofdId = {value} мерчанта с publicId = {value}
@@ -115,6 +113,12 @@ tags:
       * Добавлено описание ошибки 400 Bad Request
       * Дополнен справочник ошибок
 
+  - name: 11.08.2021
+    x-displayName: '11.08.2021'
+    description: |
+      * Обновлен справочник ошибок
+      * Скорректировано описание методов API
+
 x-tagGroups:
   - name: API
     tags:
@@ -128,6 +132,7 @@ x-tagGroups:
       - 07.07.2021
       - 13.07.2021
       - 28.07.2021
+      - 11.08.2021
 paths:
   /fiscal/v1/receipts/sell:
     post:
@@ -138,8 +143,6 @@ paths:
         Метод предназначен для создания нового чека прихода с указанным receiptNumber.
         Также позволяет обновить уже существующий чек прихода при повторном запросе с тем же receiptNumber.
         Метод возвращает тело чека, а также его тип и статус в дополнительных параметрах ответа.
-
-        Если в ответ на запрос получена ошибка RECEIPT_ALREADY_FAILED, необходимо создать новый чек.
       consumes:
         - application/json;charset=UTF-8
       produces:
@@ -223,9 +226,6 @@ paths:
         Метод предназначен для отправки чека прихода на регистрацию в ОФД.
         Метод возвращает тело чека, а также его тип и статус в дополнительных параметрах ответа.
         После отправки чека на регистрацию он будет недоступен для редактирования.
-
-        Если в ответ на запрос получена ошибка RECEIPT_ALREADY_FAILED,
-        необходимо создать новый чек и повторить попытку регистрации.
       produces:
         - application/json;charset=UTF-8
       parameters:
@@ -324,8 +324,6 @@ paths:
         Метод предназначен для создания нового чека возврата с указанным receiptNumber.
         Также позволяет обновить уже существующий чек возврата при повторном запросе с тем же receiptNumber.
         Метод возвращает тело чека, а также его тип и статус в дополнительных параметрах ответа.
-
-        Если в ответ на запрос получена ошибка RECEIPT_ALREADY_FAILED, необходимо создать новый чек.
       consumes:
         - application/json;charset=UTF-8
       produces:
@@ -409,9 +407,6 @@ paths:
         Метод предназначен для отправки чека возврата на регистрацию в ОФД.
         Метод возвращает тело чека, а также его тип и статус в дополнительных параметрах ответа.
         После отправки чека на регистрацию он будет недоступен для редактирования.
-
-        Если в ответ на запрос получена ошибка RECEIPT_ALREADY_FAILED,
-        необходимо создать новый чек и повторить попытку регистрации.
       produces:
         - application/json;charset=UTF-8
       parameters:
@@ -752,11 +747,11 @@ definitions:
       code:
         type: string
         description: Код ошибки
-        example: 'RECEIPT_ALREADY_IN_PROGRESS'
+        example: 'RECEIPT_STATUS_CONFLICT'
       message:
         type: string
         description: Описание ошибки
-        example: 'Чек {value} в процессе регистрации, действие невозможно'
+        example: 'Чек {value} в статусе {value}, действие невозможно'
     title: Error409
   Error500:
     type: object

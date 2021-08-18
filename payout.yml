@@ -1,16 +1,14 @@
----
 openapi: 3.1.0
 info:
   title: API интеграции выплат
-  contact: {
-    email: ecom@raiffeisen.ru,
+  contact:
+    email: ecom@raiffeisen.ru
     name: Support e-mail
-  }
   x-logo:
     url: images/raifflogo.png
     backgroundColor: '#FFFFFF'
     altText: Raiff logo
-  description: |
+  description: |-
     Свои предложения и идеи о документации можно оставить в репозитории по адресу: https://github.com/Raiffeisen-DGTL/ecom-API/blob/master/payout.yml
 
     # Описание API
@@ -21,13 +19,17 @@ info:
     API всегда возвращает ответ в формате JSON, независимо от типа запроса.
 
     Ответ любого метода содержит код сообщения (code). Если в процессе обработки любого запроса произойдет логическая ошибка, API вернет дополнительно описание ошибки (message).
+
+    # Авторизация
+    Авторизация производится посредством секретного ключа API (secretKey). Параметр авторизации указывается в заголовке Authorization, значение которого формируется как "Bearer secretKey".
+
+    Так же настраивается список IP с которых система будет пропускать запросы.
   summary: API интеграции выплат СБП
 servers:
   - url: 'https://test.ecom.raiffeisen.ru/api'
     description: Sandbox
   - url: 'https://e-commerce.raiffeisen.ru/api'
     description: Production
-
 tags:
   - name: api-controller
     x-displayName: Работа с выплатами
@@ -149,8 +151,13 @@ paths:
                       name: ВТБ
       operationId: get-payout-v1-sbp-banks
       description: 'Получение списка банков, принимающих выплаты по СБП'
-      security:
-        - secretKey: []
+      parameters:
+        - schema:
+            type: string
+          in: header
+          name: 'Authorization:'
+          required: true
+          description: '[secretKey](#section/Avtorizaciya)'
     parameters: []
   /payout/v1/payouts:
     post:
@@ -303,8 +310,6 @@ paths:
                       date: '2019-07-11T17:45:13+03:00'
                     createDate: '2019-07-11T17:45:13+03:00'
       description: Проведение выплаты
-      security:
-        - secretKey: []
       requestBody:
         content:
           application/json:
@@ -428,9 +433,15 @@ paths:
         - schema:
             type: string
           in: header
-          name: 'Content-type: application/json'
-          description: 'Content-type: application/json'
+          name: 'Content-type: '
+          description: application/json
           required: true
+        - schema:
+            type: string
+          in: header
+          name: 'Authorization:'
+          required: true
+          description: '[secretKey](#section/Avtorizaciya)'
       summary: Проведение выплаты
   /payout/v1/payouts/draft:
     post:
@@ -587,15 +598,19 @@ paths:
                     createDate: '2019-07-11T17:45:13+03:00'
       x-internal: false
       description: Метод позволяет создавать заявку на выплату для двухфазного взаимодействия
-      security:
-        - secretKey: []
       parameters:
         - schema:
             type: string
           in: header
-          name: 'Content-type: application/json'
-          description: 'Content-type: application/json'
+          name: 'Content-type:'
+          description: application/json
           required: true
+        - schema:
+            type: string
+          in: header
+          name: 'Authorization:'
+          required: true
+          description: '[secretKey](#section/Avtorizaciya)'
       requestBody:
         content:
           application/json:
@@ -913,8 +928,13 @@ paths:
                     createDate: '2019-07-11T17:45:13+03:00'
       operationId: get-payout-v1-payouts-id
       description: Получение информации по платежу
-      security:
-        - secretKey: []
+      parameters:
+        - schema:
+            type: string
+          in: header
+          name: 'Authorization:'
+          required: true
+          description: '[secretKey](#section/Avtorizaciya)'
     put:
       summary: Подтверждение выплаты
       tags:
@@ -923,123 +943,215 @@ paths:
       responses:
         '200':
           description: OK
-      security:
-        - secretKey: []
       parameters:
         - schema:
             type: string
           in: header
-          name: 'Content-type: application/json'
-          description: 'Content-type: application/json'
+          name: 'Content-type:'
+          description: application/json
           required: true
+        - schema:
+            type: string
+          in: header
+          name: 'Authorization:'
+          required: true
+          description: '[secretKey](#section/Avtorizaciya)'
       description: 'Подтверждение платежа , при двухфазной выплате.'
-components:
-  schemas: {}
-  securitySchemes:
-    secretKey:
-      type: http
-      scheme: bearer
-      description: |-
-        Авторизация производится посредством секретного ключа API (SECRET_KEY). Параметр авторизации указывается в заголовке Authorization, значение которого формируется как "Bearer SECRET_KEY".
-
-        Так же настраивается список IP с которых система будет пропускать запросы.
-  parameters: {}
+  /settings/v1/callback:
+    post:
+      summary: Настройка url для callback
+      operationId: post-settings-v1-callback
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                description: ''
+                type: object
+                properties:
+                  callbackUrl:
+                    type: string
+                    minLength: 1
+                required:
+                  - callbackUrl
+                x-examples:
+                  example-1:
+                    callbackUrl: 'https://yoururl.ru'
+              examples:
+                '200':
+                  value:
+                    callbackUrl: 'https://yoururl.ru'
+      description: Метод позволяет настроить url для получения уведомлений.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              description: ''
+              type: object
+              properties:
+                callbackUrl:
+                  type: string
+                  minLength: 1
+              required:
+                - callbackUrl
+              x-examples:
+                example-1:
+                  callbackUrl: 'https://yoururl.ru'
+            examples:
+              Payload:
+                value:
+                  callbackUrl: 'https://yoururl.ru'
+        description: ''
+      tags:
+        - Callback
+      parameters:
+        - schema:
+            type: string
+          in: header
+          name: 'Content-type:'
+          description: application/json
+          required: true
+        - schema:
+            type: string
+          in: header
+          name: 'Authorization:'
+          required: true
+          description: '[secretKey](#section/Avtorizaciya)'
 x-webhooks:
   newPay:
     post:
       summary: Уведомление о платеже
-      operationId: сallback
+      operationId: сallbackTransaction
       tags:
         - Callback
       requestBody:
         content:
           application/json:
             schema:
+              $ref: '#/components/schemas/paymentsNotification'
+components:
+  schemas:
+    paymentsNotification:
+      description: Уведомление о выплате
+      type: object
+      x-examples:
+        example-1:
+          event: payout
+          payout:
+            id: p210730t2WjboNkN0ft1
+            amount: 0.01
+            currency: RUB
+            payoutMethod: SBP
+            payoutParams:
+              phone: '79267016490'
+              bankAlias: RAIFFEISEN
+              firstName: Сергей
+              middleName: Сергеевич
+              lastName: Брюзгин
+            extra:
+              contract: 1234567/89012
+            status:
+              value: COMPLETED
+              date: '2021-07-30T14:16:32+03:00'
+            creationDate: '2021-07-30T14:16:31+03:00'
+      examples:
+        - event: payout
+          payout:
+            id: p210730t2jboNkN0ft1
+            amount: 0.01
+            currency: RUB
+            payoutMethod: SBP
+            payoutParams:
+              phone: '79191234567'
+              bankAlias: RAIFFEISEN
+              firstName: Петр
+              middleName: Петрович
+              lastName: Петров
+            extra:
+              contract: 1234567/89012
+            status:
+              value: COMPLETED
+              date: '2021-07-30T14:16:32+03:00'
+            creationDate: '2021-07-30T14:16:31+03:00'
+      properties:
+        event:
+          type: string
+          description: Тип уведомления
+        payout:
+          type: object
+          required:
+            - id
+            - amount
+            - currency
+            - payoutMethod
+            - payoutParams
+            - status
+            - creationDate
+          properties:
+            id:
+              type: string
+              description: Уникальныйидентификатор операции
+              format: Aa-Zz0-9_-
+            amount:
+              type: number
+              description: Сумма в рублях
+            currency:
+              type: string
+              description: Валюта платежа
+              enum:
+                - RUB
+            payoutMethod:
+              type: string
+              description: Тип выплаты
+              enum:
+                - SBP
+            payoutParams:
               type: object
+              required:
+                - phone
+                - bankAlias
               properties:
-                event:
+                phone:
                   type: string
-                  description: Тип операции
-                  example: payout
-                payout:
-                  type: object
-                  properties:
-                    id:
-                      type: string
-                      description: Aa-Zz0-9_-
-                      maxLength: 20
-                      example: 1404fhr7i272a2
-                    account:
-                      type: string
-                      description: Cчет для выплаты
-                      maxLength: 20
-                      example: '40700000000000000000'
-                    amount:
-                      type: number
-                      description: Сумма в рублях
-                      example: 1110.01
-                    currency:
-                      type: string
-                      description: Валюта платежа
-                      enum:
-                        - RUB
-                      maxLength: 3
-                      example: RUB
-                    payoutMethod:
-                      enum:
-                        - SBP
-                      description: Тип выплаты
-                      example: SBP
-                    payoutParams:
-                      type: object
-                      properties:
-                        phone:
-                          type: string
-                          description: Номер телефона получателя
-                          maxLength: 15
-                          example: '79191234567'
-                        bankAlias:
-                          type: string
-                          description: Код банка получателя из запроса списка банков
-                          maxLength: 255
-                          example: RAIFFEISEN
-                        firstName:
-                          type: string
-                          example: Петр
-                          maxLength: 140
-                          description: Имя получателя
-                        middleName:
-                          type: string
-                          example: Петрович
-                          maxLength: 140
-                          description: Второе имя получателя
-                        lastName:
-                          type: string
-                          example: Петров
-                          maxLength: 140
-                          description: Фамилия получателя
-                    incomeTypeCode:
-                      type: string
-                      enum:
-                        - '1'
-                        - '2'
-                        - '3'
-                      description: 'Код вида дохода<br/>[Значения описаны тут](http://www.consultant.ru/document/cons_doc_LAW_353568/527cf8edd2262cb7068cafd44ed596d9a05dd237/)'
-                    extra:
-                      type: object
-                      description: Дополнительные данные
-                    status:
-                      type: object
-                      properties:
-                        value:
-                          enum:
-                            - COMPLETED
-                          description: Статус
-                          example: COMPLETED
-                        date:
-                          description: Дата
-                          example: '2019-07-11T17:45:13+03:00'
-                    createDate:
-                      description: Дата создания
-                      example: '2019-07-11T17:45:13+03:00'
-              title: Callback
+                  description: Номер телефона получателя
+                  maxLength: 15
+                bankAlias:
+                  type: string
+                  description: Код банка получателя из запроса списка банков
+                  maxLength: 255
+                firstName:
+                  type: string
+                  description: Имя получателя
+                middleName:
+                  type: string
+                  description: Отчество получателя
+                lastName:
+                  type: string
+                  description: Фамилия получателя
+            extra:
+              type: object
+              description: Дополнительные данные
+            status:
+              type: object
+              required:
+                - value
+                - date
+              properties:
+                value:
+                  type: string
+                  description: Статус
+                  enum:
+                    - COMPLETED
+                date:
+                  type: string
+                  description: Дата проведения операции
+            creationDate:
+              type: string
+              description: Дата создания заявки
+            incomeTypeCode:
+              type: string
+              description: 'Код вида дохода<br/>[Значения описаны тут](http://www.consultant.ru/document/cons_doc_LAW_353568/527cf8edd2262cb7068cafd44ed596d9a05dd237/)'
+      required:
+        - event
+        - payout
