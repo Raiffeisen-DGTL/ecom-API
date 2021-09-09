@@ -35,9 +35,30 @@ info:
 
     ## Поддержка 54-ФЗ
 
-    Мы не ограничиваем в выборе решения по фискализации, но рекомендуем воспользоваться решением от наших партнеров:
-    * Интегрироваться с  операторам фискальных данных [АТОЛ.](https://online.atol.ru/lk/Account/Register?partnerUid=18583cd5-dae2-4fb1-a98b-f4b80d891eb0)
-    * Воспользоваться решениями [Paykeeper.](https://raiffeisen-processing.ru)
+    По закону от 22.05.2003 № 54–ФЗ "О применении контрольно-кассовой техники при осуществлении расчетов в Российской Федерации" при оплате товаров, работ или услуг необходимо формировать фискальный чек и отправлять его в налоговую с помощью кассы.
+
+    Клиенты Райффайзенбанка, подключившие интернет-эквайринг, также могут воспользоваться услугой фискализации чеков.
+    Для этого необходимо:
+    1. Зарегистрироваться в сервисе ["АТОЛ Онлайн"](https://online.atol.ru/lk/Account/Register?partnerUid=18583cd5-dae2-4fb1-a98b-f4b80d891eb0) и подключить онлайн-кассу
+    2. Заключить договор с [оператором фискальных данных](https://www.nalog.gov.ru/rn77/related_activities/registries/fiscaloperators/)
+    3. Отправить заявку на фискализацию
+
+    В заявке необходимо указать данные для подключения: идентификаторы мерчантов (publicId), применяемую систему налогообложения,
+    E-mail (для получения чека, если E-mail не указан покупателем), логин, пароль и идентификатор группы ККТ от "АТОЛ Онлайн".
+
+    Чтобы получить логин, пароль и идентификатор группы ККТ, зайдите в личный кабинет ["АТОЛ Онлайн"](https://online.atol.ru/lk/Account/Login). Выберите раздел "Мои компании", нажмите кнопку "Настройки интегратора".
+     Скачается XML-файл с настройками. Найдите в файле элемент access, в нём будут все три параметра: login, password, group_code.
+     Если возникли трудности, обратитесь в техподдержку "АТОЛ Онлайн".
+
+    Запрос на подключение фискализации можно отправить одним из способов ниже:
+    * По E-mail <a href="mailto:SME_Acquiring@raiffeisen.ru?subject=Подключение фискализации чеков по транзакциям ECOM&cc=<E-mail менеджера>&body=Добрый день!%0A%0A
+    Просьба подключить услугу фискализации чеков по транзакциям ECOM. Данные для подключения ниже:%0A%0A1. Идентификатор(-ы) мерчанта(-ов) (publicId) – %0A%0A2. Применяемая система налогообложения – %0A%0A3. E-mail (для поля «Отправитель чека» и для получения чека, если E-mail не указан покупателем) – %0A%0A4. Логин учетной записи в «АТОЛ Онлайн» – %0A%0A5. Пароль от учетной записи в «АТОЛ Онлайн» – %0A%0A6. Идентификатор группы ККТ в «АТОЛ Онлайн» – ">SME_Acquiring@raiffeisen.ru</a>.
+    Пример заявки доступнен при нажатии на E-mail.
+    * Через менеджера банка. Для этого безопасным способом отправьте менеджеру необходимые для подключения данные.
+
+    По итогам подключения чеки по транзакциям через интернет-эквайринг будут автоматически регистрироваться через выбранного ОФД.
+
+    Помимо автоматической фискализации чеков также доступна опция фискализации через [API](https://e-commerce.raiffeisen.ru/api/doc/fiscal.html) банка.
 
     # Cхема работы
     Демонстрация:
@@ -65,7 +86,7 @@ info:
     ##  Авторизация
 
     Для авторизация запросов необходимы:
-    * publicId - идентификатор,который используется для открытия платежной формы и не является конфиденциальным
+    * publicId - идентификатор, который используется для открытия платежной формы и не является конфиденциальным.
     * secretKey - секретный ключ, который используется для межсервисного взаимодействия.
 
     Продовый хост: https://e-commerce.raiffeisen.ru
@@ -249,7 +270,7 @@ paths:
           enum:
             - ru
             - en
-          description: Выбор языка формы , по умолчанию ru
+          description: Выбор языка формы, по умолчанию ru
       responses:
         '200':
           description: Платежная страница.
@@ -443,7 +464,7 @@ definitions:
       amount:
         type: number
         description: Сумма платежа в рублях
-        example: 1000.50
+        example: 1200.00
       comment:
         type: string
         description: Описание платежа
@@ -468,83 +489,91 @@ definitions:
         enum:
           - ONLY_SBP
           - ONLY_ACQUIRING
-        description: Выбор метода оплаты. Если значение не передано, отображается общая форма.
+        description: Выбор метода оплаты. Если значение не передано, отображается общая форма
       locale:
         type: string
         enum:
           - ru
           - en
-        description: Выбор языка формы , по умолчанию ru
-      receiptNumber:
-        type: string
-        description: Уникальный номер чека, который создается на стороне мерчанта. Выполняет роль сквозного идентификатора. Формат A-Za-z0-9_-
-        maxLength: 128
-        example: 3000827351831
-      client:
+        description: Выбор языка формы, по умолчанию ru
+      receipt:
         type: object
         required:
-          - email
-        description: Данные о покупателе
+          - items
+        description: Данные чека. Параметр обязателен, если подключена фискализация чеков
         properties:
-          email:
+          receiptNumber:
             type: string
-            description: Электронный адрес покупателя для отправки чека
-            maxLength: 64
-            example: customer@domain.ru
-          name:
-            type: string
-            description: ФИО покупателя
-            maxLength: 256
-            example: Иванов Иван Иванович
-      items:
-        type: array
-        description: Позиции чека (не более 100 объектов)
-        items:
-          type: object
-          required:
-            - name
-            - price
-            - quantity
-            - amount
-            - vat
-          properties:
-            name:
-              type: string
-              description: Наименование товара, работы, услуги, иного предмета расчета
-              maxLength: 128
-              example: Шоколадные конфеты
-            price:
-              type: number
-              description: Цена за единицу товара, работы, услуги, иного предмета расчета в рублях (8 символов на целую часть, 2 - на дробную)
-              example: 1000.00
-            quantity:
-              type: number
-              description: Количество/вес (5 символов на целую часть, 3 - на дробную)
-              example: 1.2
-            amount:
-              type: number
-              description: Сумма в рублях (8 символов на целую часть, 2 - на дробную)
-              example: 1200.00
-            measurementUnit:
-              type: string
-              description: Единица измерения товара, работы, услуги, иного предмета расчета
-              maxLength: 16
-              example: кг
-            nomenclatureCode:
-              type: string
-              description: Код товара
-              maxLength: 150
-              example: 1704909900
-            vat:
+            description: Уникальный номер чека, формат A-Za-z0-9_-. Если значение не передано, то заполняется номером заказа (orderId).
+            maxLength: 99
+            example: 3000827351831
+          customer:
+            type: object
+            description: Данные о покупателе
+            properties:
+              email:
+                type: string
+                description: E-mail покупателя для отправки чека. Значение выводится в поле ввода E-mail на платежной форме, покупатель может его изменить. Если по итогам платежа E-mail не передан, то чек отправляется на электронную почту мерчанта
+                maxLength: 64
+                example: customer@domain.ru
+              name:
+                type: string
+                description: ФИО покупателя
+                maxLength: 256
+                example: Иванов Иван Иванович
+          items:
+            type: array
+            description: Позиции чека (не более 100 объектов)
+            items:
               type: object
               required:
-                - type
+                - name
+                - price
+                - quantity
                 - amount
-              description: Данные о налоге на позицию чека
+                - vatType
               properties:
-                type:
+                name:
                   type: string
-                  description: Ставка НДС
+                  description: Наименование товара, работы, услуги, иного предмета расчета
+                  maxLength: 128
+                  example: Шоколадный торт
+                price:
+                  type: number
+                  description: Цена за единицу товара, работы, услуги, иного предмета расчета в рублях (8 символов на целую часть, 2 - на дробную)
+                  example: 1200.00
+                quantity:
+                  type: number
+                  description: Количество/вес (5 символов на целую часть, 3 - на дробную)
+                  example: 1
+                amount:
+                  type: number
+                  description: Сумма в рублях (8 символов на целую часть, 2 - на дробную)
+                  example: 1200.00
+                paymentObject:
+                  type: string
+                  description: Признак предмета расчёта (товар, подакцизный товар, работа, услуга, платеж, иной предмет расчета). Если значение не передано, то заполняется на стороне выбранного ОФД в соответствии с установленным протоколом
+                  enum:
+                    - commodity
+                    - excise
+                    - job
+                    - service
+                    - payment
+                    - another
+                  example: commodity
+                measurementUnit:
+                  type: string
+                  description: Единица измерения товара, работы, услуги, иного предмета расчета
+                  maxLength: 16
+                  example: шт
+                nomenclatureCode:
+                  type: string
+                  description: Код товара
+                  maxLength: 150
+                  example: 1806201000
+                vatType:
+                  type: string
+                  description: Ставка НДС на позицию чека
                   enum:
                     - none
                     - vat0
@@ -553,14 +582,6 @@ definitions:
                     - vat20
                     - vat120
                   example: vat20
-                amount:
-                  type: number
-                  description: Сумма налога на позицию чека в рублях (8 символов на целую часть, 2 - на дробную)
-                  example: 200.00
-      total:
-        type: number
-        description: Итоговая сумма чека (8 символов на целую часть, 2 - на дробную)
-        example: 1200.00
     title: TransactionID
   acquiring:
     type: object
@@ -726,6 +747,8 @@ definitions:
       mapping:
   Refund:
     type: object
+    required:
+      - amount
     properties:
       amount:
         type: number
@@ -743,7 +766,7 @@ definitions:
         example: 'SUCCESS'
       amount:
         type: number
-        description: Сумма возврата врублях
+        description: Сумма возврата в рублях
         example: 150
       refundStatus:
         type: string

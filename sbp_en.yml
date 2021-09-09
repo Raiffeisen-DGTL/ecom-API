@@ -38,11 +38,12 @@ info:
     * defines the format of the notification of the fact of the SBP payment
     * provides an interface for receiving payment data
 
-    ## Support 54-ФЗ
+    ## Support 54-FZ
 
-    We don't restrict your choice of fiscal solutions, but we recommend using a solution from our partners:
-    * To integrate with the operator's fiscal data [АТОЛ.](https://online.atol.ru/lk/Account/Register?partnerUid=18583cd5-dae2-4fb1-a98b-f4b80d891eb0)
-    * Use the [Paykeeper](https://raiffeisen-processing.ru) solutions.
+    In accordance with the Federal Law NO. 54-FZ of May 22, 2003 "On the use of cash registers in implementation of settlements in the Russian Federation",
+    for taxation purposes a fiscal receipt is required for making settlements for goods sold, work performed or services rendered, as well as transfer of the receipts to tax authorities.
+
+    Raiffeisenbank provides generation of fiscal receipts and their transfer to tax authorities by integration via [API](https://e-commerce.raiffeisen.ru/api/doc/fiscal.html).
 
     # General scheme of work
 
@@ -64,15 +65,24 @@ info:
     After that, using the unique subscription identifier, you can apply for debiting funds from the client for your goods and services without the client's acceptance.
 
     <a href='images/subscriptions.png' target='_blank'><img src='images/subscriptions.png'></a>
+
+    ## Payment and subscription scheme
+
+    There is also a scheme in which one request receives a QR code to receive payment and subscription.
+
+    In this case, the client makes a payment, after which a window is displayed with a proposal to activate the subscription.
+
+    The customer can pay but unsubscribe. Also, the client can make a payment from a bank application that does not support subscriptions.
+
+    <a href='images/subscriptionsandpayment.png' target='_blank'><img src='images/subscriptionsandpayment.png'></a>
+
     # Ready solutions
 
-    ## SDK
+
     You can use our SDK for faster integration:
     * [Java](https://github.com/Raiffeisen-DGTL/sbp-sdk-java)
 
-    ## CMS
-
-    You can use the [Paykeeper](https://raiffeisen-processing.ru) solutions.
+    [Our other solutions.](https://e-commerce.raiffeisen.ru/api/doc/solutions.html)
 
     # API description
     The interaction is carried out using the HTTP protocol using the GET / POST methods (the description of each request clearly indicates the required method and address).
@@ -131,7 +141,7 @@ tags:
         * receiving information on return.
   - name: qr-subscription
     x-displayName: Subscription
-    description: "To enable the subscription, additional configuration is required from the bank.\n  [Scheme.](#section/General-scheme-of-work/Subscription-scheme)\n"
+    description: "To enable the subscription, additional configuration is required from the bank.\n  There are two possible scenarios for implementation:\n  *\_Subscription\n\n  [Scheme.](#section/General-scheme-of-work/Subscription-scheme)\n  * Payment and subscription\n\n  [Scheme.](#section/General-scheme-of-work/Payment-and-subscription-scheme)\n"
   - name: Callback
     x-displayName: Payment notification
     description: |
@@ -221,6 +231,10 @@ tags:
     x-displayName: 06.07.2021
     description: |
       * Add [subscriptions service](#tag/qr-subscription)
+  - name: 09.09.2021
+    x-displayName: 09.09.2021
+    description: |
+      * Correct maxLength paymentDetails in refund method
 x-tagGroups:
   - name: API
     tags:
@@ -238,6 +252,7 @@ x-tagGroups:
     tags:
       - 02.06.2021
       - 06.07.2021
+      - 09.09.2021
 paths:
   /settings/v1/callback:
     post:
@@ -312,14 +327,21 @@ paths:
               schema:
                 $ref: '#/components/schemas/qrStatus'
               examples:
-                '200':
+                QRDynamic subscription:
+                  value:
+                    code: SUCCESS
+                    qrId: AD1F2CD7212E48FA919AB52EF0AEFB33
+                    payload: 'https://qr.nspk.ru/AD1F2CD7212E48FA919AB52EF0AEFB33?type=02&bank=10000001&sum=111000&cur=RUB&crc=C08B'
+                    qrUrl: 'https://test.ecom.raiffeisen.ru/api/sbp/v1/qr/AD1F2CD7212E48FA919AB52EF0AEFB33/image'
+                    subscriptionId: '120059'
+                QRDynamic/QRStatic:
                   value:
                     code: SUCCESS
                     qrId: AD100004BAL7227F9BNP6KNE007J9B3K
                     payload: 'https://qr.nspk.ru/AD100004BAL7227F9BNP6KNE007J9B3K?type=02&bank=100000000007&sum=1&cur=RUB&crc=AB75'
                     qrUrl: 'https://e-commerce.raiffeisen.ru/api/sbp/v1/qr/AD100004BAL7227F9BNP6KNE007J9B3K/image'
       description: |-
-        Registration of the QR code is performed without authorization, which allows you to generate it on the website or application. This method allows you to generate both static QR codes and dynamic QR codes.
+        Registration of the QR code is performed without authorization, which allows you to generate it on the website or application. This method allows you to generate both static QR codes and dynamic QR codes. You can also use this method to generate a QR code for pay and subscription at one the moment.
 
         Test QR codes can only be paid for by our [test application.](#section/Testing)
       requestBody:
@@ -339,7 +361,21 @@ paths:
                   paymentDetails: Назначение платежа
                   qrType: QRDynamic
                   qrExpirationDate: '2023-07-22T09:14:38+03:00'
-                  sbpMerchantId: MA000000055
+                  sbpMerchantId: MA0000000552
+              QRDynamic subscription:
+                value:
+                  account: 40700000000000000000
+                  additionalInfo: Доп информация
+                  amount: 1110
+                  currency: RUB
+                  order: 1-22-333
+                  paymentDetails: Назначение платежа
+                  qrType: QRDynamic
+                  qrExpirationDate: '2023-07-22T09:14:38+03:00'
+                  sbpMerchantId: MA0000000552
+                  subscription:
+                    id: '120059'
+                    subscriptionPurpose: Подписка на услуги
               QRStatic:
                 value:
                   order: 1-22-333
@@ -442,7 +478,7 @@ paths:
                     type: string
                     enum:
                       - NEW
-                      - IN_PROGRES
+                      - IN_PROGRESS
                       - CANCELLED
                       - EXPIRED
                       - PAID
@@ -1182,6 +1218,18 @@ components:
               type: string
               description: ID of registered partner in SBP
               maxLength: 12
+            subscription:
+              type: object
+              description: ''
+              properties:
+                id:
+                  type: string
+                  minLength: 1
+                  description: Subscription id
+                subscriptionPurpose:
+                  type: string
+                  minLength: 1
+                  description: Subscription info about client
           required:
             - amount
             - currency
@@ -1207,6 +1255,9 @@ components:
           qrType: QRDynamic
           qrExpirationDate: '2023-07-22T09:14:38+03:00'
           sbpMerchantId: MA0000000552
+          subscription:
+            id: '120059'
+            subscriptionPurpose: Подписка на услуги
     QRStatic:
       description: 'QRStatic is a static QR code. It can be paid several times. If a static QR code is registered without an amount, the client will independently indicate the amount in the mobile application. '
       allOf:
@@ -1288,6 +1339,9 @@ components:
         qrUrl:
           type: string
           description: URL with registered QR-code in SBP
+        subscriptionId:
+          type: string
+          description: Subscription id
       required:
         - code
         - qrId
@@ -1364,7 +1418,7 @@ components:
             paymentDetails:
               type: string
               description: Purpose of payment
-              maxLength: 180
+              maxLength: 140
             refundId:
               type: string
               description: Unique Refund Request ID
@@ -1549,7 +1603,7 @@ components:
             - UNSUBSCRIBED
         qr:
           type: object
-          description: data of QR-subscription
+          description: Данные по QR-подписки
           required:
             - id
             - payload

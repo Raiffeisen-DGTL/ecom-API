@@ -38,11 +38,12 @@ info:
     * defines the format of the notification of the fact of the SBP payment
     * provides an interface for receiving payment data
 
-    ## Support 54-ФЗ
+    ## Support 54-FZ
 
-    We don't restrict your choice of fiscal solutions, but we recommend using a solution from our partners:
-    * To integrate with the operator's fiscal data [АТОЛ.](https://online.atol.ru/lk/Account/Register?partnerUid=18583cd5-dae2-4fb1-a98b-f4b80d891eb0)
-    * Use the [Paykeeper](https://raiffeisen-processing.ru) solutions.
+    In accordance with the Federal Law NO. 54-FZ of May 22, 2003 "On the use of cash registers in implementation of settlements in the Russian Federation",
+    for taxation purposes a fiscal receipt is required for making settlements for goods sold, work performed or services rendered, as well as transfer of the receipts to tax authorities.
+
+    Raiffeisenbank provides generation of fiscal receipts and their transfer to tax authorities by integration via [API](https://e-commerce.raiffeisen.ru/api/doc/fiscal.html).
 
     # General scheme of work
 
@@ -77,13 +78,11 @@ info:
 
     # Ready solutions
 
-    ## SDK
+
     You can use our SDK for faster integration:
     * [Java](https://github.com/Raiffeisen-DGTL/sbp-sdk-java)
 
-    ## CMS
-
-    You can use the [Paykeeper](https://raiffeisen-processing.ru) solutions.
+    [Our other solutions.](https://e-commerce.raiffeisen.ru/api/doc/solutions.html)
 
     # API description
     The interaction is carried out using the HTTP protocol using the GET / POST methods (the description of each request clearly indicates the required method and address).
@@ -112,7 +111,7 @@ info:
     # Mobile version and application
     You need to redirect your users on url from payload parameter if you have mobile version of the site or app.
 
-    Banking app or bank selection list will open
+    Banking app or bank selection list will open.
 
     # Testing
 
@@ -232,6 +231,10 @@ tags:
     x-displayName: 06.07.2021
     description: |
       * Add [subscriptions service](#tag/qr-subscription)
+  - name: 09.09.2021
+    x-displayName: 09.09.2021
+    description: |
+      * Correct maxLength paymentDetails in refund method
 x-tagGroups:
   - name: API
     tags:
@@ -249,6 +252,7 @@ x-tagGroups:
     tags:
       - 02.06.2021
       - 06.07.2021
+      - 09.09.2021
 paths:
   /settings/v1/callback:
     post:
@@ -323,7 +327,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/qrStatus'
               examples:
-                '200':
+                QRDynamic subscription:
+                  value:
+                    code: SUCCESS
+                    qrId: AD1F2CD7212E48FA919AB52EF0AEFB33
+                    payload: 'https://qr.nspk.ru/AD1F2CD7212E48FA919AB52EF0AEFB33?type=02&bank=10000001&sum=111000&cur=RUB&crc=C08B'
+                    qrUrl: 'https://test.ecom.raiffeisen.ru/api/sbp/v1/qr/AD1F2CD7212E48FA919AB52EF0AEFB33/image'
+                    subscriptionId: '120059'
+                QRDynamic/QRStatic:
                   value:
                     code: SUCCESS
                     qrId: AD100004BAL7227F9BNP6KNE007J9B3K
@@ -364,7 +375,7 @@ paths:
                   sbpMerchantId: MA0000000552
                   subscription:
                     id: '120059'
-                    purpose: Подписка на услуги
+                    subscriptionPurpose: Подписка на услуги
               QRStatic:
                 value:
                   order: 1-22-333
@@ -467,7 +478,7 @@ paths:
                     type: string
                     enum:
                       - NEW
-                      - IN_PROGRES
+                      - IN_PROGRESS
                       - CANCELLED
                       - EXPIRED
                       - PAID
@@ -1215,7 +1226,7 @@ components:
                   type: string
                   minLength: 1
                   description: Subscription id
-                purpose:
+                subscriptionPurpose:
                   type: string
                   minLength: 1
                   description: Subscription info about client
@@ -1246,7 +1257,7 @@ components:
           sbpMerchantId: MA0000000552
           subscription:
             id: '120059'
-            purpose: Подписка на услуги
+            subscriptionPurpose: Подписка на услуги
     QRStatic:
       description: 'QRStatic is a static QR code. It can be paid several times. If a static QR code is registered without an amount, the client will independently indicate the amount in the mobile application. '
       allOf:
@@ -1328,6 +1339,9 @@ components:
         qrUrl:
           type: string
           description: URL with registered QR-code in SBP
+        subscriptionId:
+          type: string
+          description: Subscription id
       required:
         - code
         - qrId
@@ -1404,7 +1418,7 @@ components:
             paymentDetails:
               type: string
               description: Purpose of payment
-              maxLength: 180
+              maxLength: 140
             refundId:
               type: string
               description: Unique Refund Request ID
@@ -1589,7 +1603,7 @@ components:
             - UNSUBSCRIBED
         qr:
           type: object
-          description: data of QR-subscription
+          description: Данные по QR-подписки
           required:
             - id
             - payload

@@ -29,9 +29,20 @@ info:
     ## Инструкция
     1. Зарегистрируйтесь в сервисе ["АТОЛ Онлайн"](https://online.atol.ru/lk/Account/Register?partnerUid=18583cd5-dae2-4fb1-a98b-f4b80d891eb0) и подключите онлайн-кассу.
     2. Заключите договор с [оператором фискальных данных](https://www.nalog.gov.ru/rn77/related_activities/registries/fiscaloperators/).
-    3. Оформите заявку на фискализацию одним из способов ниже:
-    * по E-mail <a href="mailto:SME_Acquiring@raiffeisen.ru?subject=Подключение к фискализации&body=Добрый день!%0A%0AПросьба подключить услугу фискализации.">SME_Acquiring@raiffeisen.ru</a>
-    * через менеджера банка
+    3. Отправьте заявку на фискализацию
+
+    В заявке необходимо указать данные для подключения: идентификаторы мерчантов (publicId), применяемую систему налогообложения,
+    E-mail (для получения чека, если E-mail не указан покупателем), логин, пароль и идентификатор группы ККТ от "АТОЛ Онлайн".
+
+    Чтобы получить логин, пароль и идентификатор группы ККТ, зайдите в личный кабинет ["АТОЛ Онлайн"](https://online.atol.ru/lk/Account/Login). Выберите раздел "Мои компании", нажмите кнопку "Настройки интегратора".
+     Скачается XML-файл с настройками. Найдите в файле элемент access, в нём будут все три параметра: login, password, group_code.
+     Если возникли трудности, обратитесь в техподдержку "АТОЛ Онлайн".
+
+    Запрос на подключение фискализации можно отправить одним из способов ниже:
+    * По E-mail <a href="mailto:SME_Acquiring@raiffeisen.ru?subject=Подключение фискализации чеков по API&cc=<E-mail менеджера>&body=Добрый день!%0A%0A
+    Просьба подключить услугу фискализации чеков по API. Данные для подключения ниже:%0A%0A1. Идентификатор(-ы) мерчанта(-ов) (publicId) – %0A%0A2. Применяемая система налогообложения – %0A%0A3. E-mail (для поля «Отправитель чека» и для получения чека, если E-mail не указан покупателем) – %0A%0A4. Логин учетной записи в «АТОЛ Онлайн» – %0A%0A5. Пароль от учетной записи в «АТОЛ Онлайн» – %0A%0A6. Идентификатор группы ККТ в «АТОЛ Онлайн» – ">SME_Acquiring@raiffeisen.ru</a>.
+    Данные для подключения и пример заявки доступны при нажатии на E-mail.
+    * Через менеджера банка. Для этого безопасным способом отправьте менеджеру необходимые для подключения данные.
 
     # Общая схема работы
 
@@ -59,9 +70,9 @@ tags:
     x-displayName: 'Методы API'
     description: |
       Для фискализации чеков через партнёра Райффайзенбанк предоставляет API из следующих запросов:
-        * Сохранение чека,
-        * Регистрация чека,
-        * Получение статуса чека.
+        * Сохранение чека
+        * Регистрация чека
+        * Получение статуса чека
 
       Bзаимодействие осуществляется по протоколу HTTP с использованием методов POST, PUT, GET.
 
@@ -92,11 +103,6 @@ tags:
       RECEIPT_REGISTRATION_FAILED | Не удалось зарегистрировать чек {value}
       STATUS_REQUEST_FAILED | Не удалось запросить статус чека ofdId = {value} мерчанта с publicId = {value}
 
-  - name: 07.07.2021
-    x-displayName: '07.07.2021'
-    description: |
-      * Первоначальная версия документации
-
   - name: 13.07.2021
     x-displayName: '13.07.2021'
     description: |
@@ -119,6 +125,20 @@ tags:
       * Обновлен справочник ошибок
       * Скорректировано описание методов API
 
+  - name: 20.08.2021
+    x-displayName: '20.08.2021'
+    description: |
+      * Изменено ограничение для параметра "Номер чека" (receiptNumber) со 128 символов до 99
+      * Добавлен новый параметр "Признак предмета расчета" (paymentObject) на уровне позиции чека
+      * Актуализирована статусная модель
+      * Скорректировано описание отдельных параметров API
+
+  - name: 08.09.2021
+    x-displayName: '08.09.2021'
+    description: |
+      * В POST-запросе на создание (обновление) чека объект vat заменен на строковый параметр vatType
+      * В ответе на POST-запрос на создание (обновление) чека объект vat заменен на строковый параметр vatType
+
 x-tagGroups:
   - name: API
     tags:
@@ -129,16 +149,18 @@ x-tagGroups:
       - errors
   - name: История изменений
     tags:
-      - 07.07.2021
       - 13.07.2021
       - 28.07.2021
       - 11.08.2021
+      - 20.08.2021
+      - 08.09.2021
 paths:
   /fiscal/v1/receipts/sell:
     post:
       tags:
         - fiscal-controller
       summary: Сохранение чека прихода
+      operationId: postSell
       description:
         Метод предназначен для создания нового чека прихода с указанным receiptNumber.
         Также позволяет обновить уже существующий чек прихода при повторном запросе с тем же receiptNumber.
@@ -195,23 +217,19 @@ paths:
                   "price": 600.00,
                   "quantity": 2,
                   "amount": 1200.00,
+                  "paymentObject": "commodity",
                   "measurementUnit": "кг",
                   "nomenclatureCode": 1704909900,
-                  "vat": {
-                      "type": "vat20",
-                      "amount": 200
-                  }
+                  "vatType": "vat20"
               },
               {
                   "name": "Вода минеральная 1л",
                   "price": 120.00,
                   "quantity": 20,
                   "amount": 2400.00,
+                  "paymentObject": "commodity",
                   "measurementUnit": "шт",
-                  "vat": {
-                      "type": "vat20",
-                      "amount": 400.0
-                  }
+                  "vatType": "vat20"
               }
               ],
               "total": 3600.00
@@ -222,6 +240,7 @@ paths:
       tags:
         - fiscal-controller
       summary: Регистрация чека прихода
+      operationId: putSell
       description: >
         Метод предназначен для отправки чека прихода на регистрацию в ОФД.
         Метод возвращает тело чека, а также его тип и статус в дополнительных параметрах ответа.
@@ -233,7 +252,7 @@ paths:
           name: receiptNumber
           type: string
           description: Уникальный номер чека
-          maxLength: 128
+          maxLength: 99
           required: true
         - in: header
           name: Authorization
@@ -272,13 +291,15 @@ paths:
       tags:
         - fiscal-controller
       summary: Получение статуса чека прихода
+      operationId: getSellStatus
       description: >
         Метод предназначен для получения актуального статуса чека прихода.
         Чек может принимать один из четырех статусов:
           * "NEW" – чек создан и может быть отредактирован перед отправкой на регистрацию,
           * "IN_PROGRESS" – чек в процессе регистрации,
           * "DONE" – чек успешно зарегистрирован,
-          * "FAILED" – при регистрации чека возникла ошибка.
+          * "FAILED" – при регистрации чека возникла ошибка,
+          * "AWAITING" – чек в ожидании отправки на регистрацию (технический статус).
 
         Метод возвращает тело чека, а также его тип и статус в дополнительных параметрах ответа.
       produces:
@@ -288,7 +309,7 @@ paths:
           name: receiptNumber
           type: string
           description: Уникальный номер чека
-          maxLength: 128
+          maxLength: 99
           required: true
         - in: header
           name: Authorization
@@ -320,6 +341,7 @@ paths:
       tags:
         - fiscal-controller
       summary: Сохранение чека возврата
+      operationId: postRefund
       description: >
         Метод предназначен для создания нового чека возврата с указанным receiptNumber.
         Также позволяет обновить уже существующий чек возврата при повторном запросе с тем же receiptNumber.
@@ -376,23 +398,19 @@ paths:
                   "price": 600.00,
                   "quantity": 2,
                   "amount": 1200.00,
+                  "paymentObject": "commodity",
                   "measurementUnit": "кг",
                   "nomenclatureCode": 1704909900,
-                  "vat": {
-                      "type": "vat20",
-                      "amount": 200
-                  }
+                  "vatType": "vat20"
               },
               {
                   "name": "Вода минеральная 1л",
                   "price": 120.00,
                   "quantity": 20,
                   "amount": 2400.00,
+                  "paymentObject": "commodity",
                   "measurementUnit": "шт",
-                  "vat": {
-                      "type": "vat20",
-                      "amount": 400.0
-                  }
+                  "vatType": "vat20"
               }
               ],
               "total": 3600.00
@@ -403,6 +421,7 @@ paths:
       tags:
         - fiscal-controller
       summary: Регистрация чека возврата
+      operationId: putRefund
       description: >
         Метод предназначен для отправки чека возврата на регистрацию в ОФД.
         Метод возвращает тело чека, а также его тип и статус в дополнительных параметрах ответа.
@@ -414,7 +433,7 @@ paths:
           name: receiptNumber
           type: string
           description: Уникальный номер чека
-          maxLength: 128
+          maxLength: 99
           required: true
         - in: header
           name: Authorization
@@ -453,13 +472,15 @@ paths:
       tags:
         - fiscal-controller
       summary: Получение статуса чека возврата
+      operationId: getRefundStatus
       description: >
         Метод предназначен для получения актуального статуса чека возврата.
         Чек может принимать один из четырех статусов:
           * "NEW" – чек создан и может быть отредактирован перед отправкой на регистрацию,
           * "IN_PROGRESS" – чек в процессе регистрации,
           * "DONE" – чек успешно зарегистрирован,
-          * "FAILED" – при регистрации чека возникла ошибка.
+          * "FAILED" – при регистрации чека возникла ошибка,
+          * "AWAITING" – чек в ожидании отправки на регистрацию (технический статус).
 
         Метод возвращает тело чека, а также его тип и статус в дополнительных параметрах ответа.
       produces:
@@ -469,7 +490,7 @@ paths:
           name: receiptNumber
           type: string
           description: Уникальный номер чека
-          maxLength: 128
+          maxLength: 99
           required: true
         - in: header
           name: Authorization
@@ -507,8 +528,8 @@ definitions:
     properties:
       receiptNumber:
         type: string
-        description: Уникальный номер чека, который создается на стороне мерчанта. Выполняет роль сквозного идентификатора. Формат A-Za-z0-9_-
-        maxLength: 128
+        description: Уникальный номер чека. Создается на стороне мерчанта. Формат A-Za-z0-9_-
+        maxLength: 99
         example: 3000827351831
       client:
         type: object
@@ -518,7 +539,7 @@ definitions:
         properties:
           email:
             type: string
-            description: Электронный адрес покупателя для отправки чека
+            description: Электронный адрес покупателя для отправки чека. Заполняется по формату E-mail
             maxLength: 64
             example: customer@domain.ru
           name:
@@ -536,7 +557,7 @@ definitions:
             - price
             - quantity
             - amount
-            - vat
+            - vatType
           properties:
             name:
               type: string
@@ -553,8 +574,19 @@ definitions:
               example: 1.2
             amount:
               type: bigDecimal (8, 2)
-              description: Сумма в рублях
+              description: Сумма в рублях. Должна равняться произведению цены на количество (price * quantity)
               example: 1200.00
+            paymentObject:
+              type: string
+              description: Признак предмета расчета. Если параметр не передан, то заполняется на стороне выбранного ОФД в соответствии с установленным протоколом
+              enum:
+                - commodity
+                - excise
+                - job
+                - service
+                - payment
+                - another
+              example: commodity
             measurementUnit:
               type: string
               description: Единица измерения товара, работы, услуги, иного предмета расчета
@@ -565,31 +597,20 @@ definitions:
               description: Код товара
               maxLength: 150
               example: 1704909900
-            vat:
-              type: object
-              required:
-                - type
-                - amount
-              description: Данные о налоге на позицию чека
-              properties:
-                type:
-                  type: string
-                  description: Ставка НДС
-                  enum:
-                    - none
-                    - vat0
-                    - vat10
-                    - vat110
-                    - vat20
-                    - vat120
-                  example: vat20
-                amount:
-                  type: bigDecimal (8, 2)
-                  description: Сумма налога на позицию чека в рублях
-                  example: 200.00
+            vatType:
+              type: string
+              description: Ставка НДС на позицию чека
+              enum:
+                - none
+                - vat0
+                - vat10
+                - vat110
+                - vat20
+                - vat120
+              example: vat20
       total:
         type: bigDecimal (8, 2)
-        description: Итоговая сумма чека
+        description: Итоговая сумма чека в рублях
         example: 1200.00
     title: Receipt
   Response:
@@ -604,12 +625,12 @@ definitions:
     properties:
       receiptNumber:
         type: string
-        description: Уникальный номер чека, который создается на стороне мерчанта. Выполняет роль сквозного идентификатора. Формат A-Za-z0-9_-
-        maxLength: 128
+        description: Уникальный номер чека. Создается на стороне мерчанта. Формат A-Za-z0-9_-
+        maxLength: 99
         example: 3000827351831
       receiptType:
         type: string
-        description: Тип чека
+        description: Тип чека (чек прихода, чек возврата)
         enum:
           - SELL
           - REFUND
@@ -622,6 +643,7 @@ definitions:
           - IN_PROGRESS
           - DONE
           - FAILED
+          - AWAITING
         example: NEW
       client:
         type: object
@@ -631,7 +653,7 @@ definitions:
         properties:
           email:
             type: string
-            description: Электронный адрес покупателя для отправки чека
+            description: Электронный адрес покупателя для отправки чека. Заполняется по формату E-mail
             maxLength: 64
             example: customer@domain.ru
           name:
@@ -649,7 +671,7 @@ definitions:
             - price
             - quantity
             - amount
-            - vat
+            - vatType
           properties:
             name:
               type: string
@@ -666,8 +688,19 @@ definitions:
               example: 1.2
             amount:
               type: bigDecimal (8, 2)
-              description: Сумма в рублях
+              description: Сумма в рублях. Должна равняться произведению цены на количество (price * quantity)
               example: 1200.00
+            paymentObject:
+              type: string
+              description: Признак предмета расчета. Если параметр не передан, то заполняется на стороне выбранного ОФД в соответствии с установленным протоколом
+              enum:
+                - commodity
+                - excise
+                - job
+                - service
+                - payment
+                - another
+              example: commodity
             measurementUnit:
               type: string
               description: Единица измерения товара, работы, услуги, иного предмета расчета
@@ -678,31 +711,20 @@ definitions:
               description: Код товара
               maxLength: 150
               example: 1704909900
-            vat:
-              type: object
-              required:
-                - type
-                - amount
-              description: Данные о налоге на позицию чека
-              properties:
-                type:
-                  type: string
-                  description: Ставка НДС
-                  enum:
-                    - none
-                    - vat0
-                    - vat10
-                    - vat110
-                    - vat20
-                    - vat120
-                  example: vat20
-                amount:
-                  type: bigDecimal (8, 2)
-                  description: Сумма налога на позицию чека в рублях
-                  example: 200.00
+            vatType:
+              type: string
+              description: Ставка НДС на позицию чека
+              enum:
+                - none
+                - vat0
+                - vat10
+                - vat110
+                - vat20
+                - vat120
+              example: vat20
       total:
         type: bigDecimal (8, 2)
-        description: Итоговая сумма чека
+        description: Итоговая сумма чека в рублях
         example: 1200.00
     title: Response
   Error400:

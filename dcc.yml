@@ -66,7 +66,6 @@ info:
     ## Авторизация
 
     Для авторизация запросов необходимы:
-    * companyId - идентификатор,который используется в запросах и не является конфиденциальным
     * secretKey - секретный ключ, который используется для межсервисного взаимодействия.
 
     ВАЖНО: Секретный ключ необходимо хранить в защищенном месте, нельзя публиковать на сторонних ресурсах или передавать третьим лицам.
@@ -79,15 +78,12 @@ servers:
   - url: https://pay-test.raif.ru
     description: Sandbox API
 tags:
-  - name: cards-api
+  - name: corpcards-api
     x-displayName: 'Выпуск карт'
     description: |
       Для реализации взаимодействия Райффайзенбанк предоставляет API:
-      * запрос на создание держателя карты с ипользованием HTTP;
-      * получение информации о статусе запроса на создание держателя карты.
-      * запрос на создание карты с ипользованием HTTP;
-      * получение общей информации по карте.
-      * получение списка отделений для выдачи карт.
+      * запрос на создание карт с ипользованием HTTP;
+      * получение информации о статусе запроса на создание карт.
 
   - name: callback-api
     x-displayName: 'Уведомления об операциях'
@@ -129,72 +125,12 @@ tags:
       Свои предложения и идеи о документации можно оставить в репозитории по адресу: https://github.com/Raiffeisen-DGTL/ecom-API/blob/master/dcc.yml.
 
 paths:
-  /api/cards/v1/company/{companyId}/persons/add -H "Authorization :Bearer SecretKey":
-    post:
-      tags:
-        - cards-api
-      summary: Запрос на создание нового держателя карты
-      operationId: personsAdd
-      consumes:
-        - application/json;charset=UTF-8
-      produces:
-        - application/json;charset=UTF-8
-      parameters:
-        - in: header
-          name: Authorization
-          type: string
-          description: Bearer secret key
-          required: true
-        - name: companyId
-          in: path
-          description: Id компании(CNUM)
-          required: true
-          type: string
-        - in: body
-          name: personsAdd
-          description: personsAdd
-          required: true
-          schema:
-            "$ref": '#/definitions/schemas/personsAddRequest'
-      responses:
-        '200':
-          description: OK
-          schema:
-            "$ref": '#/definitions/responses/personsAddResponse'
-
-  /api/cards/v1/company/{companyId}/persons/{personId}(STRING(32))/ -H "Authorization :Bearer SecretKey":
+  /api/cards/v1/bank/branch:
     get:
       tags:
-        - cards-api
-      summary: Получение результата запроса на создание нового держателя карты
-      operationId: getPersonsAddStatus
-      consumes:
-        - application/json;charset=UTF-8
-      produces:
-        - application/json;charset=UTF-8
-      parameters:
-        - in: header
-          name: Authorization
-          type: string
-          description: Bearer secret key
-          required: true
-        - name: companyId
-          in: path
-          description: Id компании(CNUM)
-          required: true
-          type: string
-      responses:
-        '200':
-          description: OK
-          schema:
-            "$ref": '#/definitions/responses/personsAddResponse'
-
-  /api/cards/v1/bank/branches/:
-    get:
-      tags:
-        - cards-api
+        - corpcards-api
       summary: Получение списка отделений для выдачи карт
-      operationId: getBranches
+      operationId: getBranch
       consumes:
         - application/json;charset=UTF-8
       produces:
@@ -203,14 +139,14 @@ paths:
         '200':
           description: OK
           schema:
-            "$ref": '#/definitions/responses/getBranches'
+            "$ref": '#/definitions/responses/getBranch'
 
-  /api/cards/v1/company/{companyId}/cards/add -H "Authorization :Bearer SecretKey":
+  /api/cards/v1/corporate-cards/ -H "Authorization :Bearer SecretKey":
     post:
       tags:
-        - cards-api
-      summary: Запрос на создание карты
-      operationId: cardsAdd
+        - corpcards-api
+      summary: Запрос на создание карт
+      operationId: cardsBatch
       consumes:
         - application/json;charset=UTF-8
       produces:
@@ -221,29 +157,28 @@ paths:
           type: string
           description: Bearer secret key
           required: true
-        - name: companyId
-          in: path
-          description: Id компании(CNUM)
-          required: true
-          type: string
         - in: body
-          name: cardsAdd
-          description: cardsAdd
+          name: cardsBatch
+          description: cardsBatch
           required: true
           schema:
-            "$ref": '#/definitions/schemas/cardsAddRequest'
+            "$ref": '#/definitions/schemas/cardsBatchRequest'
       responses:
         '200':
           description: OK
           schema:
-            "$ref": '#/definitions/responses/cardsAddResponse'
+            "$ref": "#/definitions/EmptyBody"
+        '400':
+          description: Ошибка валидации
+          schema:
+            "$ref": '#/definitions/cardsBatchErrorResponse'
 
-  /api/cards/v1/company/{companyId}/cards/{cardId}/ -H "Authorization :Bearer SecretKey":
+  /api/cards/v1/corporate-cards/{batchId} -H "Authorization :Bearer SecretKey":
     get:
       tags:
-        - cards-api
-      summary: Получение общей информации по карте
-      operationId: getCard
+        - corpcards-api
+      summary: Получение информации о статусе запроса на создание карт.
+      operationId: cardsBatchStatus
       consumes:
         - application/json;charset=UTF-8
       produces:
@@ -254,21 +189,16 @@ paths:
           type: string
           description: Bearer secret key
           required: true
-        - name: companyId
-          in: path
-          description: Id компании(CNUM)
-          required: true
+        - in: path
+          name: batchId
           type: string
-        - name: cardId
-          in: path
-          description: Id карты
+          description: Уникальный идентификатор пакета, по которому нужно получить статус.
           required: true
-          type: string
       responses:
         '200':
           description: OK
           schema:
-            "$ref": '#/definitions/responses/cardsAddResponse'
+            "$ref": '#/definitions/batchCardStatusResponse'
 
   <URL обработчика уведомлений на стороне партнёра>:
     post:
@@ -331,7 +261,7 @@ paths:
             "$ref": "#/definitions/CallBackSettingsInternalServerError"
       deprecated: false
 
-  /api/prevcards/v1/callback/send-message:
+  /api/cards/v1/callback/send-message:
     post:
       tags:
         - callback-api
@@ -368,132 +298,37 @@ definitions:
       scheme: bearer
       description: ''
   schemas:
-    personsAddRequest:
+    cardsBatchRequest:
+      type: object
+      properties:
+        batchId:
+          type: string
+          description: Уникальный идентификатор пакета.
+          maxLength: 36
+          example: 'd780dd10-3276-4d0b-afd0-29e271491e24'
+        cards:
+          type: array
+          description: Список карт на выпуск.
+          items:
+            $ref: '#/definitions/schemas/batchCard'
+          title: cards
+    batchCard:
       type: object
       properties:
         id:
           type: string
-          description: Уникальный идентификатор запроса
-          maxLength: 32
-          example: '1234554-asddsa'
-        surname:
-          type: string
-          description: Фамилия держателя карты.
-          example: 'Тестов'
-        name:
-          type: string
-          description: Имя держателя карты.
-          example: 'Тест'
-        patronymic:
-          type: string
-          description: Отчество держателя карты.
-          example: 'Тестович'
-        birthday:
-          type: string
-          format: YYYY-MM-DD
-          description: Дата рождения держателя карты.
-          example: '1980-01-30'
-        gender:
-          type: string
-          description: Пол держателя карты.(MALE/FEMALE)
-          enum:
-            - MALE
-            - FEMALE
-          example: 'MALE'
-        resident:
-          type: string
-          description: Гражданство РФ держателя карты.(Y/N)
-          enum:
-            - Y
-            - N
-          example: 'Y'
-        cellPhone:
-          type: string
-          description: "Номер мобильного телефона держателя карты, используется для смс-информирования"
-          example: '79123456789'
-        transcriptFullName:
-          type: string
-          description: "ФИО держателя карты в альтернативной транскрипции. Необязательно для заполнения."
-          example: 'Testov Test Testovich'
-        branchId:
-          type: string
-          description: "3-х значный цифровой код Отделения Банка, куда будет доставлена карта"
-          example: '203'
-        secretWords:
-          type: string
-          description: "Кодовое слово держателя карты. Необязательно для заполнения."
-          example: 'secretWords'
-        passport:
-          type: object
-          properties:
-            series:
-              type: integer
-              description: "Паспорт РФ.Серия документа"
-              example: '1234'
-            number:
-              type: integer
-              description: "Паспорт РФ.Номер документа"
-              example: '123456'
-            issuedBy:
-              type: string
-              description: "Паспорт РФ.Кем выдан документ"
-              example: 'ОУФМС по МО в городском округе Серпухов'
-            issuedDate:
-              type: string
-              format: YYYY-MM-DD
-              description: "Паспорт РФ.Дата выдачи документа"
-              example: '2010-01-30'
-            countryOfBirthIsoCode:
-              type: string
-              description: "Паспорт РФ.Код страны рождения(ISO)"
-              example: '643'
-        address:
-          type: object
-          properties:
-            countryOfRegistrationIsoCode:
-              type: string
-              description: "Страна адреса прописки(ISO)"
-              example: '643'
-            region:
-              type: string
-              description: "Регион адреса прописки"
-              example: 'Москва'
-            city:
-              type: string
-              description: "Город адреса прописки"
-              example: 'Москва'
-            street:
-              type: string
-              description: "Улица адреса прописки"
-              example: 'Октябрьская'
-            house:
-              type: string
-              description: "Номер дома адреса прописки"
-              example: '84'
-    personsAddSuccess:
-      type: object
-      properties:
-        status:
-          type: string
-          description: Статус обработки запроса
-        collection:
-          $ref: '#/definitions/schemas/personsAddRequest'
-
-    cardsAddRequest:
-      type: object
-      properties:
-        personId:
-          type: string
-          description: ID Держателя из метода persons/add, которому создаётся карта
-          maxLength: 32
-          example: '1234554-asddsa'
+          description: Уникальный идентификатор запроса на выпуск карты.
+          maxLength: 36
+          example: 'c130bc10-3286-4d0b-afd0-29e271491e13'
         account:
           type: string
-          description: Счет компании, к которому будет привязана карта
+          description: Номер счета.
+          maxLength: 20
+          minLength: 20
           example: '40702810603000060801'
         product:
           type: string
-          description: Тип карты. Возможные значения указаны в enum
+          description: Тип карты. Возможные значения указаны в Enum
           enum:
             - MC_CORPORATE
             - VISA_CORPORATE
@@ -504,21 +339,114 @@ definitions:
             - VISA_ADM
           example: 'VISA_CORPORATE'
         dailyLimit:
-          type: integer
-          description: Ежедневный лимит на снятие наличных по карте в рублях. Параметр необязательный, устанавливается по умолчанию в соответствии с типом карты.
-          example: '10000'
-        monthlyLimit:
-          type: integer
-          description: Ежемесячный общий расходный лимит по карте в рублях. Параметр необязательный, устанавливается по умолчанию в соответствии с типом карты.
-          example: '25000'
-    cardsAddSuccess:
-      type: object
-      properties:
-        status:
           type: string
-          description: Статус обработки запроса
-        collection:
-          $ref: '#/definitions/schemas/cardsAddRequest'
+          description: Ежедневный лимит на снятие наличных по карте в рублях. Строка с целым числом. Необязательное поле, по умолчанию устанавливается в соответствии с типом карты.
+          example: '500'
+        monthlyLimit:
+          type: string
+          description: Ежемесячный общий расходный лимит по карте в рублях. Строка с целым числом. Необязательное поле, по умолчанию устанавливается в соответствии с типом карты.
+          example: '5000'
+        person:
+          type: object
+          description: Данные держателя карты
+          properties:
+            surname:
+              type: string
+              description: Фамилия.
+              example: 'Тестов'
+            name:
+              type: string
+              description: Имя.
+              example: 'Тест'
+            patronymic:
+              type: string
+              description: Отчество.
+              example: 'Тестович'
+            birthday:
+              type: string
+              format: YYYY-MM-DD
+              description: Дата рождения.
+              example: '1980-01-30'
+            gender:
+              type: string
+              description: Пол.
+              enum:
+                - MALE
+                - FEMALE
+              example: 'MALE'
+            cellPhone:
+              type: string
+              description: Номер мобильного телефона, используется для смс-информирования и активации карты.
+              example: '79123456789'
+            transcriptFullName:
+              type: string
+              description: ФИО в альтернативной транскрипции. Необязательное поле.
+              example: 'Testov Test Testovich'
+            branchId:
+              type: string
+              description: 3-х значный цифровой код отделения Банка, куда будет доставлена карта.
+              example: '203'
+            citizenshipCode:
+              type: string
+              description: Код страны гражданства (ISO). Необязательное поле. По умолчанию 643.
+              example: 643
+            secretWords:
+              type: string
+              description: Кодовое слово. Необязательное поле.
+              example: 'itsmysecret'
+            passport:
+              type: object
+              description: Информация о паспорте РФ держателя карты.
+              properties:
+                series:
+                  type: string
+                  description: Серия документа.
+                  example: '1234'
+                number:
+                  type: string
+                  description: Номер документа.
+                  example: '123456'
+                issuedBy:
+                  type: string
+                  description: Кем выдан документ.
+                  example: 'ОУФМС по МО в городском округе Серпухов'
+                issuedDate:
+                  type: string
+                  format: YYYY-MM-DD
+                  description: Дата выдачи документа.
+                  example: '2010-01-30'
+                countryOfBirthIsoCode:
+                  type: string
+                  description: Код страны рождения(ISO).
+                  example: '643'
+            address:
+              type: object
+              description: Информация об адресе держателя карты.
+              properties:
+                countryOfRegistrationIsoCode:
+                  type: string
+                  description: Страна адреса прописки(ISO).
+                  example: '643'
+                region:
+                  type: string
+                  description: Регион адреса прописки.
+                  example: 'Москва'
+                city:
+                  type: string
+                  description: Населенный пункт адреса прописки.
+                  example: 'Москва'
+                street:
+                  type: string
+                  description: Улица адреса прописки.
+                  example: 'Октябрьская'
+                house:
+                  type: string
+                  description: Номер дома адреса прописки.
+                  example: '84'
+                building:
+                  type: string
+                  description: Номер строения адреса прописки. Необязательное поле.
+                  example: '3'
     sendCallbackRequest:
       type: object
       properties:
@@ -535,141 +463,13 @@ definitions:
           example: 'https://yoururl.ru'
 
   responses:
-    personsAddResponse:
-      type: object
-      properties:
-        status:
-          type: object
-          properties:
-            value:
-              type: string
-              description: Код состояния запроса
-              enum:
-                - IN_PROGRESS
-                - ACCEPTED
-                - REJECTED
-              example: 'IN_PROGRESS'
-            date:
-              type: YYYY-MM-DD ТHH24:MM:SS±HH:MM
-              description: Дата и время получения запроса
-              maxLength:
-              example: '2020-01-15T16:01:49.043924+03:00'
-        companyId:
-          type: string
-          description: companyId из исходного запроса
-          example: 'Z986NM'
-        id:
-          type: string
-          description: Уникальный идентификатор запроса
-          maxLength: 32
-          example: '1234554-asddsa'
-        maskedName:
-          type: string
-          description: ФИО
-          example: 'Тестов Т. Т.'
-        birthday:
-          type: string
-          format: YYYY-MM-DD
-          description: Дата рождения держателя карты.
-          example: '1980.01.30'
-        gender:
-          type: string
-          description: Пол держателя карты.(МALE/FEMALE)
-          enum:
-            - МALE
-            - FEMALE
-          example: 'МALE'
-        maskedCellPhone:
-          type: string
-          description: Номер мобильного телефона держателя карты, используется для смс-информирования
-          example: '7912***6789'
-        branchId:
-          type: string
-          description: 3-х значный цифровой код Отделения Банка, куда будет доставлена карта
-          example: '203'
-        passport:
-          type: object
-          properties:
-            maskedSeries:
-              type: integer
-              description: Паспорт РФ.Серия документа
-              example: '1*3*'
-            maskedNumber:
-              type: integer
-              description: Паспорт РФ.Номер документа
-              example: '1***56'
-            issuedDate:
-              type: integer
-              format: YYYY-MM-DD
-              description: Паспорт РФ.Дата выдачи документа
-              example: '2010.01.30'
-      title: personsAddResponse
-
-    cardsAddResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Уникальный идентификатор карты на стороне Банка
-          maxLength: 32
-          example: '58436553'
-        status:
-          type: object
-          properties:
-            value:
-              type: string
-              description: Код состояния запроса
-              enum:
-                - IN_PROGRESS
-                - ACCEPTED
-                - REJECTED
-              example: 'IN_PROGRESS'
-            date:
-              type: YYYY-MM-DD ТHH24:MM:SS±HH:MM
-              description: Дата и время получения запроса
-              maxLength:
-              example: '2020-01-15T16:01:49.043924+03:00'
-        companyId:
-          type: string
-          description: companyId из исходного запроса
-          example: 'Z986NM'
-        personId:
-          type: string
-          description: ID Держателя из метода persons/add
-          maxLength: 32
-          example: '1234554-asddsa'
-        account:
-          type: string
-          description: Счет компании, к которому будет привязана карта
-          example: '40702810603000060801'
-        product:
-          type: string
-          description: Тип карты. Возможные значения указаны в enum
-          enum:
-            - MC_CORPORATE
-            - VISA_CORPORATE
-            - VISA_PREMIUM
-            - VISA_PLATINUM
-            - CASH_IN
-            - CASH_IN&OUT
-            - VISA_ADM
-          example: 'VISA_CORPORATE'
-        dailyLimit:
-          type: integer
-          description: Ежедневный лимит на снятие наличных по карте в рублях.
-          example: '10000'
-        monthlyLimit:
-          type: integer
-          description: Ежемесячный общий расходный лимит по карте в рублях.
-          example: '25000'
-      title: cardsAddResponse
-    getBranches:
+    getBranch:
       type: array
       description: Список отделений
       items:
-        $ref: '#/definitions/responses/branche'
-      title: getBranches
-    branche:
+        $ref: '#/definitions/responses/branch'
+      title: getBranch
+    branch:
       type: object
       properties:
         branchId:
@@ -688,6 +488,146 @@ definitions:
           type: string
           description: Адрес местонахождения Отделения Банка
           example: 'г.Домодедово ул.Корнеева д.12'
+  cardsBatchErrorResponse:
+    type: object
+    properties:
+      code:
+        type: string
+        description: Код ошибки.
+        example: 'ERROR.INVALID_DATA'
+      message:
+        type: string
+        description: Текст ошибки.
+        example: 'Некорректные данные'
+      errors:
+        type: array
+        description: Ошибки, возникшие при валидации запроса.
+        items:
+          $ref: '#/definitions/batchValidationError'
+        title: errors
+  batchValidationError:
+    type: object
+    properties:
+      id:
+        type: string
+        description: Уникальный идентификатор запроса на выпуск карты.
+        example: 'c130bc10-3286-4d0b-afd0-29e271491e13'
+      invalidFields:
+        type: array
+        description: Массив со списком полей.
+        items:
+          type: string
+          example: ['account', 'person.birthday', 'person.passport.series']
+
+  batchCardStatusResponse:
+    type: array
+    description: Массив со списком карт и их статусами.
+    items:
+      type: object
+      description: Информация по карте.
+      properties:
+        id:
+          type: string
+          description: Уникальный идентификатор запроса на выпуск карты.
+          example: 'c130bc10-3286-4d0b-afd0-29e271491e13'
+        cardId:
+          type: string
+          description: Уникальный банковский идентификатор карты.
+          example: '12345678'
+        account:
+          type: string
+          description: Номер счета.
+          example: '40702810603000060801'
+        product:
+          type: string
+          description: Тип карты. Возможные значения указаны в enum
+          enum:
+            - MC_CORPORATE
+            - VISA_CORPORATE
+            - VISA_PREMIUM
+            - VISA_PLATINUM
+            - CASH_IN
+            - CASH_IN&OUT
+            - VISA_ADM
+          example: 'VISA_CORPORATE'
+        dailyLimit:
+          type: string
+          description: Ежедневный лимит на снятие наличных по карте в рублях. Строка с целым числом. Необязательное поле, по умолчанию устанавливается в соответствии с типом карты.
+          example: '500'
+        monthlyLimit:
+          type: string
+          description: Ежемесячный общий расходный лимит по карте в рублях. Строка с целым числом. Необязательное поле, по умолчанию устанавливается в соответствии с типом карты.
+          example: '5000'
+        status:
+          type: object
+          description: Статус по карте.
+          properties:
+            value:
+              type: string
+              description: Код статуса.
+              enum:
+                - IN_PROGRESS
+                - SUCCESS
+                - REJECTED
+              example: 'IN_PROGRESS'
+            description:
+              type: string
+              description: Описание статуса.
+              example: 'В обработке'
+            dateTime:
+              type: YYYY-MM-DD ТHH24:MM:SS
+              description: Дата и время обновления.
+              example: '2020-01-15T16:01:49.043924'
+        person:
+          type: object
+          description: Информация по держателю карты.
+          properties:
+            companyId:
+              type: string
+              description: CNUM компании
+              example: 'HBA23K'
+            maskedName:
+              type: string
+              description: Фамилия и инициалы.
+              example: 'Тестов Т.Т.'
+            birthday:
+              type: string
+              description: Дата рождения.
+              format: YYYY-MM-DD
+              example: '1980.01.30'
+            gender:
+              type: string
+              description: Пол держателя карты.
+              enum:
+                - MALE
+                - FEMALE
+              example: 'MALE'
+            maskedCellPhone:
+              type: string
+              description: Маскированный номер телефона.
+              example: '7916***4567'
+            branchId:
+              type: string
+              description: 3-х значный цифровой код отделения Банка, куда будет доставлена карта.
+              example: '603'
+            passport:
+              type: object
+              description: Информация о паспорте держателя карты.
+              properties:
+                maskedSeries:
+                  type: string
+                  description: Маскировання серия паспорта.
+                  example: '1*3*'
+                maskedNumber:
+                  type: string
+                  description: Маскированный номер паспорта.
+                  example: '1***56'
+                issuedDate:
+                  type: string
+                  format: YYYY-MM-DD
+                  description: Дата выдачи паспорта.
+                  example: '2012-10-22'
+
   CallBackSettings:
     type: object
     allOf:

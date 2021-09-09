@@ -33,11 +33,31 @@ info:
     * a ready-made library that allows you to open a pop-up for entering payment data and transferring complex data structures.
     * redirection of the client to the payment page of Raiffeisenbank
 
-    ## Support 54-ФЗ
+    ## 54-FZ support
 
-    We don't restrict your choice of fiscal solutions, but we recommend using a solution from our partners:
-    * To integrate with the operator's fiscal data [АТОЛ.](https://online.atol.ru/lk/Account/Register?partnerUid=18583cd5-dae2-4fb1-a98b-f4b80d891eb0)
-    * Use the [Paykeeper](https://raiffeisen-processing.ru) solutions.
+    In accordance with the Federal Law NO. 54-FZ of May 22, 2003 "On the use of cash registers in implementation of settlements in the Russian Federation",
+    for taxation purposes a fiscal receipt is required for making settlements for goods sold, work performed or services rendered, as well as transfer of the receipts to tax authorities.
+
+    The Raiffeisenbank clients that use the e-commerce solution can enable automatic generation of electronic fiscal receipts and their transfer to tax authorities.
+    Detailed directions are listed below:
+    1. Sign on with ["ATOL Online"](https://online.atol.ru/lk/Account/Register?partnerUid=18583cd5-dae2-4fb1-a98b-f4b80d891eb0) to activate online cash register
+    2. Sign a contract with a [fiscal data operator](https://www.nalog.gov.ru/rn77/related_activities/registries/fiscaloperators/)
+    3. Submit an application to enable the Raiffeisenbank fiscal solution
+
+    Your application has to contain the required information: merhcants' IDs, taxation system, E-mail (for receipts), login, password and group code from "ATOL Online".
+
+    For login, password and group code sign in to ["ATOL Online" account](https://online.atol.ru/lk/Account/Login). Go to "My companies", then press the button "Integrator settings".
+    After XML export open the file and find the element 'access'. It contains the necessary parameters (login, password, group_code).
+    If you face any difficulties, contact "ATOL Online" technical support.
+
+    * by E-mail <a href="mailto:SME_Acquiring@raiffeisen.ru?subject=Подключение фискализации чеков по транзакциям ECOM&cc=<E-mail менеджера>&body=Добрый день!%0A%0A
+    Просьба подключить услугу фискализации чеков по транзакциям ECOM. Данные для подключения ниже:%0A%0A1. Идентификатор(-ы) мерчанта(-ов) (publicId) – %0A%0A2. Применяемая система налогообложения – %0A%0A3. E-mail (для поля «Отправитель чека» и для получения чека, если E-mail не указан покупателем) – %0A%0A4. Логин учетной записи в «АТОЛ Онлайн» – %0A%0A5. Пароль от учетной записи в «АТОЛ Онлайн» – %0A%0A6. Идентификатор группы ККТ в «АТОЛ Онлайн» – ">SME_Acquiring@raiffeisen.ru</a>.
+    Click on the e-mail to see a request template with a list of required information.
+    * to a bank manager. Please note that all the required information should be sent securely.
+
+    Having completed all above, fiscal receipts will be generated automatically for all successful e-commerce transactions, as well as transferred to tax authorities by the fiscal data operator.
+
+    Along with the automated fiscal solution, Raiffeisenbank provides generation of fiscal receipts and their transfer to tax authorities by integration via [API](https://e-commerce.raiffeisen.ru/api/doc/fiscal.html).
 
     # Payment process
     Demonstration:
@@ -48,7 +68,7 @@ info:
     * The store opens up the payment form.
     * The customer enters the relevant details on the payment form and confirms the payment.
 
-    The payment execution scheme is presented below:
+    The payment execution process is presented below:
 
     <a href='images/E-commerce Raiffeisenbank scheme_en.png' target='_blank'><img src='images/E-commerce Raiffeisenbank scheme_en.png'></a>
 
@@ -443,7 +463,7 @@ definitions:
       amount:
         type: number
         description: Payment amount in rubles
-        example: 1000.50
+        example: 1200.00
       comment:
         type: string
         description: Payment description
@@ -468,83 +488,91 @@ definitions:
         enum:
           - ONLY_SBP
           - ONLY_ACQUIRING
-        description: Choosing a payment method.
+        description: Choosing a payment method
       locale:
         type: string
         enum:
           - ru
           - en
         description: Select the form language, by default ru
-      receiptNumber:
-        type: string
-        description: A unique receipt number that is created on the merchant's side. Serves as a pass-through identifier. Format A-Za-z0-9_-
-        maxLength: 128
-        example: 3000827351831
-      client:
+      receipt:
         type: object
         required:
-          - email
-        description: Customer details
+          - items
+        description: Receipt details. Required if the automated generation of fiscal receipts is enabled
         properties:
-          email:
+          receiptNumber:
             type: string
-            description: Customer's email address to send the receipt
-            maxLength: 64
-            example: customer@domain.ru
-          name:
-            type: string
-            description: Customer's name
-            maxLength: 256
-            example: Ivanov Ivan Ivanovich
-      items:
-        type: array
-        description: Receipt positions (no more than 100 objects)
-        items:
-          type: object
-          required:
-            - name
-            - price
-            - quantity
-            - amount
-            - vat
-          properties:
-            name:
-              type: string
-              description: Name of goods, work, service, other subject of calculation
-              maxLength: 128
-              example: Chocolate candies
-            price:
-              type: number
-              description: Price per unit of goods, work, services, other subject of calculation in rubles (8 characters for a whole part, 2 - for a fractional part)
-              example: 1000.00
-            quantity:
-              type: number
-              description: Quantity / weight (5 characters for a whole part, 3 - for a fractional part)
-              example: 1.2
-            amount:
-              type: number
-              description: Amount in rubles (8 characters for a whole part, 2 - for a fractional part)
-              example: 1200.00
-            measurementUnit:
-              type: string
-              description: Unit of measurement of goods, work, services, other subject of calculation
-              maxLength: 16
-              example: Kg
-            nomenclatureCode:
-              type: string
-              description: Product code
-              maxLength: 150
-              example: 1704909900
-            vat:
+            description: A unique receipt number, format A-Za-z0-9_-. If null, filled in with order number (orderId)
+            maxLength: 99
+            example: 3000827351831
+          customer:
+            type: object
+            description: Customer details
+            properties:
+              email:
+                type: string
+                description: Customer's email address that electronic fiscal receipt is sent to. Displayed on the payform, on which user can edit e-mail. If null, fiscal receipt is sent to merchant's e-mail.
+                maxLength: 64
+                example: customer@domain.ru
+              name:
+                type: string
+                description: Customer's full name
+                maxLength: 256
+                example: Ivanov Ivan Ivanovich
+          items:
+            type: array
+            description: Receipt items (no more than 100 objects)
+            items:
               type: object
               required:
-                - type
+                - name
+                - price
+                - quantity
                 - amount
-              description: Tax data on the receipt item
+                - vatType
               properties:
-                type:
+                name:
                   type: string
-                  description: VAT rate
+                  description: Name of goods, work, service, other payment objects
+                  maxLength: 128
+                  example: Chocolate cake
+                price:
+                  type: number
+                  description: Price per unit of goods, work, services, other payment objects in rubles (8 characters for a whole part, 2 - for a fractional part)
+                  example: 1200.00
+                quantity:
+                  type: number
+                  description: Quantity / weight (5 characters for a whole part, 3 - for a fractional part)
+                  example: 1
+                amount:
+                  type: number
+                  description: Amount in rubles (8 characters for a whole part, 2 - for a fractional part)
+                  example: 1200.00
+                paymentObject:
+                  type: string
+                  description: Payment object type (good, job, service, etc). If null, filled in by a fiscal data operator in accordance with its protocol
+                  enum:
+                    - commodity
+                    - excise
+                    - job
+                    - service
+                    - payment
+                    - another
+                  example: commodity
+                measurementUnit:
+                  type: string
+                  description: Unit of measurement of goods, work, services, other payment objects
+                  maxLength: 16
+                  example: item
+                nomenclatureCode:
+                  type: string
+                  description: Product code
+                  maxLength: 150
+                  example: 1806201000
+                vatType:
+                  type: string
+                  description: VAT rate on each receipt item
                   enum:
                     - none
                     - vat0
@@ -553,14 +581,6 @@ definitions:
                     - vat20
                     - vat120
                   example: vat20
-                amount:
-                  type: number
-                  description: Tax amount per receipt position in rubles (8 characters for a whole part, 2 - for a fractional part)
-                  example: 200.00
-      total:
-        type: number
-        description: The total amount of the receipt (8 characters for a whole part, 2 - for a fractional part)
-        example: 1200.00
     title: TransactionID
   OrderInformation:
     type: object
@@ -726,6 +746,8 @@ definitions:
     title: information about order
   Refund:
     type: object
+    required:
+      - amount
     properties:
       amount:
         type: number
