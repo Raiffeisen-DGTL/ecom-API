@@ -44,6 +44,9 @@ info:
       АдресПрописки.УлицаНазвание | Улица адреса прописки(при отсутствии указать Нет)
       АдресПрописки.Дом | Дом адреса прописки(при отсутствии указать Нет)
       МобильныйТелефон | Мобильный телефон сотрудника-держателя(79210000001 или 9210000001)
+      Суточный лимит(только в csv формате) | Суточный лимит на снятие наличных
+      Месячный лимит(только в csv формате) | Ежемесячный общий расходный лимит
+      Секретное слово(только в csv формате) | Секретное слово держателя карты
 
     ## Инструкция по выгрузке реестра из 1С
     [Инструкция по выгрузке реестра из 1С](https://docs.google.com/document/d/1xk9q9MDW1qx9oqQI64FF9PUBdShuLc-rgYuciY2SbzI)
@@ -82,6 +85,7 @@ tags:
     x-displayName: 'Выпуск карт'
     description: |
       Для реализации взаимодействия Райффайзенбанк предоставляет API:
+      * получение списка отделений для выдачи карт
       * запрос на создание карт с ипользованием HTTP;
       * получение информации о статусе запроса на создание карт.
 
@@ -346,6 +350,34 @@ definitions:
           type: string
           description: Ежемесячный общий расходный лимит по карте в рублях. Строка с целым числом. Необязательное поле, по умолчанию устанавливается в соответствии с типом карты.
           example: '5000'
+        deliveryAddress:
+          type: object
+          description: Информация об адресе доставки карты. Необязательный блок.
+          properties:
+            countryOfRegistrationIsoCode:
+              type: string
+              description: Страна адреса доставки(ISO).
+              example: '643'
+            region:
+              type: string
+              description: Регион адреса доставки.
+              example: 'Москва'
+            city:
+              type: string
+              description: Населенный пункт адреса доставки.
+              example: 'Москва'
+            street:
+              type: string
+              description: Улица адреса доставки.
+              example: 'Октябрьская'
+            house:
+              type: string
+              description: Номер дома адреса доставки.
+              example: '84'
+            building:
+              type: string
+              description: Номер строения адреса доставки. Необязательное поле.
+              example: '3'
         person:
           type: object
           description: Данные держателя карты
@@ -389,8 +421,8 @@ definitions:
             citizenshipCode:
               type: string
               description: Код страны гражданства (ISO). Необязательное поле. По умолчанию 643.
-              example: 643
-            secretWords:
+              example: '643'
+            secretWord:
               type: string
               description: Кодовое слово. Необязательное поле.
               example: 'itsmysecret'

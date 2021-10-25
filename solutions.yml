@@ -521,6 +521,46 @@ tags:
     description: |
      * [JavaScript](https://github.com/Raiffeisen-DGTL/ecom-sdk-javascript)
 
+  - name: atol
+    x-displayName: АТОЛ Онлайн
+    description: |
+     **Описание:**
+
+     АТОЛ Онлайн - это один из самых крупных операторов облачных касс, используемых для:
+     * интернет-магазинов
+     * транспорта
+     * ЖКХ
+     * общественного питания
+     * других отраслей
+
+     АТОЛ Онлайн предоставляет облачный сервис, который полностью соответствует закону 54-ФЗ, гарантированно формирует чек в момент продажи в интернет-магазине и передает данные чека в ОФД и ФНС.
+
+     **Реферальная ссылка:**
+
+     [https://online.atol.ru](https://online.atol.ru/lk/Account/Register?partnerUid=18583cd5-dae2-4fb1-a98b-f4b80d891eb0)
+
+     **Инструкция:**
+
+     https://e-commerce.raiffeisen.ru/api/doc/fiscal.html
+
+  - name: ofd
+    x-displayName: OFD.ru
+    description: |
+     **Описание:**
+
+     OFD.ru - оператор фискальных данных который обеспечивает:
+     * удобный и надежный сервис управления ККТ
+     * обработки и передачи данных в ФНС
+     * предоставляет решения, которые помогают бизнесу оптимизировать затраты, увеличивать выручку и формировать своевременные и лучшие предложения для покупателей
+
+     **Реферальная ссылка:**
+
+     https://raiffeisen.ofd.ru/
+
+     **Инструкция:**
+
+     https://e-commerce.raiffeisen.ru/api/doc/fiscal.html
+
 x-tagGroups:
   - name: Оффлайн (СБП)
     tags:
@@ -542,6 +582,10 @@ x-tagGroups:
       - joomla
       - modx
       - retailcrm
+  - name: Чеки по СБП и ECOM (54-ФЗ)
+    tags:
+      - atol
+      - ofd
   - name: SDK
     tags:
       - sbp

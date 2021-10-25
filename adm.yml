@@ -42,3 +42,341 @@ info:
       Улица | Улица адреса прописки
       Дом | Дом адреса прописки
       E-mail | Адрес электронной почты, на который необходимо отправить созданный код (почта вносителя)
+
+     # Об API
+
+     Взаимодействие осуществляется по протоколу HTTP с использованием методов GET/POST (в описании каждого запроса явно указан требуемый метод и адрес).
+     POST-запросы используют JSON-аргументы, GET-запросы работают со строками запросов.
+     API всегда возвращает ответ в формате JSON, независимо от типа запроса.
+     Ответ любого метода содержит код сообщения (code). Если в процессе обработки любого запроса произойдет логическая ошибка, API вернет дополнительно описание ошибки (message).
+
+     ## Авторизация
+
+     Для авторизация запросов необходимы:
+     * secretKey - секретный ключ, который используется для межсервисного взаимодействия.
+
+     ВАЖНО: Секретный ключ необходимо хранить в защищенном месте, нельзя публиковать на сторонних ресурсах или передавать третьим лицам.
+
+     Межсервисные запросы авторизуются посредством секретного ключа API (SECRET_KEY). Параметр авторизации указывается в заголовке Authorization, значение которого формируется как "Bearer SECRET_KEY".
+
+servers:
+  - url: https://pay.raif.ru
+    description: Production API (uses live data)
+  - url: https://pay-test.raif.ru
+    description: Sandbox API
+tags:
+  - name: code-api
+    x-displayName: 'Выпуск кодов'
+    description: |
+      Для реализации взаимодействия Райффайзенбанк предоставляет API:
+      * запрос на создание кодов вносителей с ипользованием HTTP;
+      * получение информации о статусе запроса на создание кодов вносителей.
+
+  - name: Errors
+    x-displayName: 'Справочник ошибок'
+    description: |
+      Ответ любого метода содержит код сообщения (code). Если в процессе обработки любого запроса произойдет логическая ошибка, API вернет описание ошибки (message).
+
+      Описание основных ошибок:
+
+      HTTP-код | code | message | Комментарий
+      --------|------------------|-----------------------------------|-----------------------------
+      200 | SUCCESS | Запрос обработан успешно | Успешное выполнение запроса без логических и системных сбоев
+      400 | ERROR.Код_ошибки | Текстовое сообщение о сути ошибки | Логическая ошибка при выполнении запроса
+      500 | ERROR.INTERNAL | Ошибка | Системная ошибка при выполнении запроса
+
+paths:
+  /api/v1/registry/batch -H "Authorization :Bearer SecretKey":
+    post:
+      tags:
+        - code-api
+      summary: Запрос на создание кодов вносителей
+      operationId: codeBatch
+      consumes:
+        - application/json;charset=UTF-8
+      produces:
+        - application/json;charset=UTF-8
+      parameters:
+        - in: header
+          name: Authorization
+          type: string
+          description: Bearer secret key
+          required: true
+        - in: body
+          name: codeBatch
+          description: codeBatch
+          required: true
+          schema:
+            "$ref": '#/definitions/schemas/codeBatchRequest'
+      responses:
+        '200':
+          description: OK
+          schema:
+            "$ref": "#/definitions/EmptyBody"
+        '400':
+          description: Ошибка валидации
+          schema:
+            "$ref": '#/definitions/codeBatchErrorResponse'
+
+  /api/v1/registry/{batchId} -H "Authorization :Bearer SecretKey":
+    get:
+      tags:
+        - code-api
+      summary: Получение информации о статусе запроса на создание кодов вносителей.
+      operationId: codeBatchStatus
+      consumes:
+        - application/json;charset=UTF-8
+      produces:
+        - application/json;charset=UTF-8
+      parameters:
+        - in: header
+          name: Authorization
+          type: string
+          description: Bearer secret key
+          required: true
+        - in: path
+          name: batchId
+          type: string
+          description: Уникальный идентификатор пакета, по которому нужно получить статус.
+          required: true
+      responses:
+        '200':
+          description: OK
+          schema:
+            "$ref": '#/definitions/batchCodeStatusResponse'
+
+definitions:
+  securitySchemes:
+    SECRET_KEY:
+      type: http
+      scheme: bearer
+      description: ''
+  schemas:
+    codeBatchRequest:
+      type: object
+      properties:
+        batchId:
+          type: string
+          description: Уникальный идентификатор пакета.
+          maxLength: 36
+          example: 'd780dd10-3276-4d0b-afd0-29e271491e24'
+        payers:
+          type: array
+          description: Список кодов на выпуск.
+          items:
+            $ref: '#/definitions/schemas/batchCode'
+          title: cards
+    batchCode:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Уникальный идентификатор запроса на выпуск кода.
+          maxLength: 36
+          example: 'a111bc10-7777-4d0b-afd0-29e271491e13'
+        account:
+          type: string
+          description: Номер счета.
+          maxLength: 20
+          minLength: 20
+          example: '40702810603000060801'
+        person:
+          type: object
+          description: Данные держателя кода
+          properties:
+            surname:
+              type: string
+              description: Фамилия.
+              example: 'Иванова'
+            name:
+              type: string
+              description: Имя.
+              example: 'Иван'
+            patronymic:
+              type: string
+              description: Отчество.
+              example: 'Иванович'
+            birthday:
+              type: string
+              format: YYYY-MM-DD
+              description: Дата рождения.
+              example: '1993-12-23'
+            gender:
+              type: string
+              description: Пол.
+              enum:
+                - MALE
+                - FEMALE
+              example: 'M'
+            email:
+              type: string
+              description: E-mail адрес на который отправляется готовый код.
+              example: '79123456789'
+            passport:
+              type: object
+              description: Информация о паспорте РФ вносителя.
+              properties:
+                series:
+                  type: string
+                  description: Серия документа.
+                  example: '1234'
+                number:
+                  type: string
+                  description: Номер документа.
+                  example: '123456'
+                issuedBy:
+                  type: string
+                  description: Кем выдан документ.
+                  example: 'ОУФМС по МО в городском округе Красногорск'
+                issuedDate:
+                  type: string
+                  format: YYYY-MM-DD
+                  description: Дата выдачи документа.
+                  example: '2010-01-30'
+                countryOfBirthName:
+                  type: string
+                  description: Страна рождения.
+                  example: 'Россия'
+            address:
+              type: object
+              description: Информация об адресе вносителя.
+              properties:
+                region:
+                  type: string
+                  description: Регион адреса прописки.
+                  example: 'Московская обл'
+                city:
+                  type: string
+                  description: Населенный пункт адреса прописки.
+                  example: 'Красногорск'
+                street:
+                  type: string
+                  description: Улица адреса прописки.
+                  example: 'Ленина'
+                house:
+                  type: string
+                  description: Номер дома адреса прописки.
+                  example: '7'
+                countryOfRegistrationName:
+                  type: string
+                  description: Номер строения адреса прописки.
+                  example: 'Россия'
+  EmptyBody:
+    type: object
+  codeBatchErrorResponse:
+    type: object
+    properties:
+      code:
+        type: string
+        description: Код ошибки.
+        example: 'ERROR.INVALID_DATA'
+      message:
+        type: string
+        description: Текст ошибки.
+        example: 'Некорректные данные'
+      errors:
+        type: array
+        description: Ошибки, возникшие при валидации запроса.
+        items:
+          $ref: '#/definitions/batchValidationError'
+        title: errors
+  batchValidationError:
+    type: object
+    properties:
+      id:
+        type: string
+        description: Уникальный идентификатор запроса на выпуск кода.
+        example: 'c130bc10-3286-4d0b-afd0-29e271491e13'
+      invalidFields:
+        type: array
+        description: Массив со списком полей.
+        items:
+          type: string
+          example: ['account', 'person.birthday', 'person.passport.series']
+
+  batchCodeStatusResponse:
+    type: object
+    properties:
+      cards:
+        type: array
+        description: Список кодов на выпуск.
+        items:
+          $ref: '#/definitions/batchCodePerson'
+        title: cards
+  batchCodePerson:
+    type: object
+    description: Информация по кодам.
+    properties:
+      id:
+        type: string
+        description: Уникальный идентификатор запроса на выпуск кодов.
+        example: 'c130bc10-3286-4d0b-afd0-29e271491e13'
+      payerId:
+        type: string
+        description: Уникальный банковский идентификатор вносителя.
+        example: '12345678'
+      status:
+        type: object
+        description: Статус по коду.
+        properties:
+          value:
+            type: string
+            description: Код статуса.
+            enum:
+              - IN_PROGRESS
+              - SUCCESS
+              - REJECTED
+            example: 'IN_PROGRESS'
+          description:
+            type: string
+            description: Описание статуса.
+            example: 'В обработке'
+          dateTime:
+            type: YYYY-MM-DD ТHH24:MM:SS
+            description: Дата и время обновления.
+            example: '2020-01-15T16:01:49.043924'
+      account:
+        type: string
+        description: Номер счета.
+        example: '40702810603000060801'
+      person:
+        type: object
+        description: Информация по вносителю.
+        properties:
+          companyId:
+            type: string
+            description: CNUM компании
+            example: 'NBA2K0'
+          maskedName:
+            type: string
+            description: Фамилия.
+            example: 'Те*****ст****в.'
+          birthday:
+            type: string
+            description: Дата рождения.
+            format: YYYY-MM-DD
+            example: '1980-01-10'
+          gender:
+            type: string
+            description: Пол вносителя.
+            enum:
+              - MALE
+              - FEMALE
+            example: 'MALE'
+          document:
+            type: object
+            description: Информация о паспорте вносителя.
+            properties:
+              maskedSeries:
+                type: string
+                description: Маскировання серия паспорта.
+                example: '1*7*'
+              maskedNumber:
+                type: string
+                description: Маскированный номер паспорта.
+                example: '1***77'
+              issuedDate:
+                type: string
+                format: YYYY-MM-DD
+                description: Дата выдачи паспорта.
+                example: '2000-10-28'

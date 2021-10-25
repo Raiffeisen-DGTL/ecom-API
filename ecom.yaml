@@ -1,0 +1,834 @@
+openapi: 3.0.0
+info:
+  version: '1.0'
+  title: Raiffeisenbank e-commerce API
+  contact:
+    email: ecom@raiffeisen.ru
+    name: Support e-mail
+  x-logo:
+    url: images/raifflogo.png
+    backgroundColor: '#FFFFFF'
+    altText: Raiff logo
+  description: "Свои предложения и идеи о документации можно оставить в репозитории по адресу: https://github.com/Raiffeisen-DGTL/ecom-API/blob/master/ecom.yml\n\n# Подключение к эквайрингу\n\nДля подключения перейдите на [сайт.](https://www.raiffeisen.ru/corporate/management/commerce/)\n\nПо остальным вопросам работы с API необходимо обращаться в Службу Поддержки Raiffeisenbank:\n- email: <a href=\"mailto:ecom@raiffeisen.ru\">ecom@raiffeisen.ru</a>\n\n### Подготовительные мероприятия\nЧтобы принимать платежи:\n* подайте заявку на подключение эквайринга\n* заключите договор с Райффайзенбанком\n* выберите способ интеграции и реализуйте его\n* успешно проведите тестовые платежи.\n\n### Способы интеграции платежной страницы\nДля интеграции платежной страницы используйте:\n* готовую библиотеку, позволяющую открыть popup для ввода данных платежа и передать сложную структуру данных\n* перенаправление клиента на платежную страницу Райффайзенбанка\n\n# Cхема работы\nДемонстрация:\nhttps://e-commerce.raiffeisen.ru/pay/demo.html\n\nПользователь совершает следующие действия в процессе платежа:\n* Выбирает товары/услуги в корзину магазина и нажимает кнопку “Оплатить”.\n* Партнер открывает платежную форму.\n* Клиент вводит реквизиты на платежной форме и подтверждает платеж.\n\nСхема выполнения платежа представлена ниже:\n\n<a href='images/E-commerce Raiffeisenbank scheme.png' target='_blank'><img src='images/E-commerce Raiffeisenbank scheme.png'></a>\n\n# Поддержка 54-ФЗ\n\nПо закону от 22.05.2003 № 54–ФЗ \"О применении контрольно-кассовой техники при осуществлении расчетов в Российской Федерации\" при оплате товаров, работ или услуг необходимо формировать фискальный чек и отправлять его в налоговую с помощью кассы.\n\nКлиенты Райффайзенбанка, подключившие интернет-эквайринг, также могут воспользоваться услугой фискализации чеков через онлайн-кассу. Пошаговые инструкции приведены ниже.\n\n## OFD.ru\n\n1.\tПодключите онлайн-кассу в сервисе [OFD.ru](https://raiffeisen.ofd.ru/)\n2.  Зарегистрируйте кассу в ФНС через сервис Ferma [по инструкции](https://static.ofd.ru/mail/2020/03/code_activate_and_promocode.pdf)\n3.\tСоставьте заявку на подключение\n\nВ заявке необходимо указать данные:\n* Поставщик кассового оборудования – OFD.ru\n* Идентификаторы мерчантов (publicId)\n* Применяемая система налогообложения\n* E-mail (для получения чека, если E-mail не указан покупателем)\n* Логин, пароль и идентификатор группы ККТ от OFD.ru (см. ниже)\n\nДля получения данных по подключенной кассе в OFD.ru перейдите в раздел Ferma в [личном кабинете клиента](https://lk.ofd.ru/ferma/dashboard) и пролистайте до виджета \"Реквизиты доступа\".\nСкопируйте логин, пароль и идентификатор группы ККТ для подключения.\n\n<a href='images/fiscalization_ofdru.png' target='_blank'><img src='images/fiscalization_ofdru.png'></a>\n\n4. Отправьте заявку в банк одним из способов:\n* По E-mail <a href=\"mailto:ecom@raiffeisen.ru?subject=Подключение фискализации чеков для интернет-эквайринга&cc=<E-mail менеджера>&body=Добрый день!%0A%0A\nПросьба подключить фискализацию чеков для интернет-эквайринга через OFD.ru. Данные для подключения ниже:%0A%0A1. Поставщик кассового оборудования – OFD.ru%0A%0A2. Идентификаторы мерчантов (publicId) – %0A%0A3. Применяемая система налогообложения – %0A%0A4. E-mail (для поля «Отправитель чека» и для получения чека, если E-mail не указан покупателем) – %0A%0A5. Логин учетной записи – %0A%0A6. Пароль от учетной записи – %0A%0A7. Идентификатор группы ККТ – \">ecom@raiffeisen.ru</a>.\nПример заявки доступнен при нажатии на E-mail.\n* Через менеджера банка. Для этого отправьте ему безопасным способом необходимые для подключения данные.\n\n5. Убедитесь, что при вызове платежной формы передаются данные, необходимые для формирования чека (см. объект receipt в [JS-библиотеке](https://pay.raif.ru/api/doc/ecom.html#tag/js-sdk))\n\nПосле активации услуги чеки будут автоматически регистрироваться через выбранную кассу. Помимо автоматической фискализации чеков также доступна фискализация через [API банка](https://e-commerce.raiffeisen.ru/api/doc/fiscal.html).\n\n## АТОЛ Онлайн\n1. Зарегистрируйтесь в сервисе [\"АТОЛ Онлайн\"](https://online.atol.ru/lk/Account/Register?partnerUid=18583cd5-dae2-4fb1-a98b-f4b80d891eb0) и подключите онлайн-кассу\n2. Заключите договор с [оператором фискальных данных](https://www.nalog.gov.ru/rn77/related_activities/registries/fiscaloperators/)\n3. Составьте заявку на подключение\n\nВ заявке необходимо указать данные:\n* Поставщик кассового оборудования – \"АТОЛ Онлайн\"\n* Идентификаторы мерчантов (publicId)\n* Применяемая система налогообложения\n* E-mail (для получения чека, если E-mail не указан покупателем)\n* Логин, пароль и идентификатор группы ККТ от \"АТОЛ Онлайн\" (см. ниже)\n\nЧтобы получить логин, пароль и идентификатор, зайдите в [личный кабинет \"АТОЛ Онлайн\"](https://online.atol.ru/lk/Account/Login). Выберите раздел \"Мои компании\", нажмите кнопку \"Настройки интегратора\".\nСкачается XML-файл с настройками, найдите в файле элемент access, в нём будут все три параметра: login, password, group_code. Если возникли трудности, обратитесь в техподдержку \"АТОЛ Онлайн\".\n\n4. Отправьте заявку в банк одним из способов:\n* По E-mail <a href=\"mailto:ecom@raiffeisen.ru?subject=Подключение фискализации чеков для интернет-эквайринга&cc=<E-mail менеджера>&body=Добрый день!%0A%0A\nПросьба подключить фискализацию чеков для интернет-эквайринга через %22АТОЛ Онлайн%22. Данные для подключения ниже:%0A%0A1. Поставщик кассового оборудования – %22АТОЛ Онлайн%22%0A%0A2. Идентификаторы мерчантов (publicId) – %0A%0A3. Применяемая система налогообложения – %0A%0A4. E-mail (для поля «Отправитель чека» и для получения чека, если E-mail не указан покупателем) – %0A%0A5. Логин учетной записи – %0A%0A6. Пароль от учетной записи – %0A%0A7. Идентификатор группы ККТ – \">ecom@raiffeisen.ru</a>.\nПример заявки доступнен при нажатии на E-mail.\n* Через менеджера банка. Для этого отправьте ему безопасным способом необходимые для подключения данные.\n\n5. Убедитесь, что при вызове платежной формы передаются данные, необходимые для формирования чека (см. объект receipt в [JS-библиотеке](https://pay.raif.ru/api/doc/ecom.html#tag/js-sdk))\n\nПосле активации услуги чеки будут автоматически регистрироваться через выбранную кассу. Помимо автоматической фискализации чеков также доступна фискализация через [API банка](https://e-commerce.raiffeisen.ru/api/doc/fiscal.html).\n\n## Чек-Онлайн\n\n1. Зарегистрируйтесь в сервисе [\"Чек-Онлайн\"](https://www.chekonline.ru) и подключите онлайн-кассу\n2. Заключите договор с [оператором фискальных данных](https://www.nalog.gov.ru/rn77/related_activities/registries/fiscaloperators/)\n3. Составьте заявку на подключение\n\nВ заявке необходимо указать данные:\n* Поставщик кассового оборудования – \"Чек-Онлайн\"\n* Идентификаторы мерчантов (publicId)\n* Применяемая система налогообложения\n* E-mail (для получения чека, если E-mail не указан покупателем)\n* Логин, пароль и идентификатор группы ККТ от \"Чек-Онлайн\" (см. ниже)\n\nЧтобы получить логин и пароль, зайдите в [личный кабинет клиента](https://cabinet.chekonline.ru/Account/Login).\nОткройте раздел \"Предприятия\", найдите в списке нужную компанию и нажмите на иконку в поле \"Авторизация\". Откроется раздел, в котором можно выбрать существующие логин и пароль или сгенерировать новые.\nДля получения идентификатора группы ККТ вернитесь в раздел \"Предприятия\" и выберите нужную компанию из списка. В открывшемся профиле предприятия скопируйте API Group ID.\n\n4. Отправьте заявку в банк одним из способов:\n* По E-mail <a href=\"mailto:ecom@raiffeisen.ru?subject=Подключение фискализации чеков для интернет-эквайринга&cc=<E-mail менеджера>&body=Добрый день!%0A%0A\nПросьба подключить фискализацию чеков для интернет-эквайринга через %22Чек-Онлайн%22. Данные для подключения ниже:%0A%0A1. Поставщик кассового оборудования – %22Чек-Онлайн%22%0A%0A2. Идентификаторы мерчантов (publicId) – %0A%0A3. Применяемая система налогообложения – %0A%0A4. E-mail (для поля «Отправитель чека» и для получения чека, если E-mail не указан покупателем) – %0A%0A5. Логин учетной записи – %0A%0A6. Пароль от учетной записи – %0A%0A7. Идентификатор группы ККТ – \">ecom@raiffeisen.ru</a>.\nПример заявки доступнен при нажатии на E-mail.\n* Через менеджера банка. Для этого отправьте ему безопасным способом необходимые для подключения данные.\n\n5. Убедитесь, что при вызове платежной формы передаются данные, необходимые для формирования чека (см. объект receipt в [JS-библиотеке](https://pay.raif.ru/api/doc/ecom.html#tag/js-sdk))\n\nПосле активации услуги чеки будут автоматически регистрироваться через выбранную кассу. Помимо автоматической фискализации чеков также доступна фискализация через [API банка](https://e-commerce.raiffeisen.ru/api/doc/fiscal.html).\n\n# API\nBзаимодействие осуществляется по протоколу HTTP с использованием методов GET/POST (в описании каждого запроса явно указан требуемый метод и адрес).\n\nPOST-запросы используют JSON-аргументы, GET-запросы работают со строками запросов.\n\nAPI всегда возвращает ответ в формате JSON, независимо от типа запроса.\n\nОтвет любого метода содержит код сообщения (code). Если в процессе обработки любого запроса произойдет логическая ошибка, API вернет дополнительно описание ошибки (message).\n\n\n##  Авторизация\n\nДля авторизация запросов необходимы:\n* publicId - идентификатор, который используется для открытия платежной формы и не является конфиденциальным.\n* secretKey - секретный ключ, который используется для межсервисного взаимодействия.\n\nПродовый хост: https://e-commerce.raiffeisen.ru\n\nТестовый хост: https://test.ecom.raiffeisen.ru\n\nBАЖНО: Секретный ключ необходимо хранить в защищенном месте, нельзя публиковать на сторонних ресурсах или передавать третьим лицам.\n\nМежсервисные запросы авторизуются посредством секретного ключа API (SECRET_KEY). Параметр авторизации указывается в заголовке Authorization, значение которого формируется как \"Bearer SECRET_KEY\".\n\nПосмотреть боевой publicId и сгенерировать ключи можно в [личном кабинете](https://www.rbo.raiffeisen.ru/acquiring/mcp#/) во вкладке \"Прием платежей\"\n\n<div align=center><a href='images/createKey.png' target='_blank'><img src='images/createKey.png'></a></div>\n\nДля генерации тестового секретного ключа необходимо обратиться по адресу: ecom@raiffeisen.ru\n\n## Параметры ошибок\nОтвет любого метода содержит код сообщения (code). Если в процессе обработки любого запроса произойдет логическая ошибка, API вернет дополнительно описание ошибки (message).\n\nHTTP-код | code | message | Комментарий\n--------|------------------|-----------------------------------|-----------------------------\n200 | SUCCESS | Запрос обработан успешно | Успешное выполнение запроса без логических и системных сбоев.\n200 | ERROR.Код_ошибки | Текстовое сообщение о сути ошибки | Логическая ошибка при выполнении запроса.\n500 | ERROR.INTERNAL | Ошибка | Системная ошибка при выполнении запроса.\n\n# Тестирование\n## Эквайринг\nДля полного цикла тестирования оплаты необходимо указывать сумму платежа больше 10 рублей.\nКарты для тестовой среды:\n\n* 4000001000000018 12/24 880 - с 3DS пин для успешной оплаты 1234 , для получения ошибки 1111\n\n## СБП\nДля полного цикла тестирования оплаты Райффайзенбанк предоставляет возможность использования демо-приложения для сканирования QRC от имени покупателя по адресу:\nhttps://pay.raif.ru/pay/rfuture/\n\nУказанный адрес можно открыть в браузере любого устройства, где есть камера. Никакого дополнительного софта/плагинов устанавливать не нужно. Далее нажать на значок СБП (при необходимости разрешить браузеру доступ к камере) и поднести к ней изображение QR-кода.\nЕсли камера не открылась, проверьте что в адресе указан проткол https.\n\n### Пример экранов демо-приложения\n\n<div align=center><a href='images/example-sbp-1.png' target='_blank'><img src='images/example-sbp-1.png'></a></div>"
+servers:
+  - url: 'https://test.ecom.raiffeisen.ru/api'
+    description: Sandbox
+  - url: 'https://e-commerce.raiffeisen.ru/api'
+    description: Production
+tags:
+  - name: js-sdk
+    x-displayName: js-библиотека
+    description: |
+      Использование библиотеки позволяет открывать форму в pop-up окне, что обеспечивает бесшовный сценарий для клиента.
+      Также возможно выполнить кастомизацию интерфейса платежной формы и передать дополнительные поля.
+
+      Использование JS-библиотеки описано в репозитории https://github.com/Raiffeisen-DGTL/ecom-sdk-javascript
+
+      Вы можете настроить название, логотип и цвет кнопок на форме в нашем конфигураторе: https://pay.raif.ru/pay/configurator/
+
+      Там же можно получить код для встраивания его в JS-библиотеку.
+
+      Ниже указан пример запроса на оплату:
+
+      <SchemaDefinition schemaRef="#/components/schemas/examplesJS" />
+  - name: payform
+    x-displayName: Платежная форма
+    description: |
+      Простой способ для интеграции. Клиента необходимо перенаправить на платежную форму, передав параметры заказа. Кастомизация интерфейса формы или передача дополнительных полей в данном варианте интеграции недоступны.
+  - name: pay-controller
+    x-displayName: Методы API
+    description: |
+      Для реализации взаимодействия с партнёром Райффайзенбанк предоставляет API для:
+      * открытия платежной формы с ипользованием HTTP запросов;
+      * получения информации о статусе заказа.
+  - name: Callback
+    x-displayName: Уведомление о платеже
+    description: |
+      Для информирования ТСП о проведенных платежах могут использоваться HTTP-уведомления на адрес, указанный в его настройках.
+
+      Боевой адрес можно указать в [личном кабинете](https://www.rbo.raiffeisen.ru/acquiring/mcp#/) во вкладке "Прием платежей"
+
+      <div align=center><a href='images/callback.png' target='_blank'><img src='images/callback.png'></a></div>
+
+      Также адрес для тестовой и боевой среды можно указать с помощью [метода в API](#operation/postsettingsUrl).
+
+      Для партнёра уведомление представляет собой входящий POST-запрос, который использует JSON-структуру.
+
+      Уведомление считается принятым, если получатель ответил на запрос кодом HTTP 200.
+
+      Ответы с любыми другими HTTP-кодами будут считаться невалидными. Повторные попытки отправки будут проводиться в течение суток с нарастающим интервалом.
+
+      Для проверки подлинности уведомления к данным добавляется подпись в заголовке  x-api-signature-sha256, полученная на основе общего секретного ключа и контрольной строки (amount|publicId|order|transaction.status.value|transaction.status.date) с помощью HMAC-SHA-256.
+
+      Необходимо проверять сумму, так как у клиентов есть возможность ее изменить.
+  - name: Registry
+    x-displayName: Реестр
+    description: |
+      Для подключения отправки реестров необходимо написать на ecom@raiffeisen.ru
+
+      Реестры по платежам отправляются на ежедневной основе.
+
+      В случае отсутствия операций за день, реестр на следующий день не отправляется.
+
+      Формат реестра:
+
+      Наименование колонки | Значение
+      --------|------------------
+      Мерчант | Идентификатор в системе банка
+      Дата операции МСК | Дата и время проведения операции
+      Тип | Тип операции
+      id заказа | Id заказа в системе партнера (orderId)
+      id возврата | Id возврата в системе партнера (refundId)
+      Комментарий | Комментарий к заказу (comment)
+      Способ оплаты | Instant Payment QR - при оплате по СБП, Название платежной системы - по Эквайрингу
+      Данные оплаты | QR id - для СБП, authCode и rnn -для Эквайринга
+      id клиента | СБП - маскированный код плательщика. Для Эквайринга - маскированный номер карты
+      Сумма | Сумма транзакции (amount)
+      Комиссия | Комиссия по транзакции
+      Дополнительные поля | Дополнительная информация (extra)
+
+      [Пример реестра](images/ECOMSBPreport.csv)
+  - name: Errors
+    x-displayName: Справочник ошибок
+    description: |
+      Ответ любого метода содержит код сообщения (code). Если в процессе обработки любого запроса произойдет логическая ошибка, API вернет описание ошибки (message).
+
+      Описание основных ошибок:
+
+      code | message
+      ------------|------
+      ERROR.NOT_FOUND | Счет не найден у данного партнера
+      ERROR.REFUND_INSUFFICIENT_FUNDS | Сумма возврата больше суммы остатка по платежу
+      ERROR.INVALID_REQUEST | Некорректные параметры запроса
+  - name: 21.10.2021
+    x-displayName: 21.10.2021
+    description: |
+      * Добавлен параметр expirationDate - ответчающий за срок жизни формы
+paths:
+  /pay:
+    get:
+      servers:
+        - url: 'https://test.ecom.raiffeisen.ru'
+          description: Sandbox
+        - url: 'https://e-commerce.raiffeisen.ru'
+          description: Production
+      summary: Открытие платежной формы
+      tags:
+        - payform
+      operationId: get-pay
+      description: При редиректе клиента на полученный URL откроется форма для оплаты
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: publicId
+          description: Идентификатор магазина
+          required: true
+        - schema:
+            type: string
+          in: query
+          name: amount
+          required: true
+          description: Сумма платежа в рублях. Минимальный платеж по карте 15 рублей
+        - schema:
+            type: string
+            pattern: '^[A-z0-9-_.]'
+            maxLength: 40
+          in: query
+          name: orderId
+          description: Идентификатор заказа в магазине
+        - schema:
+            maxLength: 140
+            format: URL encoded
+            type: string
+          in: query
+          name: comment
+          description: Комментарий к заказу
+        - schema:
+            type: string
+            enum:
+              - ONLY_SBP
+              - ONLY_ACQUIRING
+          in: query
+          name: paymentMethod
+          description: Выбор метода оплаты
+        - schema:
+            type: string
+            enum:
+              - ru
+              - en
+          in: query
+          name: locale
+          description: 'Выбор языка формы, по умолчанию ru'
+        - schema:
+            format: URL encoded
+            type: string
+          in: query
+          name: successUrl
+          description: 'URL ресурса, куда будет перенаправлен клиент в случае успешного платежа'
+        - schema:
+            format: URL encoded
+            type: string
+          in: query
+          name: failUrl
+          description: 'URL ресурса, куда будет перенаправлен клиент в случае неуспешного платежа'
+        - schema:
+            type: string
+            format: date-time encoded
+          in: query
+          name: expirationDate
+          description: 'Срок жизни формы. YYYY-MM-DD ТHH24:MM:SS±HH:MM'
+      responses:
+        '200':
+          description: OK
+    parameters: []
+  '/payments/v1/orders/{orderId}/transaction':
+    parameters:
+      - schema:
+          type: string
+          pattern: A-z0-9-_.
+          maxLength: 40
+        name: orderId
+        in: path
+        required: true
+        description: Идентификатор заказа в магазине
+    get:
+      summary: Получение информации о статусе заказа
+      tags:
+        - pay-controller
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/resPayStatus'
+              examples:
+                acquiring:
+                  value:
+                    code: SUCCESS
+                    transaction:
+                      id: 120059
+                      orderId: testOrder
+                      status:
+                        value: SUCCESS
+                        date: '2019-07-11T17:45:13+03:00'
+                      paymentMethod: acquiring
+                      paymentParams:
+                        rrn: 935014591810
+                        authCode: 25984
+                      amount: 12500.5
+                      comment: Покупка шоколадного торта
+                      extra:
+                        additionalInfo: Sweet Cake
+                sbp:
+                  value:
+                    code: SUCCESS
+                    transaction:
+                      id: 120059
+                      orderId: testOrder
+                      status:
+                        value: SUCCESS
+                        date: '2019-07-11T17:45:13+03:00'
+                      paymentMethod: sbp
+                      paymentParams:
+                        qrId: AD100051KNSNR64I98CRUJUASC9M72QT
+                      amount: 12500.5
+                      comment: Покупка шоколадного торта
+                      extra:
+                        additionalInfo: Sweet Cake
+      operationId: get-payments-v1-orders-orderId-transaction
+      parameters:
+        - schema:
+            type: string
+          in: header
+          name: 'Content-type:'
+          description: application/json
+          required: true
+        - schema:
+            type: string
+          in: header
+          name: 'Authorization:'
+          required: true
+          description: '[secretKey](#section/API/Avtorizaciya)'
+      description: |-
+        Метод позволяет получить статус транзакции.
+        Необходимо проверять сумму, так как у клиентов есть возможность ее изменить.
+  '/payments/v1/orders/{orderId}/refunds/{refundId}':
+    parameters:
+      - schema:
+          type: string
+          pattern: A-z0-9-_.
+          maxLength: 40
+        name: orderId
+        in: path
+        required: true
+        description: Идентификатор заказа в магазине
+      - schema:
+          type: string
+          maxLength: 40
+          pattern: A-z0-9-_.
+        name: refundId
+        in: path
+        required: true
+        description: Уникальный идентификатор запроса на возврат в системе партнера
+    post:
+      summary: Оформление возврата по платежу
+      operationId: post-payments-v1-orders-orderId-refunds-refundId
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/statusRefund'
+              examples:
+                '200':
+                  value:
+                    code: SUCCESS
+                    amount: 150
+                    refundStatus: COMPLETED
+      description: |-
+        Метод позволяем выполнить отмену/возврат по платежу, как полную, так и частичную.
+        В случае с СБП выполняется только возврат.
+      parameters:
+        - schema:
+            type: string
+          in: header
+          name: 'Content-type:'
+          description: application/json
+          required: true
+        - schema:
+            type: string
+          in: header
+          name: 'Authorization:'
+          description: '[secretKey](#section/API/Avtorizaciya)'
+          required: true
+      tags:
+        - pay-controller
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/reqRefund'
+            examples:
+              Payload:
+                value:
+                  amount: 150
+    get:
+      summary: Статус возврата
+      operationId: get-payments-v1-orders-orderId-refunds-refundId
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/statusRefund'
+              examples:
+                '200':
+                  value:
+                    code: SUCCESS
+                    amount: 150
+                    refundStatus: COMPLETED
+      description: Метод позволяет получить статус по отмене/возврату.
+      parameters:
+        - schema:
+            type: string
+          in: header
+          name: 'Content-type:'
+          description: application/json
+          required: true
+        - schema:
+            type: string
+          in: header
+          name: 'Authorization:'
+          description: '[secretKey](#section/API/Avtorizaciya)'
+          required: true
+      tags:
+        - pay-controller
+  /settings/v1/callback:
+    post:
+      summary: Настройка url для callback
+      operationId: post-settings-v1-callback
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/callBackSettings'
+              examples:
+                '200':
+                  value:
+                    callbackUrl: 'https://yoururl.ru'
+      description: Для подписи уведомлений будет использоваться ключ из заголовка авторизации.
+      tags:
+        - Callback
+      parameters:
+        - schema:
+            type: string
+          in: header
+          name: 'Content-type:'
+          description: application/json
+          required: true
+        - schema:
+            type: string
+          in: header
+          name: 'Authorization:'
+          description: '[secretKey](#section/API/Avtorizaciya)'
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/callBackSettings'
+            examples:
+              Payload:
+                value:
+                  callbackUrl: 'https://yoururl.ru'
+components:
+  schemas:
+    reqRefund:
+      title: reqRefund
+      type: object
+      properties:
+        amount:
+          type: number
+          description: Сумма возврата в рублях
+      required:
+        - amount
+    statusRefund:
+      description: ''
+      type: object
+      x-examples: {}
+      title: statusRefund
+      properties:
+        code:
+          type: string
+          description: Код состояния http запроса
+          enum:
+            - SUCCESS
+            - ERROR
+        amount:
+          type: number
+          description: Сумма возврата в рублях
+        refundStatus:
+          type: string
+          description: Код состояния запроса на возврат
+          enum:
+            - IN_PROGRESS
+            - COMPLETED
+            - DECLINED
+    callBackSettings:
+      description: ''
+      type: object
+      x-examples: {}
+      properties:
+        callbackUrl:
+          type: string
+          description: Url для приема уведомлений
+      required:
+        - callbackUrl
+      title: callbackSettings
+    paymentsNotification:
+      description: ''
+      type: object
+      properties:
+        event:
+          type: string
+          description: Тип сообщения
+          enum:
+            - payment
+        transaction:
+          description: Данные по операции
+          oneOf:
+            - $ref: '#/components/schemas/acquiring'
+            - $ref: '#/components/schemas/sbp'
+          discriminator:
+            propertyName: paymentMethod
+    resPayStatus:
+      title: resPayStatus
+      type: object
+      properties:
+        code:
+          type: string
+          description: Код состояния http запроса
+          enum:
+            - SUCCESS
+            - ERROR
+        transaction:
+          description: Данные по операции
+          oneOf:
+            - $ref: '#/components/schemas/acquiring'
+            - $ref: '#/components/schemas/sbp'
+          discriminator:
+            propertyName: paymentMethod
+    sbp:
+      description: ''
+      type: object
+      x-examples: {}
+      properties:
+        id:
+          type: number
+          description: Идентификатор операции в Райффайзенбанке
+        orderId:
+          type: string
+          description: Идентификатор заказа в магазине
+        status:
+          type: object
+          properties:
+            value:
+              type: string
+              description: |-
+                Статус транзакции
+                NOT_FOUND - возвращается только при опросе статуса, если клиент не платил или получил ошибку входе попвтки оплаты
+              enum:
+                - SUCCESS
+                - NOT_FOUND
+            date:
+              type: string
+              description: Дата и время проведения. ISO-8601
+              format: 'YYYY-MM-DD ТHH24:MM:SS±HH:MM'
+        paymentMethod:
+          type: string
+          description: 'Тип платежа. При оплате картой вернет значение - "acquiring", при оплате через СБП - "sbp"'
+          enum:
+            - sbp
+        paymentParams:
+          type: object
+          properties:
+            qrId:
+              type: string
+              description: 'Уникальный идентификатор QRC, выданный СБП'
+        amount:
+          type: number
+          description: Сумма в рублях
+        comment:
+          type: string
+          description: Комментарий
+        extra:
+          type: object
+          description: Структура с дополнительными параметрами от магазина
+    acquiring:
+      description: ''
+      type: object
+      x-examples: {}
+      properties:
+        id:
+          type: number
+          description: Идентификатор операции в Райффайзенбанке
+        orderId:
+          type: string
+          description: Идентификатор заказа в магазине
+        status:
+          type: object
+          properties:
+            value:
+              type: string
+              description: |-
+                Статус транзакции
+                NOT_FOUND - возвращается только при опросе статуса, если клиент не платил или получил ошибку входе попвтки оплаты
+              enum:
+                - SUCCESS
+                - NOT_FOUND
+            date:
+              type: string
+              description: Дата и время проведения. ISO-8601
+              format: 'YYYY-MM-DD ТHH24:MM:SS±HH:MM'
+        paymentMethod:
+          type: string
+          enum:
+            - acquiring
+          description: 'Тип платежа. При оплате с карт придет значение - "acquiring", при СБП - "sbp"'
+        paymentParams:
+          type: object
+          properties:
+            rrn:
+              type: number
+              description: Номер для идентификации
+            authCode:
+              type: number
+              description: 'Код авторизации платежа, полученный от эмитента'
+        amount:
+          type: number
+          description: Сумма в рублях
+        comment:
+          type: string
+          description: Комментарий
+        extra:
+          type: object
+          description: Структура с дополнительными параметрами от магазина
+    js-sdk:
+      description: ''
+      type: object
+      title: Без чека
+      properties:
+        publicId:
+          type: string
+          description: Идентификатор магазина
+          example: 000001680200002-80200002
+        orderId:
+          type: string
+          description: Идентификатор заказа в магазине
+          maxLength: 40
+          example: orderTest
+          pattern: '^[A-z0-9-_.]'
+        amount:
+          type: number
+          description: Сумма платежа в рублях
+          example: 1200
+        comment:
+          type: string
+          description: Комментарий
+          maxLength: 140
+          example: Покупка шоколадного торта
+        successUrl:
+          type: string
+          description: 'URL ресурса, куда будет перенаправлен клиент в случае успешного платежа'
+          example: 'https://www.uniconf.ru/factories/krasny-octyabr/'
+        failUrl:
+          type: string
+          description: 'URL ресурса, куда будет перенаправлен клиент в случае неуспешного платежа'
+        extra:
+          type: object
+          description: Структура с дополнительными параметрами от магазина
+          example:
+            additionalInfo: Sweet Cake
+        paymentMethod:
+          type: string
+          description: 'Выбор метода оплаты. Если значение не передано, отображается общая форма'
+          enum:
+            - ONLY_SBP
+            - ONLY_ACQUIRING
+          example: ONLY_SBP
+        locale:
+          type: string
+          description: 'Выбор языка формы, по умолчанию ru'
+          enum:
+            - ru
+            - en
+          example: ru
+        expirationDate:
+          type: string
+          description: |-
+            Срок жизни формы.
+            YYYY-MM-DD ТHH24:MM:SS±HH:MM
+          format: date-time
+          example: '2021-10-21T14:17:00.000+03:00'
+      required:
+        - publicId
+        - amount
+    js-sdk-fiscal:
+      description: ''
+      x-examples:
+        example-1:
+          receipt:
+            receiptNumber: 3000827351831
+            customer:
+              email: customer@domain.ru
+              name: Иванов Иван Иванович
+            items:
+              - name: Шоколадный торт
+                price: 1200
+                quantity: 1
+                amount: 1200
+                paymentObject: commodity
+                measurementUnit: шт
+                nomenclatureCode: 00 00 00 00 12 00 AB 00
+                vatType: vat20
+      allOf:
+        - $ref: '#/components/schemas/js-sdk'
+        - type: object
+          properties:
+            receipt:
+              type: object
+              description: 'Данные чека. Объект обязателен, если подключена фискализация чеков. При отсутствии объекта receipt чек не будет создан'
+              required:
+                - customer
+              properties:
+                receiptNumber:
+                  type: string
+                  description: 'Уникальный номер чек. Если значение не передано, то заполняется номером заказа (orderId)'
+                  pattern: '^[A-Za-z0-9_-]'
+                  maxLength: 99
+                  example: '3000827351831'
+                customer:
+                  type: object
+                  properties:
+                    email:
+                      type: string
+                      description: 'E-mail покупателя для отправки чека. Значение выводится в поле ввода E-mail на платежной форме, покупатель может его изменить. Если по итогам платежа E-mail не передан, то чек отправляется на электронную почту мерчанта'
+                      maxLength: 64
+                      format: email
+                      example: customer@domain.ru
+                    name:
+                      type: string
+                      description: ФИО покупателя
+                      maxLength: 256
+                      example: Иванов Иван Иванович
+                items:
+                  type: array
+                  uniqueItems: true
+                  minItems: 1
+                  description: Позиции чека (не более 100 объектов)
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        maxLength: 128
+                        description: 'Наименование товара, работы, услуги, иного предмета расчета'
+                        example: Шоколадный торт
+                      price:
+                        type: number
+                        description: 'Цена за единицу товара, работы, услуги, иного предмета расчета в рублях (8 символов на целую часть, 2 - на дробную)'
+                        example: 1200
+                      quantity:
+                        type: number
+                        description: 'Количество/вес (5 символов на целую часть, 3 - на дробную)'
+                        example: 1
+                      amount:
+                        type: number
+                        description: 'Сумма в рублях (8 символов на целую часть, 2 - на дробную)'
+                        example: 1200
+                      paymentObject:
+                        type: string
+                        description: 'Признак предмета расчёта (товар, подакцизный товар, работа, услуга, платеж, иной предмет расчета). Если значение не передано, то заполняется на стороне выбранного ОФД в соответствии с установленным протоколом'
+                        enum:
+                          - commodity
+                          - excise
+                          - job
+                          - service
+                          - payment
+                          - another
+                        example: commodity
+                      measurementUnit:
+                        type: string
+                        description: 'Единица измерения товара, работы, услуги, иного предмета расчета'
+                        maxLength: 16
+                        example: шт
+                      nomenclatureCode:
+                        type: string
+                        description: 'Номенклатурный код товара в 16-ричном представлении с пробелами или в формате GS1. Например, "00 00 00 00 12 00 AB 00" или "010463003407001221CMK45BrhN0WLf"'
+                        maxLength: 150
+                        example: 00 00 00 00 12 00 AB 00
+                      vatType:
+                        type: string
+                        description: Ставка НДС на позицию чека
+                        enum:
+                          - none
+                          - vat0
+                          - vat10
+                          - vat110
+                          - vat20
+                          - vat120
+                        example: vat20
+                    required:
+                      - name
+                      - price
+                      - quantity
+                      - amount
+                      - vatType
+          required:
+            - receipt
+      title: С чеком
+    examplesJS:
+      title: examplesJS
+      oneOf:
+        - $ref: '#/components/schemas/js-sdk-fiscal'
+        - $ref: '#/components/schemas/js-sdk'
+x-webhooks:
+  newPay:
+    post:
+      summary: Уведомление о платеже
+      operationId: сallbackTransaction
+      tags:
+        - Callback
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/paymentsNotification'
+            examples:
+              acquiring:
+                value:
+                  event: payment
+                  transaction:
+                    id: 120059
+                    orderId: testOrder
+                    status:
+                      value: SUCCESS
+                      date: '2019-07-11T17:45:13+03:00'
+                    paymentMethod: acquiring
+                    paymentParams:
+                      rrn: 935014591810
+                      authCode: 25984
+                    amount: 12500.5
+                    comment: Покупка шоколадного торта
+                    extra:
+                      additionalInfo: Sweet Cake
+              sbp:
+                value:
+                  event: payment
+                  transaction:
+                    id: 120059
+                    orderId: testOrder
+                    status:
+                      value: SUCCESS
+                      date: '2019-07-11T17:45:13+03:00'
+                    paymentMethod: sbp
+                    paymentParams:
+                      qrId: AD100051KNSNR64I98CRUJUASC9M72QT
+                    amount: 12500.5
+                    comment: Покупка шоколадного торта
+                    extra:
+                      additionalInfo: Sweet Cake
+x-tagGroups:
+  - name: API
+    tags:
+      - js-sdk
+      - payform
+      - pay-controller
+      - Callback
+  - name: Сверка
+    tags:
+      - Registry
+  - name: Справочник
+    tags:
+      - Errors
+  - name: История изменений
+    tags:
+      - 21.10.2021
+x-example:
+  acquiring:
+    event: payment
+    transaction:
+      id: 120059
+      orderId: testOrder
+      status:
+        value: SUCCESS
+        date: '2019-07-11T17:45:13+03:00'
+      paymentMethod: acquiring
+      paymentParams:
+        rrn: 935014591810
+        authCode: '025984'
+      amount: 12500.5
+      comment: Покупка шоколадного торта
+      extra: {}
+  sbp:
+    event: payment
+    transaction:
+      id: 120059
+      orderId: testOrder
+      status:
+        value: SUCCESS
+        date: '2019-07-11T17:45:13+03:00'
+      paymentMethod: sbp
+      paymentParams:
+        qrId: AD100051KNSNR64I98CRUJUASC9M72QT
+      amount: 12500.5
+      comment: Покупка шоколадного торта
+      extra:
+        additionalInfo: Sweet Cake

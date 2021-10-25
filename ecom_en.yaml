@@ -1,0 +1,1011 @@
+openapi: 3.0.0
+info:
+  version: '1.0'
+  title: Raiffeisenbank e-commerce API
+  contact:
+    email: ecom@raiffeisen.ru
+    name: Support e-mail
+  x-logo:
+    url: images/raifflogo.png
+    backgroundColor: '#FFFFFF'
+    altText: Raiff logo
+  description: |
+    You can give your comments about current documentation in repository: https://github.com/Raiffeisen-DGTL/ecom-API/blob/master/ecom_en.yml
+
+    # Payment acceptance protocol
+
+    To receive e-commerce, follow the [link.](https://www.raiffeisen.ru/corporate/management/commerce/)
+
+    For all questions regarding operations with API, please contact Raiffeisenbank Support Service:
+    - email: <a href="mailto:ecom@raiffeisen.ru">ecom@raiffeisen.ru</a>
+
+    ### Preparatory Actions
+    In order to accept payments, you need to:
+    * submit an application for connection
+    * conclude an agreement with Raiffeisenbank
+    * choose an integration method and implement it
+    * successfully conduct test payments.
+
+    ### Payment page integration methods
+    In order to integrate the payment page, you can use:
+    * a ready-made library that allows you to open a pop-up for entering payment data and transferring complex data structures.
+    * redirection of the client to the payment page of Raiffeisenbank
+
+    # 54-FZ support
+
+    In accordance with the Federal Law NO. 54-FZ of May 22, 2003 "On the use of cash registers in implementation of settlements in the Russian Federation",
+    for taxation purposes a fiscal receipt is required for making settlements for goods sold, work performed or services rendered, as well as transfer of the receipts to tax authorities.
+
+    The Raiffeisenbank clients that use the e-commerce solution can enable automatic generation of electronic fiscal receipts and their transfer to tax authorities.
+    Detailed directions are listed below.
+
+    ## OFD.ru
+
+    1. Activate online cash register in [OFD.ru](https://raiffeisen.ofd.ru/)
+    2. Register it with the tax authorities through Ferma service according to [the instruction](https://static.ofd.ru/mail/2020/03/code_activate_and_promocode.pdf)
+    3. Create an application to enable the Raiffeisenbank fiscal solution
+
+    Your application must contain the required information:
+    * Partner service name (OFD.ru)
+    * Merchants' IDs (publicId)
+    * Taxation system
+    * E-mail (for receipts)
+    * Login, password and group code (see the details below)
+
+    For cash register information sign in to [OFD.ru account](https://lk.ofd.ru/ferma/dashboard) and go to Ferma section.
+    Scroll down to "Access details" widget and copy login, password and group code.
+
+    <a href='images/fiscalization_ofdru.png' target='_blank'><img src='images/fiscalization_ofdru.png'></a>
+
+    4. Submit the application:
+    * By E-mail <a href="mailto:ecom@raiffeisen.ru?subject=Подключение фискализации чеков для интернет-эквайринга&cc=<E-mail менеджера>&body=Добрый день!%0A%0A
+    Просьба подключить фискализацию чеков для интернет-эквайринга через OFD.ru. Данные для подключения ниже:%0A%0A1. Поставщик кассового оборудования – OFD.ru%0A%0A2. Идентификаторы мерчантов (publicId) – %0A%0A3. Применяемая система налогообложения – %0A%0A4. E-mail (для поля «Отправитель чека» и для получения чека, если E-mail не указан покупателем) – %0A%0A5. Логин учетной записи – %0A%0A6. Пароль от учетной записи – %0A%0A7. Идентификатор группы ККТ – ">ecom@raiffeisen.ru</a>.
+    Click on the e-mail to see a request template with a list of required information.
+    * To a bank manager. Please note that all the required information should be sent securely.
+
+    5. Make sure that receipt data is transferred on payment page opening (see the object 'receipt' in [the JS-library](https://e-commerce.raiffeisen.ru/api/doc/ecom_en.html#tag/js-sdk)).
+
+    Having completed all above, fiscal receipts will be generated automatically for all successful e-commerce transactions, as well as transferred to tax authorities by selected fiscal data operator.
+    Along with the automated fiscal solution, Raiffeisenbank provides generation of fiscal receipts and their transfer to tax authorities by [integration via API](https://e-commerce.raiffeisen.ru/api/doc/fiscal.html).
+
+    ## ATOL Online
+
+    1. Sign on with ["ATOL Online"](https://online.atol.ru/lk/Account/Register?partnerUid=18583cd5-dae2-4fb1-a98b-f4b80d891eb0) to activate online cash register
+    2. Sign a contract with a [fiscal data operator](https://www.nalog.gov.ru/rn77/related_activities/registries/fiscaloperators/)
+    3. Create an application to enable the Raiffeisenbank fiscal solution
+
+    Your application must contain the required information listed below:
+    * Partner service name (ATOL Online)
+    * Merchants' IDs (publicId)
+    * Taxation system
+    * E-mail (for receipts)
+    * Login, password and group code from (see the details below)
+
+    For login, password and group code sign in to [ATOL Online account](https://online.atol.ru/lk/Account/Login). Go to "My companies", then press the button "Integrator settings".
+    After XML export open the file and find element 'access'. It contains the necessary parameters (login, password, group_code). In case of difficulties contact "ATOL Online" technical support.
+
+    4. Submit the application:
+    * By E-mail <a href="mailto:ecom@raiffeisen.ru?subject=Подключение фискализации чеков для интернет-эквайринга&cc=<E-mail менеджера>&body=Добрый день!%0A%0A
+    Просьба подключить фискализацию чеков для интернет-эквайринга через %22АТОЛ Онлайн%22. Данные для подключения ниже:%0A%0A1. Поставщик кассового оборудования – %22АТОЛ Онлайн%22%0A%0A2. Идентификаторы мерчантов (publicId) – %0A%0A3. Применяемая система налогообложения – %0A%0A4. E-mail (для поля «Отправитель чека» и для получения чека, если E-mail не указан покупателем) – %0A%0A5. Логин учетной записи – %0A%0A6. Пароль от учетной записи – %0A%0A7. Идентификатор группы ККТ – ">ecom@raiffeisen.ru</a>.
+    Click on the e-mail to see a request template with a list of required information.
+    * To a bank manager. Please note that all the required information should be sent securely.
+
+    5. Make sure that receipt data is transferred on payment page opening (see the object 'receipt' in [the JS-library](https://e-commerce.raiffeisen.ru/api/doc/ecom_en.html#tag/js-sdk)).
+
+    Having completed all above, fiscal receipts will be generated automatically for all successful e-commerce transactions, as well as transferred to tax authorities by selected fiscal data operator.
+    Along with the automated fiscal solution, Raiffeisenbank provides generation of fiscal receipts and their transfer to tax authorities by [integration via API](https://e-commerce.raiffeisen.ru/api/doc/fiscal.html).
+
+    ## ChekOnline
+
+    1. Sign on with [ChekOnline](https://www.chekonline.ru) to activate online cash register
+    2. Sign a contract with a [fiscal data operator](https://www.nalog.gov.ru/rn77/related_activities/registries/fiscaloperators/)
+    3. Create an application to enable the Raiffeisenbank fiscal solution
+
+    Your application must contain the required information listed below:
+    * Partner service name (ChekOnline)
+    * Merchants' IDs (publicId)
+    * Taxation system
+    * E-mail (for receipts)
+    * Login, password and group code from (see the details below)
+
+    For login and password sign in to [ChekOnline account](https://cabinet.chekonline.ru/Account/Login). Go to "Companies", find the necessary one in the list and click on the icon in "Authorization" field.
+    Copy login and password or generate new ones. For group code go back to the "Companies" section and find the necessary one in the list. Open its profile and copy API Group ID.
+
+    4. Submit the application:
+    * By E-mail <a href="mailto:ecom@raiffeisen.ru?subject=Подключение фискализации чеков для интернет-эквайринга&cc=<E-mail менеджера>&body=Добрый день!%0A%0A
+    Просьба подключить фискализацию чеков для интернет-эквайринга через %22Чек-Онлайн%22. Данные для подключения ниже:%0A%0A1. Поставщик кассового оборудования – %22Чек-Онлайн%22%0A%0A2. Идентификаторы мерчантов (publicId) – %0A%0A3. Применяемая система налогообложения – %0A%0A4. E-mail (для поля «Отправитель чека» и для получения чека, если E-mail не указан покупателем) – %0A%0A5. Логин учетной записи – %0A%0A6. Пароль от учетной записи – %0A%0A7. Идентификатор группы ККТ – ">ecom@raiffeisen.ru</a>.
+    Click on the e-mail to see a request template with a list of required information.
+    * To a bank manager. Please note that all the required information should be sent securely.
+
+    5. Make sure that receipt data is transferred on payment page opening (see the object 'receipt' in [the JS-library](https://e-commerce.raiffeisen.ru/api/doc/ecom_en.html#tag/js-sdk)).
+
+    Having completed all above, fiscal receipts will be generated automatically for all successful e-commerce transactions, as well as transferred to tax authorities by selected fiscal data operator.
+    Along with the automated fiscal solution, Raiffeisenbank provides generation of fiscal receipts and their transfer to tax authorities by [integration via API](https://e-commerce.raiffeisen.ru/api/doc/fiscal.html).
+
+    # Payment process
+    Demonstration:
+    https://e-commerce.raiffeisen.ru/pay/demo.html
+
+    The user performs the following actions during the payment process:
+    * Selects goods/services into the shopping cart and clicks "Pay".
+    * The store opens up the payment form.
+    * The customer enters the relevant details on the payment form and confirms the payment.
+
+    The payment execution process is presented below:
+
+    <a href='images/E-commerce Raiffeisenbank scheme_en.png' target='_blank'><img src='images/E-commerce Raiffeisenbank scheme_en.png'></a>
+
+    # API description
+    Interaction is conducted with the HTTP protocol using the GET/POST methods (the description of each request clearly indicates the required method and address).
+
+    POST requests use JSON arguments, GET requests work with query strings.
+
+    API always returns a response in JSON format, regardless of the type of request.
+
+    The response of any method contains a message code. If a logical error occurs during the processing of any request, API will return an additional description of the error (message).
+
+
+    ##  Authorization
+
+    In order to authorize requests, you will need:
+    * publicId - identifier that is used to open a payment form and is not confidential
+    * secretKey - a secret key that is used for interservice communication.
+
+    Production url: https://e-commerce.raiffeisen.ru
+
+    ТSandbox url: https://test.ecom.raiffeisen.ru
+
+    IMPORTANT: The secret key must be stored in a secure place, it cannot be published on third-party resources or transferred to third parties.
+
+    You can view your public identifier and generate keys in your [personal account](https://www.rbo.raiffeisen.ru/acquiring/mcp#/) in the "Accept payments" tab
+
+    <div align=center><a href='images/createKey.png' target='_blank'><img src='images/createKey.png'></a></div>
+
+    Interservice requests are authorized using API secret key (SECRET_KEY). The authorization parameter is specified in the Authorization header, the value of which is formed as "Bearer SECRET_KEY".
+
+    In order to generate a secret key, please contact: ecom@raiffeisen.ru
+
+    ## Errors
+    The response of any method contains a message code. If a logical error occurs during the processing of any request, API will return an additional description of the error (message).
+
+    HTTP-code | code | message | Comments
+    --------|------------------|-----------------------------------|-----------------------------
+    200 | SUCCESS | Request processed successfully | Successful processing of the request without logical and system failures
+    200 | ERROR.<Error_code> | Text message on error | Logical error during processing of the request
+    500 | ERROR.INTERNAL | Error | System error during processing of the request
+
+    # Testing
+    ## E-commerce
+    For a full payment testing cycle, you must specify an amount of more than 10 rubles.
+    Cards:
+
+    * 4000001000000018 12/24 880 - 3DS PIN for success payment 1234,for fail 1111
+
+    ## SBP
+    For a full payment testing cycle, Raiffeisenbank provides the opportunity to use a demo application for scanning QRC on behalf of the buyer at:
+    https://pay.raif.ru/pay/rfuture/
+
+    The specified address can be opened in the browser of any device with a camera. No additional software / plugins need to be installed. Then click on the SBP icon (if necessary, allow the browser access to the camera) and bring the QR code image to it.
+    If the camera doesn't open, check the url, it has to have https.
+
+    ### Example Demo Screen
+
+    <div align=center><a href='images/example-sbp-1.png' target='_blank'><img src='images/example-sbp-1.png'></a></div>
+servers:
+  - url: 'https://test.ecom.raiffeisen.ru/api'
+    description: Sandbox
+  - url: 'https://e-commerce.raiffeisen.ru/api'
+    description: Production
+tags:
+  - name: js-sdk
+    x-displayName: js-library
+    description: |
+      Using the library allows you to open the form in a pop-up window, which provides a seamless script for the client.
+      It is also possible to customize the interface of the payment form and transfer additional fields.
+
+      Using the JS library is described in the repository https://github.com/Raiffeisen-DGTL/ecom-sdk-javascript
+
+      You can customize the logo, brand name and color of the buttons in our configurator: https://pay.raif.ru/pay/configurator/
+
+      And you can get the code to insert it into JS library.
+
+      Below is an example of a request for payment:
+
+      <SchemaDefinition schemaRef="#/components/schemas/examplesJS" />
+  - name: payform
+    x-displayName: Payment form
+    description: |
+      Easy way to integrate. The client must be redirected to the payment form, passing the order parameters. Customization of the form interface or transfer of additional fields is not available in this integration option.
+  - name: pay-controller
+    x-displayName: Available methods
+    description: |
+      To implement interaction with a partner, Raiffeisenbank provides an API:
+      * for opening a payment form using HTTP requests;
+      * for receiving payment status.
+  - name: Callback
+    x-displayName: Payment notification
+    description: |
+      In order to inform the Merchant site about payments made, HTTP notifications to the address specified in its settings can be used.
+
+      The prod url can be specified in the [personal account](https://www.rbo.raiffeisen.ru/acquiring/mcp#/) in the "Accept payments" tab.
+
+      <div align=center><a href='images/callback.png' target='_blank'><img src='images/callback.png'></a></div>
+
+      And prod or test url can be specified with [API.](#operation/postsettingsUrl)
+
+      For partners, a notification is presented as an incoming POST request that uses the JSON structure.
+
+      A notification is considered accepted if the recipient responded to the request with HTTP 200.
+
+      Responses with any other HTTP codes will be considered invalid. Repeated attempts to send will be conducted during the day with increasing intervals.
+
+      In order to verify the authenticity of the notification, a signature is added to the data in the x-api-signature-sha256 header, obtained on the basis of the shared secret key and control string (amount|publickId|order|paymentStatus|transactionDate) by way of HMAC-SHA-256.
+
+      It is necessary to check the amount, as customers have the opportunity to change it.
+  - name: Registry
+    x-displayName: Registry
+    description: |
+      To subscribe to the report, send an email to ecom@raiffeisen.ru
+
+      Reports are sent every day.
+
+      If there was no transaction on that day, the report is not sent.
+
+      Report format:
+
+      Column name | Value
+      --------|------------------
+      Мерчант | Store id
+      Дата операции МСК | Date and time of payment
+      Тип | Type transaction
+      id заказа | Order id
+      id возврата | Refund id
+      Комментарий | Comment
+      Способ оплаты | Instant Payment QR - SBP, Payment system name - Acquiring
+      Данные оплаты | QR id - SBP, authCode and rnn - Acquiring
+      id клиента | SBP - masked payer code. Acquiring - masked payer card
+      Сумма | Amount
+      Комиссия | Transaction fee
+      Дополнительные поля | Additional Information
+
+      [Exampl of report](images/ECOMSBPreport.csv)
+  - name: Errors
+    x-displayName: List of errors
+    description: |
+      The response of any method contains a message code (code). If a logical error occurs during the processing of any request, the API will additionally return a description of the error (message).
+
+      Examples of basic errors:
+
+      code | message
+      ------------|------
+      ERROR.NOT_FOUND | Счет не найден у данного партнера
+      ERROR.REFUND_INSUFFICIENT_FUNDS | Сумма возврата больше суммы остатка по платежу
+      ERROR.INVALID_REQUEST | Некорректные параметры запроса
+  - name: 21.10.2021
+    x-displayName: 21.10.2021
+    description: |
+      * Added parameter expirationDate - is responsible for the lifetime of the form
+paths:
+  /pay:
+    get:
+      servers:
+        - url: 'https://test.ecom.raiffeisen.ru'
+          description: Sandbox
+        - url: 'https://e-commerce.raiffeisen.ru'
+          description: Production
+      summary: Opening a payment form
+      tags:
+        - payform
+      operationId: get-pay
+      description: 'When the client redirects to the received URL, a form for payment will open'
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: publicId
+          description: Store id
+          required: true
+        - schema:
+            type: string
+          in: query
+          name: amount
+          required: true
+          description: Payment amount in rubles
+        - schema:
+            type: string
+            pattern: '^[A-z0-9-_.]'
+            maxLength: 40
+          in: query
+          name: orderId
+          description: Store order ID
+        - schema:
+            maxLength: 140
+            format: URL encoded
+            type: string
+          in: query
+          name: comment
+          description: Comment
+        - schema:
+            type: string
+            enum:
+              - ONLY_SBP
+              - ONLY_ACQUIRING
+          in: query
+          name: paymentMethod
+          description: Select a payment method
+        - schema:
+            type: string
+            enum:
+              - ru
+              - en
+          in: query
+          name: locale
+          description: Form language
+        - schema:
+            format: URL encoded
+            type: string
+          in: query
+          name: successUrl
+          description: URL of the resource where the client will be redirected in case of successful payment
+        - schema:
+            format: URL encoded
+            type: string
+          in: query
+          name: failUrl
+          description: URL of the resource where the client will be redirected in case of payment failure
+        - schema:
+            type: string
+            format: date-time encoded
+          in: query
+          name: expirationDate
+          description: 'Lifetime of the form. YYYY-MM-DD ТHH24:MM:SS±HH:MM'
+      responses:
+        '200':
+          description: OK
+    parameters: []
+  '/payments/v1/orders/{orderId}/transaction':
+    parameters:
+      - schema:
+          type: string
+          pattern: A-z0-9-_.
+          maxLength: 40
+        name: orderId
+        in: path
+        required: true
+        description: order id
+    get:
+      summary: Getting transaction status information
+      tags:
+        - pay-controller
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/resPayStatus'
+              examples:
+                acquiring:
+                  value:
+                    code: SUCCESS
+                    transaction:
+                      id: 120059
+                      orderId: testOrder
+                      status:
+                        value: SUCCESS
+                        date: '2019-07-11T17:45:13+03:00'
+                      paymentMethod: acquiring
+                      paymentParams:
+                        rrn: 935014591810
+                        authCode: 25984
+                      amount: 12500.5
+                      comment: Покупка шоколадного торта
+                      extra:
+                        additionalInfo: Sweet Cake
+                sbp:
+                  value:
+                    code: SUCCESS
+                    transaction:
+                      id: 120059
+                      orderId: testOrder
+                      status:
+                        value: SUCCESS
+                        date: '2019-07-11T17:45:13+03:00'
+                      paymentMethod: sbp
+                      paymentParams:
+                        qrId: AD100051KNSNR64I98CRUJUASC9M72QT
+                      amount: 12500.5
+                      comment: Покупка шоколадного торта
+                      extra:
+                        additionalInfo: Sweet Cake
+      operationId: get-payments-v1-orders-orderId-transaction
+      parameters:
+        - schema:
+            type: string
+          in: header
+          name: 'Content-type:'
+          description: application/json
+          required: true
+        - schema:
+            type: string
+          in: header
+          name: 'Authorization:'
+          required: true
+          description: '[secretKey](#section/API/Avtorizaciya)'
+      description: |-
+        The method allows you to get the transaction status.
+        It is necessary to check the amount, as customers have the opportunity to change it.
+  '/payments/v1/orders/{orderId}/refunds/{refundId}':
+    parameters:
+      - schema:
+          type: string
+          pattern: A-z0-9-_.
+          maxLength: 40
+        name: orderId
+        in: path
+        required: true
+        description: order id
+      - schema:
+          type: string
+          maxLength: 40
+          pattern: A-z0-9-_.
+        name: refundId
+        in: path
+        required: true
+        description: refund id
+    post:
+      summary: Refund
+      operationId: post-payments-v1-orders-orderId-refunds-refundId
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/statusRefund'
+              examples:
+                '200':
+                  value:
+                    code: SUCCESS
+                    amount: 150
+                    refundStatus: COMPLETED
+      description: |-
+        The method allows you to cancel /refund a payment, both full and partial.
+        In the case of the SBP, only the return is performed.
+      parameters:
+        - schema:
+            type: string
+          in: header
+          name: 'Content-type:'
+          description: application/json
+          required: true
+        - schema:
+            type: string
+          in: header
+          name: 'Authorization:'
+          description: '[secretKey](#section/API/Avtorizaciya)'
+          required: true
+      tags:
+        - pay-controller
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/reqRefund'
+            examples:
+              Payload:
+                value:
+                  amount: 150
+    get:
+      summary: Refund Status
+      operationId: get-payments-v1-orders-orderId-refunds-refundId
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/statusRefund'
+              examples:
+                '200':
+                  value:
+                    code: SUCCESS
+                    amount: 150
+                    refundStatus: COMPLETED
+      description: The method allows you to get the status of cancellation/refund.
+      parameters:
+        - schema:
+            type: string
+          in: header
+          name: 'Content-type:'
+          description: application/json
+          required: true
+        - schema:
+            type: string
+          in: header
+          name: 'Authorization:'
+          description: '[secretKey](#section/API/Avtorizaciya)'
+          required: true
+      tags:
+        - pay-controller
+  /settings/v1/callback:
+    post:
+      summary: Setting url for callback
+      operationId: post-settings-v1-callback
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/callBackSettings'
+              examples:
+                '200':
+                  value:
+                    callbackUrl: 'https://yoururl.ru'
+      description: The key from the authorization header will be used to sign notifications.
+      tags:
+        - Callback
+      parameters:
+        - schema:
+            type: string
+          in: header
+          name: 'Content-type:'
+          description: application/json
+          required: true
+        - schema:
+            type: string
+          in: header
+          name: 'Authorization:'
+          description: '[secretKey](#section/API/Avtorizaciya)'
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/callBackSettings'
+            examples:
+              Payload:
+                value:
+                  callbackUrl: 'https://yoururl.ru'
+components:
+  schemas:
+    reqRefund:
+      title: reqRefund
+      type: object
+      properties:
+        amount:
+          type: number
+          description: refund amount in rubles
+      required:
+        - amount
+    statusRefund:
+      description: ''
+      type: object
+      x-examples: {}
+      title: statusRefund
+      properties:
+        code:
+          type: string
+          description: HTTP request status code
+          enum:
+            - SUCCESS
+            - ERROR
+        amount:
+          type: number
+          description: refund amount in rubles
+        refundStatus:
+          type: string
+          description: refund request status code
+          enum:
+            - IN_PROGRESS
+            - COMPLETED
+            - DECLINED
+    callBackSettings:
+      description: ''
+      type: object
+      x-examples: {}
+      title: callbackSettings
+      properties:
+        callbackUrl:
+          type: string
+          description: Your url for notifications
+      required:
+        - callbackUrl
+    paymentsNotification:
+      description: ''
+      type: object
+      properties:
+        event:
+          type: string
+          description: Type message
+          enum:
+            - payment
+        transaction:
+          description: Transaction data
+          oneOf:
+            - $ref: '#/components/schemas/acquiring'
+            - $ref: '#/components/schemas/sbp'
+          discriminator:
+            propertyName: paymentMethod
+    resPayStatus:
+      title: resPayStatus
+      type: object
+      properties:
+        code:
+          type: string
+          description: HTTP request status code
+          enum:
+            - SUCCESS
+            - ERROR
+        transaction:
+          description: Transaction data
+          oneOf:
+            - $ref: '#/components/schemas/acquiring'
+            - $ref: '#/components/schemas/sbp'
+          discriminator:
+            propertyName: paymentMethod
+    sbp:
+      description: ''
+      type: object
+      x-examples: {}
+      properties:
+        id:
+          type: number
+          description: Raiffeisenbank Transaction ID
+        orderId:
+          type: string
+          description: Store order ID
+        status:
+          type: object
+          properties:
+            value:
+              type: string
+              description: Status
+              enum:
+                - SUCCESS
+                - NOT_FOUND
+            date:
+              type: string
+              description: Date and time. ISO-8601
+              format: 'YYYY-MM-DD ТHH24:MM:SS±HH:MM'
+        paymentMethod:
+          type: string
+          description: 'Type of payment. If card - "acquiring", if QR SBP - "sbp"'
+          enum:
+            - sbp
+        paymentParams:
+          type: object
+          properties:
+            qrId:
+              type: string
+              description: Unique QRC ID issued by SBP
+        amount:
+          type: number
+          description: Amount in rubles
+        comment:
+          type: string
+          description: comment
+        extra:
+          type: object
+          description: Structure with additional store options
+    acquiring:
+      description: ''
+      type: object
+      x-examples: {}
+      properties:
+        id:
+          type: number
+          description: Raiffeisenbank Transaction ID
+        orderId:
+          type: string
+          description: Store order ID
+        status:
+          type: object
+          properties:
+            value:
+              type: string
+              description: Status
+              enum:
+                - SUCCESS
+                - NOT_FOUND
+            date:
+              type: string
+              description: Date and time. ISO-8601
+              format: 'YYYY-MM-DD ТHH24:MM:SS±HH:MM'
+        paymentMethod:
+          type: string
+          enum:
+            - acquiring
+          description: 'Type of payment. If card - "acquiring", if QR SBP - "sbp"'
+        paymentParams:
+          type: object
+          properties:
+            rrn:
+              type: number
+              description: Identification Number
+            authCode:
+              type: number
+              description: Payment authorization code received from the issuer
+        amount:
+          type: number
+          description: Amount in rubles
+        comment:
+          type: string
+          description: comment
+        extra:
+          type: object
+          description: Structure with additional store options
+    js-sdk:
+      description: ''
+      type: object
+      title: Without a receipt
+      properties:
+        publicId:
+          type: string
+          description: Store id
+          example: 000001680200002-80200002
+        orderId:
+          type: string
+          description: Store order ID
+          maxLength: 40
+          example: orderTest
+          pattern: '^[A-z0-9-_.]'
+        amount:
+          type: number
+          description: Payment amount in rubles
+          example: 1200
+        comment:
+          type: string
+          description: Comment
+          maxLength: 140
+          example: Покупка шоколадного торта
+        successUrl:
+          type: string
+          description: URL of the resource where the client will be redirected in case of successful payment
+          example: 'https://www.uniconf.ru/factories/krasny-octyabr/'
+        failUrl:
+          type: string
+          description: URL of the resource where the client will be redirected in case of payment failure
+        extra:
+          type: object
+          description: Structure with additional store options
+          example:
+            additionalInfo: Sweet Cake
+        paymentMethod:
+          type: string
+          description: Choosing a payment method
+          enum:
+            - ONLY_SBP
+            - ONLY_ACQUIRING
+          example: ONLY_SBP
+        locale:
+          type: string
+          description: 'Select the form language, by default ru'
+          enum:
+            - ru
+            - en
+          example: ru
+        expirationDate:
+          type: string
+          description: |
+            Lifetime of the form.
+            YYYY-MM-DD ТHH24:MM:SS±HH:MM
+          example: '2021-10-21T14:17:00.000+03:00'
+          format: date-time
+      required:
+        - publicId
+        - amount
+    js-sdk-fiscal:
+      description: ''
+      x-examples:
+        example-1:
+          receipt:
+            receiptNumber: 3000827351831
+            customer:
+              email: customer@domain.ru
+              name: Иванов Иван Иванович
+            items:
+              - name: Шоколадный торт
+                price: 1200
+                quantity: 1
+                amount: 1200
+                paymentObject: commodity
+                measurementUnit: шт
+                nomenclatureCode: 00 00 00 00 12 00 AB 00
+                vatType: vat20
+      allOf:
+        - $ref: '#/components/schemas/js-sdk'
+        - type: object
+          properties:
+            receipt:
+              type: object
+              description: 'Receipt details. Required if the automated generation of fiscal receipts is enabled. If null, no receipts will be created'
+              required:
+                - customer
+              properties:
+                receiptNumber:
+                  type: string
+                  description: 'A unique receipt number, format A-Za-z0-9_-. If null, filled in with order number (orderId)'
+                  pattern: '^[A-Za-z0-9_-]'
+                  maxLength: 99
+                  example: '3000827351831'
+                customer:
+                  type: object
+                  properties:
+                    email:
+                      type: string
+                      description: 'Customer''s email address that electronic fiscal receipt is sent to. Displayed on the payform, on which user can edit e-mail. If null, fiscal receipt is sent to merchant''s e-mail.'
+                      maxLength: 64
+                      format: email
+                      example: customer@domain.ru
+                    name:
+                      type: string
+                      description: Customer's full name
+                      maxLength: 256
+                      example: Иванов Иван Иванович
+                items:
+                  type: array
+                  uniqueItems: true
+                  minItems: 1
+                  description: Receipt items (no more than 100 objects)
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        maxLength: 128
+                        description: 'Name of goods, work, service, other payment objects'
+                        example: Шоколадный торт
+                      price:
+                        type: number
+                        description: 'Price per unit of goods, work, services, other payment objects in rubles (8 characters for a whole part, 2 - for a fractional part)'
+                        example: 1200
+                      quantity:
+                        type: number
+                        description: 'Quantity / weight (5 characters for a whole part, 3 - for a fractional part)'
+                        example: 1
+                      amount:
+                        type: number
+                        description: 'Amount in rubles (8 characters for a whole part, 2 - for a fractional part)'
+                        example: 1200
+                      paymentObject:
+                        type: string
+                        description: 'Payment object type (good, job, service, etc). If null, filled in by a fiscal data operator in accordance with its protocol'
+                        enum:
+                          - commodity
+                          - excise
+                          - job
+                          - service
+                          - payment
+                          - another
+                        example: commodity
+                      measurementUnit:
+                        type: string
+                        description: 'Unit of measurement of goods, work, services, other payment objects'
+                        maxLength: 16
+                        example: шт
+                      nomenclatureCode:
+                        type: string
+                        description: 'Product code in hexadecimal divided by spaces or in GS1 format. For example, "00 00 00 00 12 00 AB 00" or "010463003407001221CMK45BrhN0WLf"'
+                        maxLength: 150
+                        example: 00 00 00 00 12 00 AB 00
+                      vatType:
+                        type: string
+                        description: VAT rate on each receipt item
+                        enum:
+                          - none
+                          - vat0
+                          - vat10
+                          - vat110
+                          - vat20
+                          - vat120
+                        example: vat20
+                    required:
+                      - name
+                      - price
+                      - quantity
+                      - amount
+                      - vatType
+          required:
+            - receipt
+      title: With a receipt
+    examplesJS:
+      title: examplesJS
+      oneOf:
+        - $ref: '#/components/schemas/js-sdk-fiscal'
+        - $ref: '#/components/schemas/js-sdk'
+x-webhooks:
+  newPay:
+    post:
+      summary: Payment notification
+      operationId: сallbackTransaction
+      tags:
+        - Callback
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/paymentsNotification'
+            examples:
+              acquiring:
+                value:
+                  event: payment
+                  transaction:
+                    id: 120059
+                    orderId: testOrder
+                    status:
+                      value: SUCCESS
+                      date: '2019-07-11T17:45:13+03:00'
+                    paymentMethod: acquiring
+                    paymentParams:
+                      rrn: 935014591810
+                      authCode: 25984
+                    amount: 12500.5
+                    comment: Покупка шоколадного торта
+                    extra:
+                      additionalInfo: Sweet Cake
+              sbp:
+                value:
+                  event: payment
+                  transaction:
+                    id: 120059
+                    orderId: testOrder
+                    status:
+                      value: SUCCESS
+                      date: '2019-07-11T17:45:13+03:00'
+                    paymentMethod: sbp
+                    paymentParams:
+                      qrId: AD100051KNSNR64I98CRUJUASC9M72QT
+                    amount: 12500.5
+                    comment: Покупка шоколадного торта
+                    extra:
+                      additionalInfo: Sweet Cake
+x-tagGroups:
+  - name: API
+    tags:
+      - js-sdk
+      - payform
+      - pay-controller
+      - Callback
+  - name: COMPARISON
+    tags:
+      - Registry
+  - name: REFERENCE INFORMATION
+    tags:
+      - Errors
+  - name: Change log
+    tags:
+      - 21.10.2021
+x-example:
+  acquiring:
+    event: payment
+    transaction:
+      id: 120059
+      orderId: testOrder
+      status:
+        value: SUCCESS
+        date: '2019-07-11T17:45:13+03:00'
+      paymentMethod: acquiring
+      paymentParams:
+        rrn: 935014591810
+        authCode: '025984'
+      amount: 12500.5
+      comment: Покупка шоколадного торта
+      extra: {}
+  sbp:
+    event: payment
+    transaction:
+      id: 120059
+      orderId: testOrder
+      status:
+        value: SUCCESS
+        date: '2019-07-11T17:45:13+03:00'
+      paymentMethod: sbp
+      paymentParams:
+        qrId: AD100051KNSNR64I98CRUJUASC9M72QT
+      amount: 12500.5
+      comment: Покупка шоколадного торта
+      extra:
+        additionalInfo: Sweet Cake

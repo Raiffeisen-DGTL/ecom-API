@@ -99,7 +99,7 @@ info:
     ## Авторизация
     Запросы связанные с получением данных по платежу и управлением платежами авторизуются посредством секретного ключа API (sercretKey). Параметр авторизации указывается в заголовке Authorization, значение которого формируется как "Bearer secretKey".
 
-    Для получения тестовых данных для интеграции необходимо обратиться по адресу:  ecom@raiffeisen.ru
+    Для получения тестовых данных для интеграции необходимо заполнить анкету на [pay.raif.ru](https://corp-request.rbo.raiffeisen.ru/?product=pay_raif&preselect=6|28)
 
     Посмотреть боевой sbpMerchantId и сгенерировать ключи можно в [личном кабинете](https://www.rbo.raiffeisen.ru/acquiring/mcp#/) во вкладке "Прием платежей"
 
@@ -138,7 +138,7 @@ tags:
         * возврат денежных средств - может быть выполнен в любое время после проведения оплаты на полную сумму платежа или частичную. Однако сумма частичных запросов на возврат не должна превышать общую сумму заказа.
         * получение информации по возврату.
 
-        [Схема взаимодействия.](#section/общие-схемы-работы/схема-работы-с-формой)
+        [Схема взаимодействия.](#section/Obshie-shemy-raboty/Shema-raboty-po-pryamomu-protokolu-SBP)
   - name: qr-subscription
     x-displayName: Подписки
     description: |
@@ -147,11 +147,11 @@ tags:
       Для реализации возможны два сценария:
         * отдельно подписка с последующими платежами
 
-        [Схема взаимодействия.](#section/общие-схемы-работы/схема-работы-с-подписками)
+        [Схема взаимодействия.](#section/Obshie-shemy-raboty/Shema-raboty-s-podpiskami)
 
         * подписка с оплатой
 
-        [Схема взаимодействия.](#section/общие-схемы-работы/схема-работа-по-подпискам-с-оплатой)
+        [Схема взаимодействия.](#section/Obshie-shemy-raboty/Shema-rabota-po-podpiskam-s-oplatoj)
   - name: Callback
     x-displayName: Уведомления
     description: |
@@ -301,7 +301,7 @@ paths:
             type: string
           in: header
           name: 'Authorization:'
-          description: '[secretKey](#section/API/авторизация)'
+          description: '[secretKey](#section/Opisanie-API/Avtorizaciya)'
           required: true
       description: Для подписи уведомлений будет использоваться ключ из заголовка авторизации.
   /sbp/v1/qr/register:
@@ -332,7 +332,7 @@ paths:
       description: |-
         Регистрация QR кода выполяется без авторизации, что позволяет сгенерировать его на сайте или приложении. Данный метод позволяет генерировать как статический QR кода , так и динамечкие QR кода. Так же с помощью данного метода вы можете сгенерировать QR код для оплаты с подпиской.
 
-        Тестовые QR можно оплатить только нашим [тестовым приложением.](#section/тестирование)
+        Тестовые QR можно оплатить только нашим [тестовым приложением.](#section/Testirovanie)
       requestBody:
         content:
           application/json:
@@ -344,7 +344,7 @@ paths:
                 value:
                   account: 40700000000000000000
                   additionalInfo: Доп информация
-                  amount: 1110
+                  amount: 1110.11
                   currency: RUB
                   order: 1-22-333
                   paymentDetails: Назначение платежа
@@ -355,7 +355,7 @@ paths:
                 value:
                   account: 40700000000000000000
                   additionalInfo: Доп информация
-                  amount: 1110
+                  amount: 1110.11
                   currency: RUB
                   order: 1-22-333
                   paymentDetails: Назначение платежа
@@ -434,7 +434,7 @@ paths:
             type: string
           in: header
           name: 'Authorization:'
-          description: '[secretKey](#section/API/авторизация)'
+          description: '[secretKey](#section/Opisanie-API/Avtorizaciya)'
           required: true
       x-codeSamples:
         - lang: cURL
@@ -473,7 +473,7 @@ paths:
             type: string
           in: header
           name: 'Authorization:'
-          description: '[secretKey](#section/API/авторизация)'
+          description: '[secretKey](#section/Opisanie-API/Avtorizaciya)'
           required: true
       x-codeSamples:
         - lang: cURL
@@ -519,7 +519,7 @@ paths:
             type: string
           in: header
           name: 'Authorization:'
-          description: '[secretKey](#section/API/авторизация)'
+          description: '[secretKey](#section/Opisanie-API/Avtorizaciya)'
           required: true
       x-codeSamples:
         - lang: cURL
@@ -556,7 +556,7 @@ paths:
                   value:
                     additionalInfo: Доп информация
                     paymentPurpose: Назначение платежа
-                    amount: 12399
+                    amount: 1110.11
                     code: SUCCESS
                     createDate: '2020-01-31T09:14:38.107227+03:00'
                     currency: RUB
@@ -580,7 +580,7 @@ paths:
         - schema:
             type: string
           in: header
-          description: '[secretKey](#section/API/авторизация)'
+          description: '[secretKey](#section/Opisanie-API/Avtorizaciya)'
           name: 'Authorization:'
           required: true
       x-codeSamples:
@@ -642,7 +642,7 @@ paths:
             type: string
           in: header
           name: 'Authorization:'
-          description: '[secretKey](#section/API/авторизация)'
+          description: '[secretKey](#section/Opisanie-API/Avtorizaciya)'
           required: true
       x-codeSamples:
         - lang: cURL
@@ -705,7 +705,7 @@ paths:
             type: string
           in: header
           name: 'Authorization:'
-          description: '[secretKey](#section/API/авторизация)'
+          description: '[secretKey](#section/Opisanie-API/Avtorizaciya)'
           required: true
       x-codeSamples:
         - lang: cURL
@@ -803,7 +803,7 @@ paths:
             type: string
           in: header
           name: 'Authorization:'
-          description: '[secretKey](#section/API/авторизация)'
+          description: '[secretKey](#section/Opisanie-API/Avtorizaciya)'
           required: true
       description: Метод позволяет получить данные по ранее созданной подписки
   '/sbp/v1/subscriptions/{subscriptionId}/orders':
@@ -863,7 +863,7 @@ paths:
             type: string
           in: header
           name: 'Authorization:'
-          description: '[secretKey](#section/API/авторизация)'
+          description: '[secretKey](#section/Opisanie-API/Avtorizaciya)'
           required: true
   '/sbp/v1/subscriptions/{subscriptionId}/orders/{order}':
     parameters:
@@ -914,7 +914,7 @@ paths:
             type: string
           in: header
           name: 'Authorization:'
-          description: '[secretKey](#section/API/авторизация)'
+          description: '[secretKey](#section/Opisanie-API/Avtorizaciya)'
           required: true
 components:
   schemas:
@@ -925,7 +925,7 @@ components:
         example-1:
           additionalInfo: Доп информация
           paymentPurpose: Назначение платежа
-          amount: 12399
+          amount: 12399.1
           code: SUCCESS
           createDate: '2020-01-31T09:14:38.107227+03:00'
           currency: RUB
@@ -1342,48 +1342,6 @@ components:
         - createDate
         - status
         - qr
-    subscriptionNotification:
-      title: subscriptionNotification
-      type: object
-      properties:
-        event:
-          type: string
-          description: Тип уведомления.
-          example: subscription
-        subscription:
-          type: object
-          properties:
-            id:
-              type: string
-              description: Идентификатор подписки.
-              example: '120059'
-            bank:
-              type: string
-              description: Идентификатор банка в котором осуществленна подписка.
-              example: someBank
-            createDate:
-              type: string
-              format: date-time
-              description: Время формирования заявки
-              example: '2020-01-31T09:14:38.107227+03:00'
-            status:
-              example: SUBSCRIBED
-            qr:
-              type: object
-              properties:
-                id:
-                  type: string
-                  description: Уникальный идентификатор QR кода
-                  example: AD100004BAL7227F9BNP6KNE007J9B3K
-                payload:
-                  type: string
-                  description: 'Данные для самостоятельной генерации изображения зарегистрированного QR-кода в СБП. При открытии с мобильного устройства, запускает банковское приложение клиента или список выбора банка.'
-                  example: 'https://sub.nspk.ru/AS3D33FC7B034DEEA8A365142E1DE737?type=03&bank=10000001&crc=C08B'
-                url:
-                  type: string
-                  description: URL с изображением зарегистрированного QR-кода в СБП
-                  example: 'https://test.ecom.raiffeisen.ru/api/sbp/v1/qr/AS3D33FC7B034DEEA8A365142E1DE737/image'
-      description: Уведомления о подписке
     paymentNotification:
       title: paymentNotification
       type: object
@@ -1617,14 +1575,3 @@ x-webhooks:
           application/json:
             schema:
               $ref: '#/components/schemas/paymentNotification'
-  newSubscriprion:
-    post:
-      summary: Уведомление о подписке
-      operationId: сallbackSubscription
-      tags:
-        - Callback
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/subscriptionNotification'
